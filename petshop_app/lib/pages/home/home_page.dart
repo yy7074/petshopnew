@@ -178,23 +178,7 @@ class _HomePageState extends State<HomePage> {
                             ),
                           );
                         case 1:
-                          return _buildCategoryContent('宠物', [
-                            {
-                              'name': '英短蓝猫',
-                              'price': 1200,
-                              'image': 'https://picsum.photos/200/200?random=30'
-                            },
-                            {
-                              'name': '金毛犬',
-                              'price': 2500,
-                              'image': 'https://picsum.photos/200/200?random=31'
-                            },
-                            {
-                              'name': '布偶猫',
-                              'price': 3800,
-                              'image': 'https://picsum.photos/200/200?random=32'
-                            },
-                          ]);
+                          return _buildPetPageContent();
                         case 2:
                           return _buildCategoryContent('水族', [
                             {
@@ -1190,5 +1174,453 @@ class _HomePageState extends State<HomePage> {
         // 刷新数据
       });
     }
+  }
+
+  // 构建宠物页面内容
+  Widget _buildPetPageContent() {
+    return SingleChildScrollView(
+      physics: const BouncingScrollPhysics(),
+      child: Column(
+        children: [
+          SizedBox(height: 16.h),
+
+          // 分类网格
+          _buildPetCategoryGrid(),
+          SizedBox(height: 16.h),
+
+          // 标签筛选
+          _buildPetFilterTags(),
+          SizedBox(height: 16.h),
+
+          // 商品列表
+          _buildPetProductList(),
+          SizedBox(height: 100.h),
+        ],
+      ),
+    );
+  }
+
+  // 构建宠物页面搜索栏
+  Widget _buildPetSearchBar() {
+    return Container(
+      margin: EdgeInsets.symmetric(horizontal: 16.w),
+      height: 40.h,
+      decoration: BoxDecoration(
+        color: Colors.white,
+        borderRadius: BorderRadius.circular(20.r),
+        boxShadow: [
+          BoxShadow(
+            color: Colors.black.withOpacity(0.05),
+            blurRadius: 8,
+            offset: const Offset(0, 2),
+          ),
+        ],
+      ),
+      child: Row(
+        children: [
+          SizedBox(width: 16.w),
+          Icon(
+            Icons.search,
+            size: 20.w,
+            color: const Color(0xFF9C4DFF),
+          ),
+          SizedBox(width: 12.w),
+          Expanded(
+            child: TextField(
+              decoration: const InputDecoration(
+                hintText: '搜拍品',
+                hintStyle: TextStyle(
+                  color: Color(0xFF999999),
+                ),
+                border: InputBorder.none,
+              ),
+              style: TextStyle(
+                fontSize: 14.sp,
+                color: const Color(0xFF333333),
+              ),
+            ),
+          ),
+          Container(
+            width: 1.w,
+            height: 20.h,
+            color: const Color(0xFFE0E0E0),
+          ),
+          SizedBox(width: 12.w),
+          Text(
+            '搜索',
+            style: TextStyle(
+              fontSize: 14.sp,
+              color: const Color(0xFF9C4DFF),
+              fontWeight: FontWeight.w500,
+            ),
+          ),
+          SizedBox(width: 16.w),
+        ],
+      ),
+    );
+  }
+
+  // 构建宠物分类网格
+  Widget _buildPetCategoryGrid() {
+    // 第一行：宠物分期 - 单独背景卡
+    final topRowCategories = [
+      {'name': '宠物分期', 'icon': Icons.percent, 'color': const Color(0xFFFFB74D)},
+      {'name': '宠粮', 'icon': Icons.food_bank, 'color': const Color(0xFF9C77FF)},
+      {'name': '宠药', 'icon': Icons.medical_services, 'color': const Color(0xFFFF6B6B)},
+      {'name': '宠物店', 'icon': Icons.store, 'color': const Color(0xFFFFEB3B)},
+      {'name': '店铺排行', 'icon': Icons.emoji_events, 'color': const Color(0xFF4ECDC4)},
+    ];
+
+    // 下面10个分类
+    final bottomCategories = [
+      {'name': '猫咪', 'icon': Icons.pets, 'color': const Color(0xFF6FA8DC)},
+      {'name': '狗狗', 'icon': Icons.pets, 'color': const Color(0xFFFFB347)},
+      {'name': '爬宠', 'icon': Icons.pets, 'color': const Color(0xFF90EE90)},
+      {'name': '小宠', 'icon': Icons.pets, 'color': const Color(0xFFDDA0DD)},
+      {'name': '鹦鹉', 'icon': Icons.pets, 'color': const Color(0xFFFF6347)},
+      {'name': '鸟类', 'icon': Icons.pets, 'color': const Color(0xFF87CEEB)},
+      {'name': '昆虫', 'icon': Icons.bug_report, 'color': const Color(0xFF8FBC8F)},
+      {'name': '大型宠物', 'icon': Icons.pets, 'color': const Color(0xFFFFB6C1)},
+      {'name': '变异宠物', 'icon': Icons.star, 'color': const Color(0xFFFFE5B4)},
+      {'name': '宠物批发', 'icon': Icons.business, 'color': const Color(0xFF87CEFA)},
+    ];
+
+    return Column(
+      children: [
+        // 顶部5个分类 - 单独背景卡
+        Container(
+          margin: EdgeInsets.symmetric(horizontal: 16.w, vertical: 4.h),
+          padding: EdgeInsets.symmetric(horizontal: 12.w, vertical: 12.h),
+          decoration: BoxDecoration(
+            color: Colors.white,
+            borderRadius: BorderRadius.circular(12.r),
+            boxShadow: [
+              BoxShadow(
+                color: Colors.black.withOpacity(0.05),
+                blurRadius: 4,
+                offset: const Offset(0, 2),
+              ),
+            ],
+          ),
+          child: SizedBox(
+            height: 65.h, // 进一步减少高度
+            child: Row(
+              mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+              children: topRowCategories.map((category) {
+                return Expanded(
+                  child: _buildCategoryItem(category),
+                );
+              }).toList(),
+            ),
+          ),
+        ),
+        
+        SizedBox(height: 8.h),
+        
+        // 下面10个分类 - 单独背景卡
+        Container(
+          margin: EdgeInsets.symmetric(horizontal: 16.w, vertical: 4.h),
+          padding: EdgeInsets.symmetric(horizontal: 12.w, vertical: 12.h),
+          decoration: BoxDecoration(
+            color: Colors.white,
+            borderRadius: BorderRadius.circular(12.r),
+            boxShadow: [
+              BoxShadow(
+                color: Colors.black.withOpacity(0.05),
+                blurRadius: 4,
+                offset: const Offset(0, 2),
+              ),
+            ],
+          ),
+          child: SizedBox(
+            height: 130.h, // 进一步减少高度
+            child: GridView.builder(
+              shrinkWrap: true,
+              physics: const NeverScrollableScrollPhysics(),
+              gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
+                crossAxisCount: 5,
+                crossAxisSpacing: 6.w,
+                mainAxisSpacing: 6.h,
+                childAspectRatio: 1.1,
+              ),
+              itemCount: bottomCategories.length,
+              itemBuilder: (context, index) {
+                final category = bottomCategories[index];
+                return _buildCategoryItem(category);
+              },
+            ),
+          ),
+        ),
+      ],
+    );
+  }
+
+  // 构建分类项目
+  Widget _buildCategoryItem(Map<String, dynamic> category) {
+    return GestureDetector(
+      onTap: () {
+        print('点击了${category['name']}');
+      },
+      child: Container(
+        constraints: BoxConstraints(maxHeight: 55.h), // 进一步减少最大高度
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          mainAxisAlignment: MainAxisAlignment.center,
+          children: [
+            Container(
+              width: 34.w, // 减小图标容器
+              height: 34.w,
+              decoration: BoxDecoration(
+                color: category['color'] as Color,
+                shape: BoxShape.circle,
+                boxShadow: [
+                  BoxShadow(
+                    color: (category['color'] as Color).withOpacity(0.2),
+                    blurRadius: 2,
+                    offset: const Offset(0, 1),
+                  ),
+                ],
+              ),
+              child: Icon(
+                category['icon'] as IconData,
+                size: 18.w, // 减小图标大小
+                color: Colors.white,
+              ),
+            ),
+            SizedBox(height: 3.h), // 减小间距
+            Flexible(
+              child: Text(
+                category['name'] as String,
+                style: TextStyle(
+                  fontSize: 8.sp, // 减小字体
+                  color: const Color(0xFF333333),
+                  fontWeight: FontWeight.w500,
+                ),
+                textAlign: TextAlign.center,
+                maxLines: 1,
+                overflow: TextOverflow.ellipsis,
+              ),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+
+  // 构建宠物页面标签筛选
+  Widget _buildPetFilterTags() {
+    final tags = ['标签', '标签', '标签', '标签', '标签', '标签', '标签'];
+
+    return Container(
+      margin: EdgeInsets.symmetric(horizontal: 16.w, vertical: 8.h),
+      child: Row(
+        mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+        children: tags.map((tag) {
+          final isSelected = false; // 从设计图看都没有选中状态
+          return GestureDetector(
+            onTap: () {
+              print('点击了标签: $tag');
+            },
+            child: Container(
+              width: 40.w,
+              height: 20.h,
+              decoration: BoxDecoration(
+                color: const Color(0xFF9C4DFF),
+                borderRadius: BorderRadius.circular(10.r),
+              ),
+              child: Center(
+                child: Text(
+                  tag,
+                  style: TextStyle(
+                    fontSize: 10.sp,
+                    color: Colors.white,
+                    fontWeight: FontWeight.w500,
+                  ),
+                ),
+              ),
+            ),
+          );
+        }).toList(),
+      ),
+    );
+  }
+
+  // 构建宠物商品列表
+  Widget _buildPetProductList() {
+    final products = [
+      {
+        'name': '宠物标题宠物标题宠物标题宠物标题宠物标题',
+        'price': 432,
+        'image': 'https://picsum.photos/200/200?random=40',
+        'isFavorite': false,
+        'isBoutique': true,
+        'timeLeft': '今天20:05截拍',
+      },
+      {
+        'name': '宠物标题宠物标题宠物标题宠物标题宠物',
+        'price': 432,
+        'image': 'https://picsum.photos/200/200?random=41',
+        'isFavorite': true,
+        'isBoutique': true,
+        'timeLeft': '今天20:05截拍',
+      },
+    ];
+
+    return Container(
+      margin: EdgeInsets.symmetric(horizontal: 16.w),
+      child: Row(
+        children: [
+          Expanded(
+            child: _buildPetProductCard(products[0]),
+          ),
+          SizedBox(width: 12.w),
+          Expanded(
+            child: _buildPetProductCard(products[1]),
+          ),
+        ],
+      ),
+    );
+  }
+
+  // 构建宠物商品卡片
+  Widget _buildPetProductCard(Map<String, dynamic> product) {
+    return GestureDetector(
+      onTap: () {
+        print('点击了商品: ${product['name']}');
+      },
+      child: Container(
+        height: 200.h, // 减少总高度
+        decoration: BoxDecoration(
+          color: Colors.white,
+          borderRadius: BorderRadius.circular(8.r),
+          boxShadow: [
+            BoxShadow(
+              color: Colors.black.withOpacity(0.05),
+              blurRadius: 4,
+              offset: const Offset(0, 2),
+            ),
+          ],
+        ),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            // 商品图片
+            SizedBox(
+              height: 120.h, // 固定图片高度
+              width: double.infinity,
+              child: Stack(
+                children: [
+                  ClipRRect(
+                    borderRadius: BorderRadius.only(
+                      topLeft: Radius.circular(8.r),
+                      topRight: Radius.circular(8.r),
+                    ),
+                    child: CachedNetworkImage(
+                      imageUrl: product['image'],
+                      fit: BoxFit.cover,
+                      width: double.infinity,
+                      height: double.infinity,
+                      placeholder: (context, url) => Container(
+                        color: const Color(0xFFF5F5F5),
+                        child: const Center(
+                          child: CircularProgressIndicator(),
+                        ),
+                      ),
+                      errorWidget: (context, url, error) => Container(
+                        color: const Color(0xFFF5F5F5),
+                        child: const Icon(Icons.error),
+                      ),
+                    ),
+                  ),
+                  // 精品标签
+                  if (product['isBoutique'])
+                    Positioned(
+                      top: 4.h,
+                      left: 4.w,
+                      child: Container(
+                        padding: EdgeInsets.symmetric(
+                            horizontal: 4.w, vertical: 1.h),
+                        decoration: BoxDecoration(
+                          color: const Color(0xFF9C4DFF),
+                          borderRadius: BorderRadius.circular(2.r),
+                        ),
+                        child: Text(
+                          '精品',
+                          style: TextStyle(
+                            fontSize: 7.sp,
+                            color: Colors.white,
+                            fontWeight: FontWeight.w600,
+                          ),
+                        ),
+                      ),
+                    ),
+                  // 右下角收藏图标
+                  Positioned(
+                    bottom: 4.h,
+                    right: 4.w,
+                    child: Icon(
+                      Icons.favorite_border,
+                      size: 14.w,
+                      color: Colors.white,
+                    ),
+                  ),
+                ],
+              ),
+            ),
+            // 商品信息
+            Expanded(
+              child: Padding(
+                padding: EdgeInsets.all(6.w), // 减少内边距
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    Flexible(
+                      child: Text(
+                        product['name'],
+                        style: TextStyle(
+                          fontSize: 10.sp, // 减小字体
+                          color: const Color(0xFF333333),
+                          fontWeight: FontWeight.w500,
+                          height: 1.2,
+                        ),
+                        maxLines: 2,
+                        overflow: TextOverflow.ellipsis,
+                      ),
+                    ),
+                    SizedBox(height: 2.h),
+                    Text(
+                      '¥${product['price']}',
+                      style: TextStyle(
+                        fontSize: 14.sp, // 减小字体
+                        color: const Color(0xFFFF5722),
+                        fontWeight: FontWeight.w600,
+                      ),
+                    ),
+                    SizedBox(height: 1.h),
+                    Text(
+                      '无理由',
+                      style: TextStyle(
+                        fontSize: 8.sp,
+                        color: const Color(0xFF999999),
+                      ),
+                    ),
+                    SizedBox(height: 1.h),
+                    Text(
+                      '①${product['timeLeft']}',
+                      style: TextStyle(
+                        fontSize: 8.sp,
+                        color: const Color(0xFF9C4DFF),
+                        fontWeight: FontWeight.w500,
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+            ),
+          ],
+        ),
+      ),
+    );
   }
 }
