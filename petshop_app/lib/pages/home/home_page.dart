@@ -308,161 +308,6 @@ class _HomePageState extends State<HomePage> with TickerProviderStateMixin {
     );
   }
 
-  // 推广横幅
-  Widget _buildPromoBanner() {
-    return Container(
-      margin: EdgeInsets.symmetric(horizontal: 16.w, vertical: 8.h),
-      height: 120.h, // 稍微降低高度
-      decoration: BoxDecoration(
-        borderRadius: BorderRadius.circular(16.r),
-        gradient: const LinearGradient(
-          begin: Alignment.centerLeft,
-          end: Alignment.centerRight,
-          colors: [
-            Color(0xFFFFB74D), // Orange
-            Color(0xFFFF9800), // Deeper orange
-          ],
-        ),
-      ),
-      child: Stack(
-        children: [
-          // Decorative pattern background
-          Positioned(
-            right: 0,
-            top: 0,
-            bottom: 0,
-            child: Container(
-              width: 180.w,
-              decoration: BoxDecoration(
-                borderRadius: BorderRadius.only(
-                  topRight: Radius.circular(16.r),
-                  bottomRight: Radius.circular(16.r),
-                ),
-                gradient: LinearGradient(
-                  begin: Alignment.centerLeft,
-                  end: Alignment.centerRight,
-                  colors: [
-                    Colors.orange.withOpacity(0.1),
-                    Colors.orange.withOpacity(0.3),
-                  ],
-                ),
-              ),
-            ),
-          ),
-          
-          // Pet images (placeholder)
-          Positioned(
-            left: 20.w,
-            top: 15.h,
-            child: Container(
-              width: 70.w,
-              height: 70.w,
-              decoration: BoxDecoration(
-                borderRadius: BorderRadius.circular(12.r),
-                color: Colors.white.withOpacity(0.2),
-              ),
-              child: Icon(
-                Icons.pets,
-                size: 35.w,
-                color: Colors.white,
-              ),
-            ),
-          ),
-          
-          // Main promotional text
-          Positioned(
-            right: 20.w,
-            top: 20.h,
-            child: Container(
-              padding: EdgeInsets.symmetric(horizontal: 12.w, vertical: 6.h),
-              decoration: BoxDecoration(
-                color: Colors.white,
-                borderRadius: BorderRadius.circular(16.r),
-              ),
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                mainAxisSize: MainAxisSize.min,
-                children: [
-                  Row(
-                    mainAxisSize: MainAxisSize.min,
-                    children: [
-                      Text(
-                        '买卖宠物就到',
-                        style: TextStyle(
-                          fontSize: 12.sp,
-                          color: Colors.black87,
-                          fontWeight: FontWeight.w500,
-                        ),
-                      ),
-                      Text(
-                        '拍宠有道',
-                        style: TextStyle(
-                          fontSize: 14.sp,
-                          color: Colors.black,
-                          fontWeight: FontWeight.bold,
-                        ),
-                      ),
-                      Text(
-                        ',',
-                        style: TextStyle(
-                          fontSize: 12.sp,
-                          color: Colors.black87,
-                          fontWeight: FontWeight.w500,
-                        ),
-                      ),
-                    ],
-                  ),
-                  Text(
-                    '质量价格有保障！',
-                    style: TextStyle(
-                      fontSize: 12.sp,
-                      color: Colors.black87,
-                      fontWeight: FontWeight.w500,
-                    ),
-                  ),
-                ],
-              ),
-            ),
-          ),
-          
-          // Bottom promotional button
-          Positioned(
-            right: 20.w,
-            bottom: 15.h,
-            child: Container(
-              padding: EdgeInsets.symmetric(horizontal: 10.w, vertical: 4.h),
-              decoration: BoxDecoration(
-                color: Colors.white,
-                borderRadius: BorderRadius.circular(10.r),
-              ),
-              child: Row(
-                mainAxisSize: MainAxisSize.min,
-                children: [
-                  Text(
-                    '禁止虐待宠物',
-                    style: TextStyle(
-                      fontSize: 9.sp,
-                      color: Colors.orange[800],
-                      fontWeight: FontWeight.w500,
-                    ),
-                  ),
-                  SizedBox(width: 3.w),
-                  Text(
-                    '从我做起',
-                    style: TextStyle(
-                      fontSize: 9.sp,
-                      color: Colors.orange[800],
-                      fontWeight: FontWeight.w500,
-                    ),
-                  ),
-                ],
-              ),
-            ),
-          ),
-        ],
-      ),
-    );
-  }
 
   // 轮播图部分 - 与推广横幅同样大小
   Widget _buildBannerSection() {
@@ -536,24 +381,20 @@ class _HomePageState extends State<HomePage> with TickerProviderStateMixin {
               child: Column(
                 mainAxisAlignment: MainAxisAlignment.center,
                 children: [
-                  // 图标容器 - 背景图片占满按钮
-                  Container(
+                  // 图标容器 - 去掉背景色
+                  SizedBox(
                     width: 40.w,
                     height: 40.w,
-                    decoration: BoxDecoration(
-                      color: item['color'] as Color, // 直接使用颜色，不透明
-                      borderRadius: BorderRadius.circular(10.r),
-                    ),
                     child: Image.asset(
                       item['icon'],
-                      width: 40.w, // 图片占满整个容器
+                      width: 40.w,
                       height: 40.w,
                       fit: BoxFit.contain,
                       errorBuilder: (context, error, stackTrace) {
                         return Icon(
                           _getIconByName(item['name']),
-                          color: Colors.white,
-                          size: 20.w,
+                          color: item['color'] as Color,
+                          size: 24.w,
                         );
                       },
                     ),
@@ -917,7 +758,6 @@ class _HomePageState extends State<HomePage> with TickerProviderStateMixin {
         children: [
           // 首页内容 (index 0)
           if (tabIndex == 0) ...[
-            _buildPromoBanner(),
             _buildBannerSection(),
             _buildFunctionGrid(),
             _buildProductList(),
