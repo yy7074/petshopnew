@@ -12,8 +12,7 @@ class HomePage extends StatefulWidget {
   State<HomePage> createState() => _HomePageState();
 }
 
-class _HomePageState extends State<HomePage> with TickerProviderStateMixin {
-  late TabController _tabController;
+class _HomePageState extends State<HomePage> {
   late PageController _pageController;
   int _currentTabIndex = 0;
 
@@ -23,10 +22,6 @@ class _HomePageState extends State<HomePage> with TickerProviderStateMixin {
     '水族',
     '一口价',
     '同城',
-    '限时拍卖',
-    '今日专场',
-    '山东鱼宠专场',
-    '苏州宠物专场'
   ];
 
   // 功能网格数据
@@ -113,26 +108,11 @@ class _HomePageState extends State<HomePage> with TickerProviderStateMixin {
   @override
   void initState() {
     super.initState();
-    _tabController = TabController(length: tabs.length, vsync: this);
     _pageController = PageController(initialPage: 0);
-
-    _tabController.addListener(() {
-      if (_tabController.indexIsChanging) {
-        setState(() {
-          _currentTabIndex = _tabController.index;
-        });
-        _pageController.animateToPage(
-          _tabController.index,
-          duration: const Duration(milliseconds: 300),
-          curve: Curves.easeInOut,
-        );
-      }
-    });
   }
 
   @override
   void dispose() {
-    _tabController.dispose();
     _pageController.dispose();
     super.dispose();
   }
@@ -174,18 +154,97 @@ class _HomePageState extends State<HomePage> with TickerProviderStateMixin {
           Expanded(
             child: Container(
               color: const Color(0xFFF5F5F5),
-              child: PageView.builder(
+              child: PageView(
                 controller: _pageController,
                 onPageChanged: (index) {
                   setState(() {
                     _currentTabIndex = index;
                   });
-                  _tabController.animateTo(index);
                 },
-                itemCount: tabs.length,
-                itemBuilder: (context, index) {
-                  return _buildTabContent(index);
-                },
+                children: [
+                  // 首页·AI (index 0)
+                  SingleChildScrollView(
+                    child: Column(
+                      children: [
+                        _buildBannerSection(),
+                        _buildFunctionGrid(),
+                        _buildProductList(),
+                      ],
+                    ),
+                  ),
+                  // 宠物 (index 1)
+                  _buildCategoryContent('宠物', [
+                    {
+                      'name': '英短蓝猫',
+                      'price': 1200,
+                      'image': 'https://picsum.photos/200/200?random=30'
+                    },
+                    {
+                      'name': '金毛犬',
+                      'price': 2500,
+                      'image': 'https://picsum.photos/200/200?random=31'
+                    },
+                    {
+                      'name': '布偶猫',
+                      'price': 3800,
+                      'image': 'https://picsum.photos/200/200?random=32'
+                    },
+                  ]),
+                  // 水族 (index 2)
+                  _buildCategoryContent('水族', [
+                    {
+                      'name': '红绿灯鱼',
+                      'price': 25,
+                      'image': 'https://picsum.photos/200/200?random=33'
+                    },
+                    {
+                      'name': '龙鱼',
+                      'price': 1500,
+                      'image': 'https://picsum.photos/200/200?random=34'
+                    },
+                    {
+                      'name': '锦鲤',
+                      'price': 800,
+                      'image': 'https://picsum.photos/200/200?random=35'
+                    },
+                  ]),
+                  // 一口价 (index 3)
+                  _buildCategoryContent('一口价专区', [
+                    {
+                      'name': '萨摩耶',
+                      'price': 1800,
+                      'image': 'https://picsum.photos/200/200?random=36'
+                    },
+                    {
+                      'name': '柯基',
+                      'price': 1500,
+                      'image': 'https://picsum.photos/200/200?random=37'
+                    },
+                    {
+                      'name': '比熊',
+                      'price': 1200,
+                      'image': 'https://picsum.photos/200/200?random=38'
+                    },
+                  ]),
+                  // 同城 (index 4)
+                  _buildCategoryContent('同城服务', [
+                    {
+                      'name': '宠物美容',
+                      'price': 100,
+                      'image': 'https://picsum.photos/200/200?random=39'
+                    },
+                    {
+                      'name': '宠物医疗',
+                      'price': 200,
+                      'image': 'https://picsum.photos/200/200?random=40'
+                    },
+                    {
+                      'name': '宠物寄养',
+                      'price': 50,
+                      'image': 'https://picsum.photos/200/200?random=41'
+                    },
+                  ]),
+                ],
               ),
             ),
           ),
@@ -199,17 +258,16 @@ class _HomePageState extends State<HomePage> with TickerProviderStateMixin {
       margin: EdgeInsets.symmetric(horizontal: 16.w),
       height: 36.h,
       decoration: BoxDecoration(
-        color: Colors.white.withOpacity(0.2),
+        color: Colors.white.withOpacity(0.15),
         borderRadius: BorderRadius.circular(18.r),
-        border: Border.all(color: Colors.white.withOpacity(0.3)),
       ),
       child: Row(
         children: [
-          SizedBox(width: 12.w),
+          SizedBox(width: 16.w),
           Icon(
             Icons.search,
-            size: 20.w,
-            color: Colors.white,
+            size: 18.w,
+            color: Colors.white.withOpacity(0.9),
           ),
           SizedBox(width: 8.w),
           Expanded(
@@ -217,23 +275,25 @@ class _HomePageState extends State<HomePage> with TickerProviderStateMixin {
               '搜拍品',
               style: TextStyle(
                 fontSize: 14.sp,
-                color: Colors.white.withOpacity(0.8),
+                color: Colors.white.withOpacity(0.9),
+                fontWeight: FontWeight.w400,
               ),
             ),
           ),
           Container(
-            margin: EdgeInsets.only(right: 8.w),
-            padding: EdgeInsets.symmetric(horizontal: 12.w, vertical: 4.h),
-            decoration: BoxDecoration(
-              color: Colors.white.withOpacity(0.2),
-              borderRadius: BorderRadius.circular(12.r),
-              border: Border.all(color: Colors.white.withOpacity(0.3)),
-            ),
+            height: 24.h,
+            width: 1.w,
+            color: Colors.white.withOpacity(0.3),
+            margin: EdgeInsets.symmetric(horizontal: 12.w),
+          ),
+          Padding(
+            padding: EdgeInsets.only(right: 16.w),
             child: Text(
               '搜索',
               style: TextStyle(
-                fontSize: 12.sp,
-                color: Colors.white,
+                fontSize: 14.sp,
+                color: Colors.white.withOpacity(0.9),
+                fontWeight: FontWeight.w400,
               ),
             ),
           ),
@@ -244,66 +304,79 @@ class _HomePageState extends State<HomePage> with TickerProviderStateMixin {
 
   Widget _buildTabBar() {
     return Container(
-      height: 40.h,
+      height: 50.h, // 固定高度，包含底部横条空间
       margin: EdgeInsets.symmetric(horizontal: 16.w),
       child: Row(
-        mainAxisAlignment: MainAxisAlignment.spaceBetween,
-        children: tabs.asMap().entries.map((entry) {
-          final index = entry.key;
-          final tab = entry.value;
-          final isSelected = index == _currentTabIndex;
-          final isFirst = index == 0;
+        mainAxisAlignment: MainAxisAlignment.spaceBetween, // 固定5个标签平均分布
+          children: tabs.asMap().entries.map((entry) {
+            final index = entry.key;
+            final tab = entry.value;
+            final isSelected = index == _currentTabIndex;
 
-          return GestureDetector(
-            onTap: () {
-              setState(() {
-                _currentTabIndex = index;
-              });
-              _tabController.animateTo(index);
-            },
-            child: Container(
-              padding: EdgeInsets.symmetric(horizontal: 12.w, vertical: 6.h),
-              decoration: BoxDecoration(
-                color: isSelected ? Colors.white : Colors.transparent,
-                borderRadius: BorderRadius.circular(20.r),
-              ),
-              child: Row(
+            return GestureDetector(
+              onTap: () {
+                if (_currentTabIndex != index) {
+                  // 使用jumpToPage实现无动画直接跳转
+                  _pageController.jumpToPage(index);
+                }
+              },
+              child: Column(
                 mainAxisSize: MainAxisSize.min,
                 children: [
-                  if (isFirst) ...[
-                    Container(
-                      padding:
-                          EdgeInsets.symmetric(horizontal: 4.w, vertical: 1.h),
-                      decoration: BoxDecoration(
-                        color: const Color(0xFFFFEB3B),
-                        borderRadius: BorderRadius.circular(8.r),
-                      ),
-                      child: Text(
-                        '推荐',
-                        style: TextStyle(
-                          fontSize: 10.sp,
-                          color: Colors.black,
-                          fontWeight: FontWeight.bold,
-                        ),
-                      ),
+                  Container(
+                    padding: EdgeInsets.symmetric(horizontal: 12.w, vertical: 8.h),
+                    decoration: const BoxDecoration(
+                      color: Colors.transparent, // 去掉白色背景
                     ),
-                    SizedBox(width: 4.w),
-                  ],
-                  Text(
-                    tab,
-                    style: TextStyle(
-                      fontSize: 14.sp,
-                      color:
-                          isSelected ? const Color(0xFF9C4DFF) : Colors.white,
-                      fontWeight:
-                          isSelected ? FontWeight.w600 : FontWeight.normal,
+                    child: Stack(
+                      clipBehavior: Clip.none,
+                      children: [
+                        Text(
+                          tab,
+                          style: TextStyle(
+                            fontSize: 15.sp,
+                            color: Colors.white, // 始终保持白色，不改变
+                            fontWeight: isSelected ? FontWeight.w600 : FontWeight.w500,
+                          ),
+                        ),
+                        // 为“宠物”添加右上角“捡漏”图标
+                        if (index == 1) // 宠物是第二个标签（索引为1）
+                          Positioned(
+                            top: -10.h, // 调高位置
+                            right: -8.w,
+                            child: Container(
+                              padding: EdgeInsets.symmetric(horizontal: 4.w, vertical: 1.h),
+                              decoration: BoxDecoration(
+                                color: const Color(0xFFFFEB3B),
+                                borderRadius: BorderRadius.circular(6.r),
+                              ),
+                              child: Text(
+                                '捡漏',
+                                style: TextStyle(
+                                  fontSize: 8.sp,
+                                  color: Colors.black87,
+                                  fontWeight: FontWeight.w600,
+                                ),
+                              ),
+                            ),
+                          ),
+                      ],
+                    ),
+                  ),
+                  SizedBox(height: 4.h),
+                  // 选中时显示底部黄色横条
+                  Container(
+                    width: isSelected ? 30.w : 0,
+                    height: 3.h,
+                    decoration: BoxDecoration(
+                      color: isSelected ? const Color(0xFFFFEB3B) : Colors.transparent, // 黄色横条
+                      borderRadius: BorderRadius.circular(1.5.r),
                     ),
                   ),
                 ],
               ),
-            ),
-          );
-        }).toList(),
+            );
+          }).toList(),
       ),
     );
   }
@@ -567,7 +640,7 @@ class _HomePageState extends State<HomePage> with TickerProviderStateMixin {
               );
             },
           ),
-          SizedBox(height: 80.h), // 底部导航栏高度
+          SizedBox(height: 16.h), // 减少底部空间
         ],
       ),
     );
@@ -751,121 +824,6 @@ class _HomePageState extends State<HomePage> with TickerProviderStateMixin {
     );
   }
 
-  // 构建标签页内容
-  Widget _buildTabContent(int tabIndex) {
-    return SingleChildScrollView(
-      child: Column(
-        children: [
-          // 首页内容 (index 0)
-          if (tabIndex == 0) ...[
-            _buildBannerSection(),
-            _buildFunctionGrid(),
-            _buildProductList(),
-          ]
-          // 宠物内容 (index 1)
-          else if (tabIndex == 1) ...[
-            _buildCategoryContent('宠物', [
-              {
-                'name': '英短蓝猫',
-                'price': 1200,
-                'image': 'https://picsum.photos/200/200?random=30'
-              },
-              {
-                'name': '金毛犬',
-                'price': 2500,
-                'image': 'https://picsum.photos/200/200?random=31'
-              },
-              {
-                'name': '布偶猫',
-                'price': 3800,
-                'image': 'https://picsum.photos/200/200?random=32'
-              },
-            ]),
-          ]
-          // 水族内容 (index 2)
-          else if (tabIndex == 2) ...[
-            _buildCategoryContent('水族', [
-              {
-                'name': '红绿灯鱼',
-                'price': 25,
-                'image': 'https://picsum.photos/200/200?random=33'
-              },
-              {
-                'name': '龙鱼',
-                'price': 1500,
-                'image': 'https://picsum.photos/200/200?random=34'
-              },
-              {
-                'name': '锦鲤',
-                'price': 800,
-                'image': 'https://picsum.photos/200/200?random=35'
-              },
-            ]),
-          ]
-          // 一口价内容 (index 3)
-          else if (tabIndex == 3) ...[
-            _buildCategoryContent('一口价专区', [
-              {
-                'name': '萨摩耶',
-                'price': 1800,
-                'image': 'https://picsum.photos/200/200?random=36'
-              },
-              {
-                'name': '柯基',
-                'price': 1500,
-                'image': 'https://picsum.photos/200/200?random=37'
-              },
-              {
-                'name': '比熊',
-                'price': 1200,
-                'image': 'https://picsum.photos/200/200?random=38'
-              },
-            ]),
-          ]
-          // 同城内容 (index 4)
-          else if (tabIndex == 4) ...[
-            _buildCategoryContent('同城服务', [
-              {
-                'name': '宠物美容',
-                'price': 100,
-                'image': 'https://picsum.photos/200/200?random=39'
-              },
-              {
-                'name': '宠物医疗',
-                'price': 200,
-                'image': 'https://picsum.photos/200/200?random=40'
-              },
-              {
-                'name': '宠物寄养',
-                'price': 50,
-                'image': 'https://picsum.photos/200/200?random=41'
-              },
-            ]),
-          ]
-          // 限时拍卖内容 (index 5)
-          else if (tabIndex == 5) ...[
-            _buildSpecialAuctionContent(),
-          ]
-          // 今日专场内容 (index 6)
-          else if (tabIndex == 6) ...[
-            _buildTodaySpecialContent(),
-          ]
-          // 山东鱼宠专场内容 (index 7)
-          else if (tabIndex == 7) ...[
-            _buildShandongFishContent(),
-          ]
-          // 苏州宠物专场内容 (index 8)
-          else if (tabIndex == 8) ...[
-            _buildSuzhouPetContent(),
-          ]
-          // 默认内容
-          else ...[
-            _buildDefaultContent(tabs[tabIndex]),
-          ],
-        ],
-      ),
-    );
-  }
 
   // 构建分类内容
   Widget _buildCategoryContent(String title, List<Map<String, dynamic>> items) {
@@ -960,7 +918,7 @@ class _HomePageState extends State<HomePage> with TickerProviderStateMixin {
               );
             },
           ),
-          SizedBox(height: 80.h),
+          SizedBox(height: 16.h),
         ],
       ),
     );
@@ -995,7 +953,7 @@ class _HomePageState extends State<HomePage> with TickerProviderStateMixin {
                     ),
                   ))
               .toList(),
-          SizedBox(height: 80.h),
+          SizedBox(height: 16.h),
         ],
       ),
     );
@@ -1049,7 +1007,7 @@ class _HomePageState extends State<HomePage> with TickerProviderStateMixin {
                     ),
                   ))
               .toList(),
-          SizedBox(height: 80.h),
+          SizedBox(height: 16.h),
         ],
       ),
     );
@@ -1187,7 +1145,7 @@ class _HomePageState extends State<HomePage> with TickerProviderStateMixin {
                     ),
                   ))
               .toList(),
-          SizedBox(height: 80.h),
+          SizedBox(height: 16.h),
         ],
       ),
     );
