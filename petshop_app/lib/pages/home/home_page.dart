@@ -13,7 +13,6 @@ class HomePage extends StatefulWidget {
 }
 
 class _HomePageState extends State<HomePage> {
-  late PageController _pageController;
   int _currentTabIndex = 0;
 
   final List<String> tabs = [
@@ -108,12 +107,10 @@ class _HomePageState extends State<HomePage> {
   @override
   void initState() {
     super.initState();
-    _pageController = PageController(initialPage: 0);
   }
 
   @override
   void dispose() {
-    _pageController.dispose();
     super.dispose();
   }
 
@@ -154,22 +151,34 @@ class _HomePageState extends State<HomePage> {
           Expanded(
             child: Container(
               color: const Color(0xFFF5F5F5),
-              child: PageView(
-                controller: _pageController,
-                onPageChanged: (index) {
-                  setState(() {
-                    _currentTabIndex = index;
-                  });
-                },
+              child: IndexedStack(
+                index: _currentTabIndex,
                 children: [
                   // 首页·AI (index 0)
-                  SingleChildScrollView(
-                    child: Column(
-                      children: [
-                        _buildBannerSection(),
-                        _buildFunctionGrid(),
-                        _buildProductList(),
-                      ],
+                  Scrollbar(
+                    child: SingleChildScrollView(
+                      physics: const AlwaysScrollableScrollPhysics(),
+                      child: Column(
+                        children: [
+                          _buildBannerSection(),
+                          _buildFunctionGrid(),
+                          _buildProductList(),
+                          // 添加足够的空间确保可以滚动
+                          SizedBox(height: 200.h),
+                          Container(
+                            padding: EdgeInsets.all(16.w),
+                            child: Text(
+                              '--- 已到底部 ---',
+                              style: TextStyle(
+                                fontSize: 14.sp,
+                                color: Colors.grey,
+                              ),
+                              textAlign: TextAlign.center,
+                            ),
+                          ),
+                          SizedBox(height: 100.h),
+                        ],
+                      ),
                     ),
                   ),
                   // 宠物 (index 1)
@@ -272,7 +281,7 @@ class _HomePageState extends State<HomePage> {
           SizedBox(width: 8.w),
           Expanded(
             child: Text(
-              '搜拍品',
+              '限时拍搜索...',
               style: TextStyle(
                 fontSize: 14.sp,
                 color: Colors.white.withOpacity(0.9),
@@ -316,8 +325,9 @@ class _HomePageState extends State<HomePage> {
             return GestureDetector(
               onTap: () {
                 if (_currentTabIndex != index) {
-                  // 使用jumpToPage实现无动画直接跳转
-                  _pageController.jumpToPage(index);
+                  setState(() {
+                    _currentTabIndex = index;
+                  });
                 }
               },
               child: Column(
@@ -553,25 +563,33 @@ class _HomePageState extends State<HomePage> {
           ),
           SizedBox(height: 12.h),
 
-          // 标签筛选
-          Container(
-            height: 36.h,
-            child: ListView(
-              scrollDirection: Axis.horizontal,
-              padding: EdgeInsets.symmetric(horizontal: 4.w),
-              children: [
-                _buildFilterTag('自定义', true, isPrimary: true),
-                _buildFilterTag('比熊', false),
-                _buildFilterTag('标赛', false),
-                _buildFilterTag('标赛', false),
-                _buildFilterTag('标赛', false),
-                _buildFilterTag('标赛', false),
-                _buildFilterTag('标赛', false),
-                _buildFilterTag('标赛', false),
-                _buildFilterTag('标赛', false),
-                _buildFilterTag('标赛', false),
-              ],
-            ),
+          // 标签筛选 - 两行布局
+          Column(
+            children: [
+              // 第一行：6个标签
+              Row(
+                mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+                children: [
+                  _buildFilterTag('自定义', true, isPrimary: true),
+                  _buildFilterTag('比熊', false),
+                  _buildFilterTag('标赛', false),
+                  _buildFilterTag('标赛', false),
+                  _buildFilterTag('标赛', false),
+                  _buildFilterTag('标赛', false),
+                ],
+              ),
+              SizedBox(height: 8.h),
+              // 第二行：4个标签
+              Row(
+                mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+                children: [
+                  _buildFilterTag('标赛', false),
+                  _buildFilterTag('标赛', false),
+                  _buildFilterTag('标赛', false),
+                  _buildFilterTag('标赛', false),
+                ],
+              ),
+            ],
           ),
           SizedBox(height: 16.h),
 
@@ -603,43 +621,6 @@ class _HomePageState extends State<HomePage> {
           ),
           SizedBox(height: 16.h),
 
-          // 热门拍卖商品
-          Text(
-            '热门拍卖',
-            style: TextStyle(
-              fontSize: 18.sp,
-              fontWeight: FontWeight.bold,
-              color: const Color(0xFF333333),
-            ),
-          ),
-          SizedBox(height: 12.h),
-          ListView.builder(
-            shrinkWrap: true,
-            physics: const NeverScrollableScrollPhysics(),
-            itemCount: auctionProducts.length,
-            itemBuilder: (context, index) {
-              final product = auctionProducts[index];
-              return Container(
-                margin: EdgeInsets.only(bottom: 16.h),
-                child: AuctionCard(
-                  product: product,
-                  onTap: () {
-                    Navigator.pushNamed(
-                      context,
-                      '/product-detail',
-                      arguments: product,
-                    );
-                  },
-                  onFavorite: () {
-                    setState(() {
-                      auctionProducts[index]['isFavorite'] =
-                          !(product['isFavorite'] ?? false);
-                    });
-                  },
-                ),
-              );
-            },
-          ),
           SizedBox(height: 16.h), // 减少底部空间
         ],
       ),
@@ -647,29 +628,32 @@ class _HomePageState extends State<HomePage> {
   }
 
   Widget _buildFilterTag(String text, bool isSelected, {bool isPrimary = false}) {
-    return Container(
-      margin: EdgeInsets.only(right: 8.w),
-      padding: EdgeInsets.symmetric(horizontal: 16.w, vertical: 8.h),
-      decoration: BoxDecoration(
-        color: isSelected 
-            ? (isPrimary ? const Color(0xFF9C4DFF) : Colors.white)
-            : Colors.white,
-        borderRadius: BorderRadius.circular(18.r),
-        border: Border.all(
+    return Expanded(
+      child: Container(
+        margin: EdgeInsets.symmetric(horizontal: 2.w),
+        padding: EdgeInsets.symmetric(horizontal: 12.w, vertical: 6.h),
+        decoration: BoxDecoration(
           color: isSelected 
-              ? (isPrimary ? const Color(0xFF9C4DFF) : const Color(0xFFE0E0E0))
-              : const Color(0xFFE0E0E0),
-          width: 1,
+              ? (isPrimary ? const Color(0xFF9C4DFF) : Colors.white)
+              : Colors.white,
+          borderRadius: BorderRadius.circular(18.r),
+          border: Border.all(
+            color: isSelected 
+                ? (isPrimary ? const Color(0xFF9C4DFF) : const Color(0xFF9C4DFF))
+                : const Color(0xFF9C4DFF),
+            width: 1,
+          ),
         ),
-      ),
-      child: Text(
-        text,
-        style: TextStyle(
-          fontSize: 12.sp,
-          color: isSelected 
-              ? (isPrimary ? Colors.white : const Color(0xFF666666))
-              : const Color(0xFF666666),
-          fontWeight: isSelected ? FontWeight.w500 : FontWeight.normal,
+        child: Text(
+          text,
+          textAlign: TextAlign.center,
+          style: TextStyle(
+            fontSize: 11.sp,
+            color: isSelected 
+                ? (isPrimary ? Colors.white : const Color(0xFF9C4DFF))
+                : const Color(0xFF9C4DFF),
+            fontWeight: isSelected ? FontWeight.w500 : FontWeight.normal,
+          ),
         ),
       ),
     );
@@ -827,11 +811,13 @@ class _HomePageState extends State<HomePage> {
 
   // 构建分类内容
   Widget _buildCategoryContent(String title, List<Map<String, dynamic>> items) {
-    return Container(
-      padding: EdgeInsets.all(16.w),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
+    return SingleChildScrollView(
+      physics: const ClampingScrollPhysics(),
+      child: Container(
+        padding: EdgeInsets.all(16.w),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
           Text(
             title,
             style: TextStyle(
@@ -920,6 +906,7 @@ class _HomePageState extends State<HomePage> {
           ),
           SizedBox(height: 16.h),
         ],
+        ),
       ),
     );
   }
