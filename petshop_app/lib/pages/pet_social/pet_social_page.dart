@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import '../../constants/app_colors.dart';
 import 'pet_social_detail_page.dart';
+import 'pet_social_publish_page.dart';
 
 class PetSocialPage extends StatefulWidget {
   const PetSocialPage({super.key});
@@ -142,9 +143,9 @@ class _PetSocialPageState extends State<PetSocialPage> {
       ),
       floatingActionButton: FloatingActionButton(
         onPressed: () {
-          // TODO: 实现发布新帖子功能
-          ScaffoldMessenger.of(context).showSnackBar(
-            const SnackBar(content: Text('发布新帖子功能待实现')),
+          Navigator.push(
+            context,
+            MaterialPageRoute(builder: (context) => const PetSocialPublishPage()),
           );
         },
         backgroundColor: AppColors.primary,

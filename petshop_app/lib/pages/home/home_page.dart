@@ -6,6 +6,9 @@ import '../../widgets/auction_card.dart';
 import '../../widgets/banner_swiper.dart';
 import '../pet_social/pet_social_page.dart';
 import '../local_stores/local_pet_stores_page.dart';
+import '../aquarium_design/aquarium_design_page.dart';
+import '../door_service/door_service_page.dart';
+import '../search/search_page.dart';
 
 class HomePage extends StatefulWidget {
   const HomePage({super.key});
@@ -202,50 +205,58 @@ class _HomePageState extends State<HomePage> {
   }
 
   Widget _buildSearchBar() {
-    return Container(
-      margin: EdgeInsets.symmetric(horizontal: 16.w),
-      height: 36.h,
-      decoration: BoxDecoration(
-        color: Colors.white.withOpacity(0.15),
-        borderRadius: BorderRadius.circular(18.r),
-      ),
-      child: Row(
-        children: [
-          SizedBox(width: 16.w),
-          Icon(
-            Icons.search,
-            size: 18.w,
-            color: Colors.white.withOpacity(0.9),
-          ),
-          SizedBox(width: 8.w),
-          Expanded(
-            child: Text(
-              '限时拍搜索...',
-              style: TextStyle(
-                fontSize: 14.sp,
-                color: Colors.white.withOpacity(0.9),
-                fontWeight: FontWeight.w400,
+    return GestureDetector(
+      onTap: () {
+        Navigator.push(
+          context,
+          MaterialPageRoute(builder: (context) => const SearchPage()),
+        );
+      },
+      child: Container(
+        margin: EdgeInsets.symmetric(horizontal: 16.w),
+        height: 36.h,
+        decoration: BoxDecoration(
+          color: Colors.white.withOpacity(0.15),
+          borderRadius: BorderRadius.circular(18.r),
+        ),
+        child: Row(
+          children: [
+            SizedBox(width: 16.w),
+            Icon(
+              Icons.search,
+              size: 18.w,
+              color: Colors.white.withOpacity(0.9),
+            ),
+            SizedBox(width: 8.w),
+            Expanded(
+              child: Text(
+                '搜拍品',
+                style: TextStyle(
+                  fontSize: 14.sp,
+                  color: Colors.white.withOpacity(0.9),
+                  fontWeight: FontWeight.w400,
+                ),
               ),
             ),
-          ),
-          Container(
-            height: 24.h,
-            width: 1.w,
-            color: Colors.white.withOpacity(0.3),
-            margin: EdgeInsets.symmetric(horizontal: 12.w),
-          ),
-          Padding(
-            padding: EdgeInsets.only(right: 16.w),
-            child: Text(
-              '搜索',
-              style: TextStyle(
-                fontSize: 14.sp,
-                color: Colors.white.withOpacity(0.9),
-                fontWeight: FontWeight.w400,
+            Container(
+              height: 24.h,
+              width: 1.w,
+              color: Colors.white.withOpacity(0.3),
+              margin: EdgeInsets.symmetric(horizontal: 12.w),
+            ),
+            Padding(
+              padding: EdgeInsets.only(right: 16.w),
+              child: Text(
+                '搜索',
+                style: TextStyle(
+                  fontSize: 14.sp,
+                  color: Colors.white.withOpacity(0.9),
+                  fontWeight: FontWeight.w400,
+                ),
               ),
             ),
-          ),
-        ],
+          ],
+        ),
       ),
     );
   }
@@ -2660,6 +2671,16 @@ class _HomePageState extends State<HomePage> {
           Navigator.push(
             context,
             MaterialPageRoute(builder: (context) => const LocalPetStoresPage()),
+          );
+        } else if (service['title'] == '鱼缸造景') {
+          Navigator.push(
+            context,
+            MaterialPageRoute(builder: (context) => const AquariumDesignPage()),
+          );
+        } else if (service['title'] == '上门服务') {
+          Navigator.push(
+            context,
+            MaterialPageRoute(builder: (context) => const DoorServicePage()),
           );
         } else {
           print('点击了服务: ${service['title']}');

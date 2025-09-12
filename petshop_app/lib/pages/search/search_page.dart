@@ -113,6 +113,7 @@ class _SearchPageState extends State<SearchPage> {
   void initState() {
     super.initState();
     _loadSearchHistory();
+    _searchController.text = '搜拍品'; // 设置默认搜索文字
     _searchFocus.requestFocus();
   }
 
@@ -124,8 +125,8 @@ class _SearchPageState extends State<SearchPage> {
   }
 
   void _loadSearchHistory() {
-    // 模拟加载搜索历史
-    searchHistory = ['英短蓝猫', '金毛犬'];
+    // 模拟加载搜索历史 - 根据UI设计
+    searchHistory = ['这是一条搜索记录', '这是一条搜索记录'];
   }
 
   void _performSearch(String query) {
@@ -189,11 +190,23 @@ class _SearchPageState extends State<SearchPage> {
       appBar: AppBar(
         backgroundColor: Colors.white,
         elevation: 0,
-        title: _buildSearchBar(),
         leading: IconButton(
-          icon: Icon(Icons.arrow_back, color: AppColors.textPrimary),
+          icon: const Icon(Icons.arrow_back_ios, color: Colors.black87),
           onPressed: () => Navigator.pop(context),
         ),
+        title: _buildSearchBar(),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.pop(context),
+            child: Text(
+              '取消',
+              style: TextStyle(
+                color: Colors.black87,
+                fontSize: 14.sp,
+              ),
+            ),
+          ),
+        ],
       ),
       body: showResults ? _buildSearchResults() : _buildSearchSuggestions(),
     );
@@ -210,7 +223,7 @@ class _SearchPageState extends State<SearchPage> {
         controller: _searchController,
         focusNode: _searchFocus,
         decoration: InputDecoration(
-          hintText: '搜索宠物、水族用品...',
+          hintText: '搜拍品',
           hintStyle: TextStyle(
             fontSize: 14.sp,
             color: AppColors.textSecondary,
