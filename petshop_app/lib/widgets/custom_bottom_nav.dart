@@ -92,25 +92,18 @@ class CustomBottomNav extends StatelessWidget {
                       ),
                     ],
                   ),
-                  child: Container(
-                    decoration: const BoxDecoration(
-                      shape: BoxShape.circle,
-                      color: Colors.white,
-                    ),
-                    margin: EdgeInsets.all(3.w), // 减小边距
-                    child: Padding(
-                      padding: EdgeInsets.all(10.w), // 减小内边距
-                      child: Image.asset(
-                        'assets/images/app_logo.png',
-                        fit: BoxFit.contain,
-                        errorBuilder: (context, error, stackTrace) {
-                          return Icon(
-                            Icons.pets,
-                            size: 28.w, // 减小图标尺寸
-                            color: const Color(0xFF29B6F6),
-                          );
-                        },
-                      ),
+                  child: Padding(
+                    padding: EdgeInsets.all(8.w), // 减少内边距
+                    child: Image.asset(
+                      'assets/images/pet_shop_logo.png', // 使用拍宠有道logo
+                      fit: BoxFit.contain,
+                      errorBuilder: (context, error, stackTrace) {
+                        return Icon(
+                          Icons.pets,
+                          size: 28.w, // 减小图标尺寸
+                          color: Colors.white, // 改为白色图标
+                        );
+                      },
                     ),
                   ),
                 ),

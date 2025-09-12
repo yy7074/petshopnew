@@ -137,7 +137,7 @@ class _SplashPageState extends State<SplashPage> with TickerProviderStateMixin {
                                 ),
                                 SizedBox(height: 24.h),
                                 Text(
-                                  '拍竞有道',
+                                  '拍宠有道',
                                   style: TextStyle(
                                     fontSize: 28.sp,
                                     fontWeight: FontWeight.bold,
@@ -146,7 +146,7 @@ class _SplashPageState extends State<SplashPage> with TickerProviderStateMixin {
                                 ),
                                 SizedBox(height: 8.h),
                                 Text(
-                                  '宠物拍卖·就到拍竞有道',
+                                  '宠物拍卖·就到拍宠有道',
                                   style: TextStyle(
                                     fontSize: 16.sp,
                                     color: Colors.white.withOpacity(0.9),

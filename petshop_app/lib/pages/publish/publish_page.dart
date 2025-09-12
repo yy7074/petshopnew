@@ -135,7 +135,7 @@ class _PublishPageState extends State<PublishPage> {
           ),
           SizedBox(height: 12.h),
           Text(
-            '拍竞有道',
+            '拍宠有道',
             style: TextStyle(
               fontSize: 20.sp,
               fontWeight: FontWeight.bold,

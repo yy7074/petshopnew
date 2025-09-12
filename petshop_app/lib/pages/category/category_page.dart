@@ -1,7 +1,5 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
-import '../../constants/app_colors.dart';
-import '../../widgets/auction_card.dart';
 
 class CategoryPage extends StatefulWidget {
   const CategoryPage({super.key});
@@ -11,379 +9,254 @@ class CategoryPage extends StatefulWidget {
 }
 
 class _CategoryPageState extends State<CategoryPage> {
-  List<Map<String, dynamic>> products = [];
+  int selectedMainCategoryIndex = 0;
   String searchQuery = '';
-  String selectedCategory = '全部';
-  String sortBy = '默认';
 
-  final List<String> categories = ['全部', '猫咪', '狗狗', '鸟类', '水族', '小动物'];
-  final List<String> sortOptions = ['默认', '价格低到高', '价格高到低', '最新发布'];
+  // 主分类列表
+  final List<Map<String, dynamic>> mainCategories = [
+    {'name': '猫咪', 'icon': Icons.pets},
+    {'name': '狗狗', 'icon': Icons.pets},
+    {'name': '爬宠', 'icon': Icons.pets},
+    {'name': '小宠', 'icon': Icons.pets},
+    {'name': '鹦鹉', 'icon': Icons.pets},
+    {'name': '鸟类', 'icon': Icons.pets},
+    {'name': '昆虫', 'icon': Icons.pets},
+    {'name': '大型宠物', 'icon': Icons.pets},
+    {'name': '变异宠物', 'icon': Icons.pets},
+  ];
 
-  @override
-  void initState() {
-    super.initState();
-    _loadProducts();
-  }
-
-  void _loadProducts() {
-    // 模拟商品数据
-    products = [
-      {
-        'id': 1,
-        'name': '纯种英短蓝猫',
-        'currentPrice': 1200.0,
-        'startPrice': 800.0,
-        'image': 'https://picsum.photos/200/200?random=10',
-        'category': '猫咪',
-        'timeLeft': '2天3小时',
-        'bidCount': 15,
-        'description': '健康活泼的英短蓝猫，疫苗齐全，血统纯正',
-        'location': '北京朝阳',
-        'seller': {
-          'name': '爱宠之家',
-          'avatar': 'https://picsum.photos/50/50?random=1',
-          'rating': 4.8,
-        }
-      },
-      {
-        'id': 2,
-        'name': '金毛犬幼崽',
-        'currentPrice': 2500.0,
-        'startPrice': 1500.0,
-        'image': 'https://picsum.photos/200/200?random=11',
-        'category': '狗狗',
-        'timeLeft': '1天12小时',
-        'bidCount': 23,
-        'description': '温顺可爱的金毛犬，已训练基本指令',
-        'location': '上海浦东',
-        'seller': {
-          'name': '宠物乐园',
-          'avatar': 'https://picsum.photos/50/50?random=2',
-          'rating': 4.9,
-        }
-      },
-      {
-        'id': 3,
-        'name': '虎皮鹦鹉',
-        'currentPrice': 150.0,
-        'startPrice': 80.0,
-        'image': 'https://picsum.photos/200/200?random=14',
-        'category': '鸟类',
-        'timeLeft': '5天1小时',
-        'bidCount': 6,
-        'description': '活泼可爱的虎皮鹦鹉，会说话',
-        'location': '深圳南山',
-        'seller': {
-          'name': '鸟语花香',
-          'avatar': 'https://picsum.photos/50/50?random=4',
-          'rating': 4.6,
-        }
-      },
-      {
-        'id': 4,
-        'name': '红绿灯鱼',
-        'currentPrice': 25.0,
-        'startPrice': 15.0,
-        'image': 'https://picsum.photos/200/200?random=15',
-        'category': '水族',
-        'timeLeft': '3天8小时',
-        'bidCount': 12,
-        'description': '群游观赏鱼，颜色艳丽',
-        'location': '杭州西湖',
-        'seller': {
-          'name': '水族世界',
-          'avatar': 'https://picsum.photos/50/50?random=5',
-          'rating': 4.7,
-        }
-      },
-      {
-        'id': 5,
-        'name': '荷兰猪',
-        'currentPrice': 80.0,
-        'startPrice': 50.0,
-        'image': 'https://picsum.photos/200/200?random=16',
-        'category': '小动物',
-        'timeLeft': '4天2小时',
-        'bidCount': 8,
-        'description': '可爱的荷兰猪，性格温顺',
-        'location': '成都武侯',
-        'seller': {
-          'name': '小动物天地',
-          'avatar': 'https://picsum.photos/50/50?random=6',
-          'rating': 4.5,
-        }
-      },
-    ];
-    setState(() {});
-  }
-
-  List<Map<String, dynamic>> get filteredProducts {
-    var filtered = products.where((product) {
-      final matchesCategory =
-          selectedCategory == '全部' || product['category'] == selectedCategory;
-      final matchesSearch = product['name']
-          .toString()
-          .toLowerCase()
-          .contains(searchQuery.toLowerCase());
-      return matchesCategory && matchesSearch;
-    }).toList();
-
-    // 排序
-    switch (sortBy) {
-      case '价格低到高':
-        filtered.sort((a, b) => (a['currentPrice'] as double)
-            .compareTo(b['currentPrice'] as double));
-        break;
-      case '价格高到低':
-        filtered.sort((a, b) => (b['currentPrice'] as double)
-            .compareTo(a['currentPrice'] as double));
-        break;
-      case '最新发布':
-        // 这里可以根据发布时间排序，暂时保持原顺序
-        break;
-      default:
-        // 默认排序
-        break;
-    }
-
-    return filtered;
-  }
+  // 子分类数据
+  final Map<String, List<String>> subCategories = {
+    '猫咪': [
+      '蓝白',
+      '蓝猫',
+      '金渐层',
+      '银渐层',
+      '纯白猫',
+      '虎斑',
+      '加白',
+      '橘猫',
+      '狸花猫',
+      '奶牛猫',
+      '三花猫',
+      '黑猫',
+      '布偶',
+      '缅因',
+      '波斯猫',
+      '金吉拉',
+      '拿破仑',
+      '无毛猫',
+      '德文卷毛',
+      '豹猫',
+      '美国卷耳猫',
+      '矮脚猫',
+      '暹罗猫',
+      '挪威森林猫'
+    ],
+    '狗狗': [
+      '金毛',
+      '拉布拉多',
+      '哈士奇',
+      '萨摩耶',
+      '阿拉斯加',
+      '边牧',
+      '德牧',
+      '泰迪',
+      '比熊',
+      '博美',
+      '柯基',
+      '法斗',
+      '英斗',
+      '雪纳瑞',
+      '贵宾',
+      '吉娃娃'
+    ],
+    '爬宠': ['蜥蜴', '蛇类', '龟类', '蛙类', '壁虎', '变色龙', '鬣蜥', '守宫'],
+    '小宠': ['仓鼠', '荷兰猪', '兔子', '龙猫', '松鼠', '刺猬', '花枝鼠', '沙鼠'],
+    '鹦鹉': ['虎皮鹦鹉', '玄凤鹦鹉', '牡丹鹦鹉', '和尚鹦鹉', '太阳锥尾', '灰鹦鹉', '金刚鹦鹉', '小太阳'],
+    '鸟类': ['文鸟', '珍珠鸟', '金丝雀', '画眉', '八哥', '鹩哥', '百灵', '云雀'],
+    '昆虫': ['甲虫', '螳螂', '竹节虫', '蝴蝶', '蛾子', '蟋蟀', '螽斯', '天牛'],
+    '大型宠物': ['马', '驴', '羊', '猪', '牛', '鹿', '骆驼', '鸵鸟'],
+    '变异宠物': ['白化', '黑化', '黄化', '蓝化', '派特', '珍珠', '肉桂', '橄榄'],
+  };
 
   @override
   Widget build(BuildContext context) {
-    final category =
-        ModalRoute.of(context)?.settings.arguments as Map<String, dynamic>?;
-    final categoryName = category?['name'] ?? '分类';
-
     return Scaffold(
-      backgroundColor: AppColors.background,
-      appBar: AppBar(
-        title: Text(
-          categoryName,
-          style: TextStyle(
-            color: AppColors.textPrimary,
-            fontSize: 18.sp,
-            fontWeight: FontWeight.w600,
-          ),
+      backgroundColor: const Color(0xFFF5F5F5),
+      body: SafeArea(
+        child: Column(
+          children: [
+            // 搜索栏
+            _buildSearchBar(),
+
+            // 主内容区域
+            Expanded(
+              child: Row(
+                children: [
+                  // 左侧主分类导航
+                  _buildMainCategoryList(),
+
+                  // 右侧子分类内容
+                  _buildSubCategoryContent(),
+                ],
+              ),
+            ),
+          ],
         ),
-        backgroundColor: Colors.white,
-        elevation: 0,
-        iconTheme: IconThemeData(color: AppColors.textPrimary),
-        actions: [
-          IconButton(
-            icon: const Icon(Icons.search),
-            onPressed: () {
-              Navigator.pushNamed(context, '/search');
-            },
+      ),
+    );
+  }
+
+  // 构建搜索栏
+  Widget _buildSearchBar() {
+    return Container(
+      margin: EdgeInsets.all(16.w),
+      height: 40.h,
+      decoration: BoxDecoration(
+        color: Colors.white,
+        borderRadius: BorderRadius.circular(20.r),
+        boxShadow: [
+          BoxShadow(
+            color: Colors.black.withOpacity(0.05),
+            blurRadius: 8,
+            offset: const Offset(0, 2),
           ),
         ],
       ),
-      body: Column(
+      child: Row(
         children: [
-          // 分类选择器
-          Container(
-            height: 50.h,
-            color: Colors.white,
-            child: ListView.builder(
-              scrollDirection: Axis.horizontal,
-              padding: EdgeInsets.symmetric(horizontal: 16.w),
-              itemCount: categories.length,
-              itemBuilder: (context, index) {
-                final category = categories[index];
-                final isSelected = category == selectedCategory;
-                return GestureDetector(
-                  onTap: () {
-                    setState(() {
-                      selectedCategory = category;
-                    });
-                  },
-                  child: Container(
-                    margin: EdgeInsets.only(right: 16.w, top: 8.h, bottom: 8.h),
-                    padding: EdgeInsets.symmetric(horizontal: 16.w),
-                    decoration: BoxDecoration(
-                      color:
-                          isSelected ? AppColors.primary : Colors.transparent,
-                      borderRadius: BorderRadius.circular(20.r),
-                      border: Border.all(
-                        color:
-                            isSelected ? AppColors.primary : AppColors.border,
-                      ),
-                    ),
-                    alignment: Alignment.center,
-                    child: Text(
-                      category,
-                      style: TextStyle(
-                        fontSize: 14.sp,
-                        color:
-                            isSelected ? Colors.white : AppColors.textSecondary,
-                        fontWeight:
-                            isSelected ? FontWeight.w500 : FontWeight.normal,
-                      ),
-                    ),
-                  ),
-                );
+          SizedBox(width: 16.w),
+          Icon(
+            Icons.search,
+            size: 20.w,
+            color: const Color(0xFF999999),
+          ),
+          SizedBox(width: 12.w),
+          Expanded(
+            child: TextField(
+              decoration: const InputDecoration(
+                hintText: '搜索产品',
+                hintStyle: TextStyle(
+                  color: Color(0xFF999999),
+                ),
+                border: InputBorder.none,
+              ),
+              style: TextStyle(
+                fontSize: 14.sp,
+                color: const Color(0xFF333333),
+              ),
+              onChanged: (value) {
+                setState(() {
+                  searchQuery = value;
+                });
               },
             ),
-          ),
-
-          // 排序选择器
-          Container(
-            height: 44.h,
-            color: Colors.white,
-            padding: EdgeInsets.symmetric(horizontal: 16.w),
-            child: Row(
-              children: [
-                Text(
-                  '共${filteredProducts.length}个商品',
-                  style: TextStyle(
-                    fontSize: 14.sp,
-                    color: AppColors.textSecondary,
-                  ),
-                ),
-                const Spacer(),
-                GestureDetector(
-                  onTap: () {
-                    _showSortOptions();
-                  },
-                  child: Row(
-                    children: [
-                      Text(
-                        sortBy,
-                        style: TextStyle(
-                          fontSize: 14.sp,
-                          color: AppColors.textPrimary,
-                        ),
-                      ),
-                      SizedBox(width: 4.w),
-                      Icon(
-                        Icons.keyboard_arrow_down,
-                        size: 16.w,
-                        color: AppColors.textSecondary,
-                      ),
-                    ],
-                  ),
-                ),
-              ],
-            ),
-          ),
-
-          // 商品列表
-          Expanded(
-            child: filteredProducts.isEmpty
-                ? Center(
-                    child: Column(
-                      mainAxisAlignment: MainAxisAlignment.center,
-                      children: [
-                        Icon(
-                          Icons.pets,
-                          size: 64.w,
-                          color: AppColors.textHint,
-                        ),
-                        SizedBox(height: 16.h),
-                        Text(
-                          '暂无商品',
-                          style: TextStyle(
-                            fontSize: 16.sp,
-                            color: AppColors.textHint,
-                          ),
-                        ),
-                      ],
-                    ),
-                  )
-                : ListView.builder(
-                    padding: EdgeInsets.all(16.w),
-                    itemCount: filteredProducts.length,
-                    itemBuilder: (context, index) {
-                      final product = filteredProducts[index];
-                      return Container(
-                        margin: EdgeInsets.only(bottom: 16.h),
-                        child: AuctionCard(
-                          product: product,
-                          onTap: () {
-                            Navigator.pushNamed(
-                              context,
-                              '/product-detail',
-                              arguments: product,
-                            );
-                          },
-                          onFavorite: () {
-                            setState(() {
-                              int originalIndex = products
-                                  .indexWhere((p) => p['id'] == product['id']);
-                              if (originalIndex != -1) {
-                                products[originalIndex]['isFavorite'] =
-                                    !(product['isFavorite'] ?? false);
-                              }
-                            });
-                          },
-                        ),
-                      );
-                    },
-                  ),
           ),
         ],
       ),
     );
   }
 
-  void _showSortOptions() {
-    showModalBottomSheet(
-      context: context,
-      shape: RoundedRectangleBorder(
-        borderRadius: BorderRadius.vertical(top: Radius.circular(20.r)),
-      ),
-      builder: (context) {
-        return Container(
-          padding: EdgeInsets.all(20.w),
-          child: Column(
-            mainAxisSize: MainAxisSize.min,
-            children: [
-              Container(
-                width: 40.w,
-                height: 4.h,
-                decoration: BoxDecoration(
-                  color: AppColors.divider,
-                  borderRadius: BorderRadius.circular(2.r),
-                ),
+  // 构建左侧主分类列表
+  Widget _buildMainCategoryList() {
+    return Container(
+      width: 100.w, // 固定宽度
+      color: Colors.white,
+      child: ListView.builder(
+        itemCount: mainCategories.length,
+        itemBuilder: (context, index) {
+          final category = mainCategories[index];
+          final isSelected = index == selectedMainCategoryIndex;
+
+          return GestureDetector(
+            onTap: () {
+              setState(() {
+                selectedMainCategoryIndex = index;
+              });
+            },
+            child: Container(
+              height: 50.h,
+              decoration: BoxDecoration(
+                color: isSelected ? const Color(0xFF9C4DFF) : Colors.white,
+                border: isSelected
+                    ? const Border(
+                        left: BorderSide(
+                          color: Color(0xFF9C4DFF),
+                          width: 3,
+                        ),
+                      )
+                    : null,
               ),
-              SizedBox(height: 20.h),
-              Text(
-                '排序方式',
-                style: TextStyle(
-                  fontSize: 18.sp,
-                  fontWeight: FontWeight.bold,
-                  color: AppColors.textPrimary,
-                ),
-              ),
-              SizedBox(height: 20.h),
-              ...sortOptions.map((option) {
-                return ListTile(
-                  contentPadding: EdgeInsets.zero,
-                  title: Text(
-                    option,
-                    style: TextStyle(
-                      fontSize: 16.sp,
-                      color: sortBy == option
-                          ? AppColors.primary
-                          : AppColors.textPrimary,
-                    ),
+              child: Center(
+                child: Text(
+                  category['name'],
+                  style: TextStyle(
+                    fontSize: 14.sp,
+                    color: isSelected ? Colors.white : const Color(0xFF333333),
+                    fontWeight:
+                        isSelected ? FontWeight.w600 : FontWeight.normal,
                   ),
-                  trailing: sortBy == option
-                      ? Icon(Icons.check, color: AppColors.primary)
-                      : null,
-                  onTap: () {
-                    setState(() {
-                      sortBy = option;
-                    });
-                    Navigator.pop(context);
-                  },
-                );
-              }).toList(),
-              SizedBox(height: 20.h),
-            ],
+                ),
+              ),
+            ),
+          );
+        },
+      ),
+    );
+  }
+
+  // 构建右侧子分类内容
+  Widget _buildSubCategoryContent() {
+    final selectedCategory = mainCategories[selectedMainCategoryIndex]['name'];
+    final subCats = subCategories[selectedCategory] ?? [];
+
+    return Expanded(
+      child: Container(
+        color: const Color(0xFFF5F5F5),
+        padding: EdgeInsets.all(16.w),
+        child: GridView.builder(
+          gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
+            crossAxisCount: 3, // 3列布局
+            crossAxisSpacing: 12.w,
+            mainAxisSpacing: 12.h,
+            childAspectRatio: 2.5, // 调整宽高比
           ),
-        );
-      },
+          itemCount: subCats.length,
+          itemBuilder: (context, index) {
+            final subCat = subCats[index];
+            return GestureDetector(
+              onTap: () {
+                // 这里可以处理子分类点击事件
+                print('点击了子分类: $subCat');
+              },
+              child: Container(
+                decoration: BoxDecoration(
+                  color: Colors.white,
+                  borderRadius: BorderRadius.circular(8.r),
+                  border: Border.all(
+                    color: const Color(0xFFE0E0E0),
+                    width: 1,
+                  ),
+                ),
+                child: Center(
+                  child: Text(
+                    subCat,
+                    style: TextStyle(
+                      fontSize: 12.sp,
+                      color: const Color(0xFF333333),
+                      fontWeight: FontWeight.w500,
+                    ),
+                    textAlign: TextAlign.center,
+                    maxLines: 2,
+                    overflow: TextOverflow.ellipsis,
+                  ),
+                ),
+              ),
+            );
+          },
+        ),
+      ),
     );
   }
 }

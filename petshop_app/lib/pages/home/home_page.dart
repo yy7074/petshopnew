@@ -154,7 +154,8 @@ class _HomePageState extends State<HomePage> {
                   ),
                   child: PageView.builder(
                     controller: _pageController,
-                    physics: const NeverScrollableScrollPhysics(), // 禁用PageView的手势滑动，但允许内部滚动
+                    physics:
+                        const NeverScrollableScrollPhysics(), // 禁用PageView的手势滑动，但允许内部滚动
                     scrollDirection: Axis.horizontal, // 明确指定水平滚动
                     onPageChanged: (index) {
                       setState(() {
@@ -574,26 +575,28 @@ class _HomePageState extends State<HomePage> {
           Column(
             children: [
               // 第一行：6个标签
-              Row(
-                mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+              Wrap(
+                spacing: 6.w, // 减少水平间距
+                runSpacing: 6.h, // 减少垂直间距
                 children: [
                   _buildFilterTag('自定义', true, isPrimary: true),
                   _buildFilterTag('比熊', false),
                   _buildFilterTag('标赛', false),
-                  _buildFilterTag('标赛', false),
-                  _buildFilterTag('标赛', false),
-                  _buildFilterTag('标赛', false),
+                  _buildFilterTag('双血统', false),
+                  _buildFilterTag('幼犬', false),
+                  _buildFilterTag('成犬', false),
                 ],
               ),
-              SizedBox(height: 8.h),
+              SizedBox(height: 6.h), // 减少行间距
               // 第二行：4个标签
-              Row(
-                mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+              Wrap(
+                spacing: 6.w,
+                runSpacing: 6.h,
                 children: [
-                  _buildFilterTag('标赛', false),
-                  _buildFilterTag('标赛', false),
-                  _buildFilterTag('标赛', false),
-                  _buildFilterTag('标赛', false),
+                  _buildFilterTag('竞价中', false),
+                  _buildFilterTag('即将结束', false),
+                  _buildFilterTag('热门推荐', false),
+                  _buildFilterTag('新品上架', false),
                 ],
               ),
             ],
@@ -636,34 +639,29 @@ class _HomePageState extends State<HomePage> {
 
   Widget _buildFilterTag(String text, bool isSelected,
       {bool isPrimary = false}) {
-    return Expanded(
-      child: Container(
-        margin: EdgeInsets.symmetric(horizontal: 2.w),
-        padding: EdgeInsets.symmetric(horizontal: 12.w, vertical: 6.h),
-        decoration: BoxDecoration(
+    return Container(
+      padding: EdgeInsets.symmetric(horizontal: 12.w, vertical: 6.h), // 减少内边距
+      decoration: BoxDecoration(
+        color: isSelected
+            ? (isPrimary ? const Color(0xFF9C4DFF) : Colors.white)
+            : Colors.white,
+        borderRadius: BorderRadius.circular(16.r), // 减少圆角
+        border: Border.all(
           color: isSelected
-              ? (isPrimary ? const Color(0xFF9C4DFF) : Colors.white)
-              : Colors.white,
-          borderRadius: BorderRadius.circular(18.r),
-          border: Border.all(
-            color: isSelected
-                ? (isPrimary
-                    ? const Color(0xFF9C4DFF)
-                    : const Color(0xFF9C4DFF))
-                : const Color(0xFF9C4DFF),
-            width: 1,
-          ),
+              ? (isPrimary ? const Color(0xFF9C4DFF) : const Color(0xFF9C4DFF))
+              : const Color(0xFF9C4DFF),
+          width: 1,
         ),
-        child: Text(
-          text,
-          textAlign: TextAlign.center,
-          style: TextStyle(
-            fontSize: 11.sp,
-            color: isSelected
-                ? (isPrimary ? Colors.white : const Color(0xFF9C4DFF))
-                : const Color(0xFF9C4DFF),
-            fontWeight: isSelected ? FontWeight.w500 : FontWeight.normal,
-          ),
+      ),
+      child: Text(
+        text,
+        textAlign: TextAlign.center,
+        style: TextStyle(
+          fontSize: 10.sp, // 减小字体大小
+          color: isSelected
+              ? (isPrimary ? Colors.white : const Color(0xFF9C4DFF))
+              : const Color(0xFF9C4DFF),
+          fontWeight: isSelected ? FontWeight.w600 : FontWeight.w500,
         ),
       ),
     );
