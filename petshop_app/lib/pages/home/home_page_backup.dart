@@ -635,154 +635,143 @@ class _HomePageState extends State<HomePage> {
     String imageUrl,
     Color accentColor,
   ) {
-    return GestureDetector(
-      onTap: () {
-        // 跳转到专场列表页面
-        Navigator.push(
-          context,
-          MaterialPageRoute(
-            builder: (context) => const SpecialEventPage(),
+    return Container(
+      height: 140.h, // Increased height to match design
+      decoration: BoxDecoration(
+        borderRadius: BorderRadius.circular(12.r),
+        boxShadow: [
+          BoxShadow(
+            color: Colors.black.withOpacity(0.1),
+            blurRadius: 8,
+            offset: const Offset(0, 2),
           ),
-        );
-      },
-      child: Container(
-        height: 140.h, // Increased height to match design
-        decoration: BoxDecoration(
-          borderRadius: BorderRadius.circular(12.r),
-          boxShadow: [
-            BoxShadow(
-              color: Colors.black.withOpacity(0.1),
-              blurRadius: 8,
-              offset: const Offset(0, 2),
-            ),
-          ],
-        ),
-        child: ClipRRect(
-          borderRadius: BorderRadius.circular(12.r),
-          child: Stack(
-            children: [
-              // Background image covering the entire card
-              Positioned.fill(
-                child: CachedNetworkImage(
-                  imageUrl: imageUrl,
-                  fit: BoxFit.cover,
-                  placeholder: (context, url) => Container(
-                    color: accentColor.withOpacity(0.3),
-                  ),
-                  errorWidget: (context, url, error) => Container(
-                    decoration: BoxDecoration(
-                      gradient: LinearGradient(
-                        begin: Alignment.topLeft,
-                        end: Alignment.bottomRight,
-                        colors: [
-                          accentColor.withOpacity(0.8),
-                          accentColor,
-                        ],
-                      ),
-                    ),
-                  ),
+        ],
+      ),
+      child: ClipRRect(
+        borderRadius: BorderRadius.circular(12.r),
+        child: Stack(
+          children: [
+            // Background image covering the entire card
+            Positioned.fill(
+              child: CachedNetworkImage(
+                imageUrl: imageUrl,
+                fit: BoxFit.cover,
+                placeholder: (context, url) => Container(
+                  color: accentColor.withOpacity(0.3),
                 ),
-              ),
-
-              // Gradient overlay
-              Positioned.fill(
-                child: Container(
+                errorWidget: (context, url, error) => Container(
                   decoration: BoxDecoration(
                     gradient: LinearGradient(
-                      begin: Alignment.topCenter,
-                      end: Alignment.bottomCenter,
+                      begin: Alignment.topLeft,
+                      end: Alignment.bottomRight,
                       colors: [
-                        Colors.black.withOpacity(0.2),
-                        Colors.black.withOpacity(0.6),
+                        accentColor.withOpacity(0.8),
+                        accentColor,
                       ],
                     ),
                   ),
                 ),
               ),
+            ),
 
-              // Content
-              Padding(
-                padding: EdgeInsets.all(12.w),
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    Container(
-                      padding:
-                          EdgeInsets.symmetric(horizontal: 8.w, vertical: 3.h),
-                      decoration: BoxDecoration(
-                        color: accentColor,
-                        borderRadius: BorderRadius.circular(10.r),
-                      ),
-                      child: Text(
-                        tag,
-                        style: TextStyle(
-                          fontSize: 10.sp,
-                          color: Colors.white,
-                          fontWeight: FontWeight.bold,
-                        ),
+            // Gradient overlay
+            Positioned.fill(
+              child: Container(
+                decoration: BoxDecoration(
+                  gradient: LinearGradient(
+                    begin: Alignment.topCenter,
+                    end: Alignment.bottomCenter,
+                    colors: [
+                      Colors.black.withOpacity(0.2),
+                      Colors.black.withOpacity(0.6),
+                    ],
+                  ),
+                ),
+              ),
+            ),
+
+            // Content
+            Padding(
+              padding: EdgeInsets.all(12.w),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Container(
+                    padding:
+                        EdgeInsets.symmetric(horizontal: 8.w, vertical: 3.h),
+                    decoration: BoxDecoration(
+                      color: accentColor,
+                      borderRadius: BorderRadius.circular(10.r),
+                    ),
+                    child: Text(
+                      tag,
+                      style: TextStyle(
+                        fontSize: 10.sp,
+                        color: Colors.white,
+                        fontWeight: FontWeight.bold,
                       ),
                     ),
-                    SizedBox(height: 8.h),
-                    Text(
-                      title,
-                      style: TextStyle(
-                        fontSize: 16.sp,
-                        fontWeight: FontWeight.bold,
+                  ),
+                  SizedBox(height: 8.h),
+                  Text(
+                    title,
+                    style: TextStyle(
+                      fontSize: 16.sp,
+                      fontWeight: FontWeight.bold,
+                      color: Colors.white,
+                    ),
+                  ),
+                  const Spacer(),
+                  Row(
+                    children: [
+                      Icon(
+                        Icons.access_time,
+                        size: 14.w,
                         color: Colors.white,
                       ),
-                    ),
-                    const Spacer(),
-                    Row(
-                      children: [
-                        Icon(
-                          Icons.access_time,
-                          size: 14.w,
+                      SizedBox(width: 4.w),
+                      Text(
+                        endTime,
+                        style: TextStyle(
+                          fontSize: 12.sp,
                           color: Colors.white,
                         ),
-                        SizedBox(width: 4.w),
-                        Text(
-                          endTime,
+                      ),
+                    ],
+                  ),
+                  SizedBox(height: 4.h),
+                  RichText(
+                    text: TextSpan(
+                      children: [
+                        TextSpan(
+                          text: count.split('：')[0],
                           style: TextStyle(
                             fontSize: 12.sp,
                             color: Colors.white,
                           ),
                         ),
+                        TextSpan(
+                          text: '：',
+                          style: TextStyle(
+                            fontSize: 12.sp,
+                            color: Colors.white,
+                          ),
+                        ),
+                        TextSpan(
+                          text: count.split('：')[1],
+                          style: TextStyle(
+                            fontSize: 16.sp,
+                            fontWeight: FontWeight.bold,
+                            color: Colors.red,
+                          ),
+                        ),
                       ],
                     ),
-                    SizedBox(height: 4.h),
-                    RichText(
-                      text: TextSpan(
-                        children: [
-                          TextSpan(
-                            text: count.split('：')[0],
-                            style: TextStyle(
-                              fontSize: 12.sp,
-                              color: Colors.white,
-                            ),
-                          ),
-                          TextSpan(
-                            text: '：',
-                            style: TextStyle(
-                              fontSize: 12.sp,
-                              color: Colors.white,
-                            ),
-                          ),
-                          TextSpan(
-                            text: count.split('：')[1],
-                            style: TextStyle(
-                              fontSize: 16.sp,
-                              fontWeight: FontWeight.bold,
-                              color: Colors.red,
-                            ),
-                          ),
-                        ],
-                      ),
-                    ),
-                  ],
-                ),
+                  ),
+                ],
               ),
-            ],
-          ),
+            ),
+          ],
         ),
       ),
     );
@@ -2795,6 +2784,511 @@ class _HomePageState extends State<HomePage> {
                     ),
                   ),
                 ],
+              ),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+
+}
+    return SingleChildScrollView(
+      physics: const BouncingScrollPhysics(),
+      child: Column(
+        children: [
+          SizedBox(height: 16.h),
+
+          // 顶部导航栏
+          _buildSpecialEventHeader(),
+          SizedBox(height: 16.h),
+
+          // 排序筛选栏
+          _buildSpecialEventSortBar(),
+          SizedBox(height: 12.h),
+
+          // 标签筛选
+          _buildSpecialEventFilterTags(),
+          SizedBox(height: 16.h),
+
+          // 商品网格列表
+          _buildSpecialEventProductGrid(),
+          SizedBox(height: 100.h),
+        ],
+      ),
+    );
+  }
+
+  // 构建专场列表顶部导航栏
+  Widget _buildSpecialEventHeader() {
+    return Container(
+      margin: EdgeInsets.symmetric(horizontal: 16.w),
+      child: Row(
+        children: [
+          // 返回按钮
+          GestureDetector(
+            onTap: () {
+              Navigator.pop(context);
+            },
+            child: Container(
+              width: 32.w,
+              height: 32.w,
+              decoration: BoxDecoration(
+                color: Colors.white,
+                borderRadius: BorderRadius.circular(16.r),
+                boxShadow: [
+                  BoxShadow(
+                    color: Colors.black.withOpacity(0.1),
+                    blurRadius: 4,
+                    offset: const Offset(0, 2),
+                  ),
+                ],
+              ),
+              child: Icon(
+                Icons.arrow_back_ios,
+                size: 16.w,
+                color: const Color(0xFF333333),
+              ),
+            ),
+          ),
+          SizedBox(width: 12.w),
+
+          // 标题
+          Expanded(
+            child: Text(
+              '山东鱼宠专场',
+              style: TextStyle(
+                fontSize: 18.sp,
+                fontWeight: FontWeight.w600,
+                color: const Color(0xFF333333),
+              ),
+              textAlign: TextAlign.center,
+            ),
+          ),
+
+          // 搜索按钮
+          GestureDetector(
+            onTap: () {
+              Navigator.push(
+                context,
+                MaterialPageRoute(builder: (context) => const SearchPage()),
+              );
+            },
+            child: Container(
+              padding: EdgeInsets.symmetric(horizontal: 12.w, vertical: 6.h),
+              decoration: BoxDecoration(
+                color: const Color(0xFFF5F5F5),
+                borderRadius: BorderRadius.circular(16.r),
+              ),
+              child: Row(
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  Icon(
+                    Icons.search,
+                    size: 14.w,
+                    color: const Color(0xFF999999),
+                  ),
+                  SizedBox(width: 4.w),
+                  Text(
+                    '搜索',
+                    style: TextStyle(
+                      fontSize: 12.sp,
+                      color: const Color(0xFF999999),
+                    ),
+                  ),
+                ],
+              ),
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
+  // 构建专场列表排序筛选栏
+  Widget _buildSpecialEventSortBar() {
+    return Container(
+      margin: EdgeInsets.symmetric(horizontal: 16.w),
+      child: Row(
+        children: [
+          // 默认排序
+          _buildSortItem('默认排序', true),
+          SizedBox(width: 24.w),
+
+          // 价格排序
+          _buildSortItem('价格', false, hasArrow: true),
+          SizedBox(width: 24.w),
+
+          // 结标时间排序
+          _buildSortItem('结标时间', false, hasArrow: true),
+          SizedBox(width: 24.w),
+
+          // 我的关注
+          _buildSortItem('我的关注', false),
+        ],
+      ),
+    );
+  }
+
+  // 构建排序项目
+  Widget _buildSortItem(String title, bool isSelected,
+      {bool hasArrow = false}) {
+    return GestureDetector(
+      onTap: () {
+        print('点击了排序: $title');
+      },
+      child: Row(
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          Text(
+            title,
+            style: TextStyle(
+              fontSize: 14.sp,
+              color: isSelected
+                  ? const Color(0xFF333333)
+                  : const Color(0xFF999999),
+              fontWeight: isSelected ? FontWeight.w600 : FontWeight.w400,
+            ),
+          ),
+          if (hasArrow) ...[
+            SizedBox(width: 4.w),
+            Icon(
+              Icons.keyboard_arrow_down,
+              size: 16.w,
+              color: isSelected
+                  ? const Color(0xFF333333)
+                  : const Color(0xFF999999),
+            ),
+          ],
+        ],
+      ),
+    );
+  }
+
+  // 构建专场列表标签筛选
+  Widget _buildSpecialEventFilterTags() {
+    final tags = [
+      {'name': '全部(500)', 'isSelected': true},
+      {'name': '标签', 'isSelected': false},
+      {'name': '标签', 'isSelected': false},
+      {'name': '标签', 'isSelected': false},
+      {'name': '标签', 'isSelected': false},
+      {'name': '标签', 'isSelected': false},
+      {'name': '标签', 'isSelected': false},
+      {'name': '标签', 'isSelected': false},
+      {'name': '标签', 'isSelected': false},
+    ];
+
+    return Container(
+      margin: EdgeInsets.symmetric(horizontal: 16.w),
+      child: Wrap(
+        spacing: 8.w,
+        runSpacing: 8.h,
+        children: tags.map((tag) {
+          return GestureDetector(
+            onTap: () {
+              print('点击了标签: ${tag['name']}');
+            },
+            child: Container(
+              padding: EdgeInsets.symmetric(horizontal: 12.w, vertical: 6.h),
+              decoration: BoxDecoration(
+                color: (tag['isSelected'] as bool)
+                    ? const Color(0xFF9C4DFF)
+                    : Colors.white,
+                borderRadius: BorderRadius.circular(16.r),
+                border: Border.all(
+                  color: (tag['isSelected'] as bool)
+                      ? const Color(0xFF9C4DFF)
+                      : const Color(0xFFE0E0E0),
+                  width: 1,
+                ),
+              ),
+              child: Text(
+                tag['name'] as String,
+                style: TextStyle(
+                  fontSize: 12.sp,
+                  color: (tag['isSelected'] as bool)
+                      ? Colors.white
+                      : const Color(0xFF666666),
+                  fontWeight: FontWeight.w500,
+                ),
+              ),
+            ),
+          );
+        }).toList(),
+      ),
+    );
+  }
+
+  // 构建专场列表商品网格
+  Widget _buildSpecialEventProductGrid() {
+    final products = [
+      {
+        'id': '1869863017137013',
+        'name': '产品标题产品标题产品标题产品标题产品',
+        'price': 924.9,
+        'image': 'https://picsum.photos/200/200?random=80',
+        'bids': 39,
+        'views': 394,
+        'timeLeft': '00时34分23秒',
+        'isFavorite': false,
+      },
+      {
+        'id': '1869863017137014',
+        'name': '产品标题产品标题产品标题产品标题产品',
+        'price': 924.9,
+        'image': 'https://picsum.photos/200/200?random=81',
+        'bids': 39,
+        'views': 394,
+        'timeLeft': '00时34分23秒',
+        'isFavorite': true,
+      },
+      {
+        'id': '1869863017137015',
+        'name': '产品标题产品标题产品标题产品标题产品',
+        'price': 924.9,
+        'image': 'https://picsum.photos/200/200?random=82',
+        'bids': 39,
+        'views': 394,
+        'timeLeft': '00时34分23秒',
+        'isFavorite': false,
+      },
+      {
+        'id': '1869863017137016',
+        'name': '产品标题产品标题产品标题产品标题产品',
+        'price': 924.9,
+        'image': 'https://picsum.photos/200/200?random=83',
+        'bids': 39,
+        'views': 394,
+        'timeLeft': '00时34分23秒',
+        'isFavorite': true,
+      },
+    ];
+
+    return Container(
+      margin: EdgeInsets.symmetric(horizontal: 16.w),
+      child: GridView.builder(
+        shrinkWrap: true,
+        physics: const NeverScrollableScrollPhysics(),
+        gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
+          crossAxisCount: 2,
+          crossAxisSpacing: 12.w,
+          mainAxisSpacing: 12.h,
+          childAspectRatio: 0.75,
+        ),
+        itemCount: products.length,
+        itemBuilder: (context, index) {
+          final product = products[index];
+          return _buildSpecialEventProductCard(product);
+        },
+      ),
+    );
+  }
+
+  // 构建专场列表商品卡片
+  Widget _buildSpecialEventProductCard(Map<String, dynamic> product) {
+    return GestureDetector(
+      onTap: () {
+        print('点击了商品: ${product['name']}');
+      },
+      child: Container(
+        decoration: BoxDecoration(
+          color: Colors.white,
+          borderRadius: BorderRadius.circular(12.r),
+          boxShadow: [
+            BoxShadow(
+              color: Colors.black.withOpacity(0.05),
+              blurRadius: 8,
+              offset: const Offset(0, 2),
+            ),
+          ],
+        ),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            // 商品图片
+            Expanded(
+              flex: 3,
+              child: Stack(
+                children: [
+                  ClipRRect(
+                    borderRadius: BorderRadius.only(
+                      topLeft: Radius.circular(12.r),
+                      topRight: Radius.circular(12.r),
+                    ),
+                    child: CachedNetworkImage(
+                      imageUrl: product['image'],
+                      fit: BoxFit.cover,
+                      width: double.infinity,
+                      height: double.infinity,
+                      placeholder: (context, url) => Container(
+                        color: const Color(0xFFF5F5F5),
+                        child: const Center(
+                          child: CircularProgressIndicator(),
+                        ),
+                      ),
+                      errorWidget: (context, url, error) => Container(
+                        color: const Color(0xFFF5F5F5),
+                        child: const Icon(Icons.error),
+                      ),
+                    ),
+                  ),
+                  // 收藏按钮
+                  Positioned(
+                    bottom: 8.h,
+                    right: 8.w,
+                    child: GestureDetector(
+                      onTap: () {
+                        setState(() {
+                          product['isFavorite'] = !product['isFavorite'];
+                        });
+                      },
+                      child: Container(
+                        width: 24.w,
+                        height: 24.w,
+                        decoration: BoxDecoration(
+                          color: Colors.white.withOpacity(0.9),
+                          shape: BoxShape.circle,
+                        ),
+                        child: Icon(
+                          product['isFavorite']
+                              ? Icons.favorite
+                              : Icons.favorite_border,
+                          size: 14.w,
+                          color: product['isFavorite']
+                              ? const Color(0xFFFFEB3B)
+                              : const Color(0xFF999999),
+                        ),
+                      ),
+                    ),
+                  ),
+                ],
+              ),
+            ),
+            // 商品信息
+            Expanded(
+              flex: 2,
+              child: Padding(
+                padding: EdgeInsets.all(8.w),
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    // 编号
+                    Text(
+                      '编号: ${product['id']}',
+                      style: TextStyle(
+                        fontSize: 10.sp,
+                        color: const Color(0xFF999999),
+                      ),
+                    ),
+                    SizedBox(height: 4.h),
+
+                    // 出价和观看数
+                    Row(
+                      children: [
+                        Icon(
+                          Icons.person,
+                          size: 12.w,
+                          color: const Color(0xFF999999),
+                        ),
+                        SizedBox(width: 2.w),
+                        Text(
+                          '${product['bids']}次出价',
+                          style: TextStyle(
+                            fontSize: 10.sp,
+                            color: const Color(0xFF999999),
+                          ),
+                        ),
+                        SizedBox(width: 8.w),
+                        Icon(
+                          Icons.visibility,
+                          size: 12.w,
+                          color: const Color(0xFF999999),
+                        ),
+                        SizedBox(width: 2.w),
+                        Text(
+                          '${product['views']}人已看',
+                          style: TextStyle(
+                            fontSize: 10.sp,
+                            color: const Color(0xFF999999),
+                          ),
+                        ),
+                      ],
+                    ),
+                    SizedBox(height: 6.h),
+
+                    // 商品标题
+                    Text(
+                      product['name'],
+                      style: TextStyle(
+                        fontSize: 12.sp,
+                        color: const Color(0xFF333333),
+                        fontWeight: FontWeight.w500,
+                        height: 1.2,
+                      ),
+                      maxLines: 2,
+                      overflow: TextOverflow.ellipsis,
+                    ),
+                    SizedBox(height: 6.h),
+
+                    // 价格和出价按钮
+                    Row(
+                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                      children: [
+                        Text(
+                          '¥${product['price']}',
+                          style: TextStyle(
+                            fontSize: 16.sp,
+                            color: const Color(0xFFFF5722),
+                            fontWeight: FontWeight.w600,
+                          ),
+                        ),
+                        GestureDetector(
+                          onTap: () {
+                            print('点击出价');
+                          },
+                          child: Container(
+                            padding: EdgeInsets.symmetric(
+                                horizontal: 8.w, vertical: 4.h),
+                            decoration: BoxDecoration(
+                              color: const Color(0xFF9C4DFF),
+                              borderRadius: BorderRadius.circular(4.r),
+                            ),
+                            child: Text(
+                              '出价',
+                              style: TextStyle(
+                                fontSize: 10.sp,
+                                color: Colors.white,
+                                fontWeight: FontWeight.w500,
+                              ),
+                            ),
+                          ),
+                        ),
+                      ],
+                    ),
+                    SizedBox(height: 4.h),
+
+                    // 倒计时
+                    Row(
+                      children: [
+                        Icon(
+                          Icons.access_time,
+                          size: 12.w,
+                          color: const Color(0xFF9C4DFF),
+                        ),
+                        SizedBox(width: 4.w),
+                        Text(
+                          product['timeLeft'],
+                          style: TextStyle(
+                            fontSize: 10.sp,
+                            color: const Color(0xFF9C4DFF),
+                            fontWeight: FontWeight.w500,
+                          ),
+                        ),
+                      ],
+                    ),
+                  ],
+                ),
               ),
             ),
           ],
