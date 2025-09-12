@@ -120,143 +120,144 @@ class _HomePageState extends State<HomePage> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      body: Column(
-        children: [
-          // 紫色渐变顶部区域
-          Container(
-            decoration: const BoxDecoration(
-              gradient: LinearGradient(
-                begin: Alignment.topLeft,
-                end: Alignment.bottomRight,
-                colors: [
-                  Color(0xFF9C4DFF), // 紫色
-                  Color(0xFF7B1FA2), // 深紫色
-                ],
-              ),
-            ),
-            child: SafeArea(
-              bottom: false,
-              child: Column(
-                children: [
-                  SizedBox(height: 8.h),
-                  // 搜索栏
-                  _buildSearchBar(),
-                  SizedBox(height: 16.h),
-                  // Tab标签
-                  _buildTabBar(),
-                  SizedBox(height: 16.h),
-                ],
-              ),
-            ),
+      body: Container(
+        decoration: const BoxDecoration(
+          gradient: LinearGradient(
+            begin: Alignment.topLeft,
+            end: Alignment.bottomRight,
+            colors: [
+              Color(0xFF9C4DFF), // 紫色
+              Color(0xFF7B1FA2), // 深紫色
+            ],
           ),
-
-          // 主内容区域
-          Expanded(
-            child: Container(
-              color: const Color(0xFFF5F5F5),
-              child: PageView.builder(
-                controller: _pageController,
-                physics:
-                    const NeverScrollableScrollPhysics(), // 禁用PageView的垂直滚动
-                onPageChanged: (index) {
-                  setState(() {
-                    _currentTabIndex = index;
-                  });
-                },
-                itemCount: 5, // 5个标签页
-                itemBuilder: (context, index) {
-                  switch (index) {
-                    case 0:
-                      return SingleChildScrollView(
-                        physics: const BouncingScrollPhysics(), // 使用弹性滚动
-                        child: Column(
-                          children: [
-                            _buildBannerSection(),
-                            _buildFunctionGrid(),
-                            _buildProductList(),
-                          ],
-                        ),
-                      );
-                    case 1:
-                      return _buildCategoryContent('宠物', [
-                        {
-                          'name': '英短蓝猫',
-                          'price': 1200,
-                          'image': 'https://picsum.photos/200/200?random=30'
-                        },
-                        {
-                          'name': '金毛犬',
-                          'price': 2500,
-                          'image': 'https://picsum.photos/200/200?random=31'
-                        },
-                        {
-                          'name': '布偶猫',
-                          'price': 3800,
-                          'image': 'https://picsum.photos/200/200?random=32'
-                        },
-                      ]);
-                    case 2:
-                      return _buildCategoryContent('水族', [
-                        {
-                          'name': '红绿灯鱼',
-                          'price': 25,
-                          'image': 'https://picsum.photos/200/200?random=33'
-                        },
-                        {
-                          'name': '龙鱼',
-                          'price': 1500,
-                          'image': 'https://picsum.photos/200/200?random=34'
-                        },
-                        {
-                          'name': '锦鲤',
-                          'price': 800,
-                          'image': 'https://picsum.photos/200/200?random=35'
-                        },
-                      ]);
-                    case 3:
-                      return _buildCategoryContent('一口价专区', [
-                        {
-                          'name': '萨摩耶',
-                          'price': 1800,
-                          'image': 'https://picsum.photos/200/200?random=36'
-                        },
-                        {
-                          'name': '柯基',
-                          'price': 1500,
-                          'image': 'https://picsum.photos/200/200?random=37'
-                        },
-                        {
-                          'name': '比熊',
-                          'price': 1200,
-                          'image': 'https://picsum.photos/200/200?random=38'
-                        },
-                      ]);
-                    case 4:
-                      return _buildCategoryContent('同城服务', [
-                        {
-                          'name': '宠物美容',
-                          'price': 100,
-                          'image': 'https://picsum.photos/200/200?random=39'
-                        },
-                        {
-                          'name': '宠物医疗',
-                          'price': 200,
-                          'image': 'https://picsum.photos/200/200?random=40'
-                        },
-                        {
-                          'name': '宠物寄养',
-                          'price': 50,
-                          'image': 'https://picsum.photos/200/200?random=41'
-                        },
-                      ]);
-                    default:
-                      return Container();
-                  }
-                },
+        ),
+        child: SafeArea(
+          bottom: false,
+          child: Column(
+            children: [
+              SizedBox(height: 8.h),
+              // 搜索栏
+              _buildSearchBar(),
+              SizedBox(height: 16.h),
+              // Tab标签
+              _buildTabBar(),
+              SizedBox(height: 16.h),
+              // 主内容区域
+              Expanded(
+                child: Container(
+                  decoration: BoxDecoration(
+                    color: const Color(0xFFF5F5F5),
+                    borderRadius: BorderRadius.only(
+                      topLeft: Radius.circular(20.r),
+                      topRight: Radius.circular(20.r),
+                    ),
+                  ),
+                  child: PageView.builder(
+                    controller: _pageController,
+                    physics: const NeverScrollableScrollPhysics(), // 禁用PageView的手势滑动，但允许内部滚动
+                    scrollDirection: Axis.horizontal, // 明确指定水平滚动
+                    onPageChanged: (index) {
+                      setState(() {
+                        _currentTabIndex = index;
+                      });
+                    },
+                    itemCount: 5, // 5个标签页
+                    itemBuilder: (context, index) {
+                      switch (index) {
+                        case 0:
+                          return SingleChildScrollView(
+                            physics: const BouncingScrollPhysics(), // 使用弹性滚动
+                            child: Column(
+                              children: [
+                                _buildBannerSection(),
+                                _buildFunctionGrid(),
+                                _buildProductList(),
+                                SizedBox(height: 100.h), // 添加底部空间确保可以滚动
+                              ],
+                            ),
+                          );
+                        case 1:
+                          return _buildCategoryContent('宠物', [
+                            {
+                              'name': '英短蓝猫',
+                              'price': 1200,
+                              'image': 'https://picsum.photos/200/200?random=30'
+                            },
+                            {
+                              'name': '金毛犬',
+                              'price': 2500,
+                              'image': 'https://picsum.photos/200/200?random=31'
+                            },
+                            {
+                              'name': '布偶猫',
+                              'price': 3800,
+                              'image': 'https://picsum.photos/200/200?random=32'
+                            },
+                          ]);
+                        case 2:
+                          return _buildCategoryContent('水族', [
+                            {
+                              'name': '红绿灯鱼',
+                              'price': 25,
+                              'image': 'https://picsum.photos/200/200?random=33'
+                            },
+                            {
+                              'name': '龙鱼',
+                              'price': 1500,
+                              'image': 'https://picsum.photos/200/200?random=34'
+                            },
+                            {
+                              'name': '锦鲤',
+                              'price': 800,
+                              'image': 'https://picsum.photos/200/200?random=35'
+                            },
+                          ]);
+                        case 3:
+                          return _buildCategoryContent('一口价专区', [
+                            {
+                              'name': '萨摩耶',
+                              'price': 1800,
+                              'image': 'https://picsum.photos/200/200?random=36'
+                            },
+                            {
+                              'name': '柯基',
+                              'price': 1500,
+                              'image': 'https://picsum.photos/200/200?random=37'
+                            },
+                            {
+                              'name': '比熊',
+                              'price': 1200,
+                              'image': 'https://picsum.photos/200/200?random=38'
+                            },
+                          ]);
+                        case 4:
+                          return _buildCategoryContent('同城服务', [
+                            {
+                              'name': '宠物美容',
+                              'price': 100,
+                              'image': 'https://picsum.photos/200/200?random=39'
+                            },
+                            {
+                              'name': '宠物医疗',
+                              'price': 200,
+                              'image': 'https://picsum.photos/200/200?random=40'
+                            },
+                            {
+                              'name': '宠物寄养',
+                              'price': 50,
+                              'image': 'https://picsum.photos/200/200?random=41'
+                            },
+                          ]);
+                        default:
+                          return Container();
+                      }
+                    },
+                  ),
+                ),
               ),
-            ),
+            ],
           ),
-        ],
+        ),
       ),
     );
   }

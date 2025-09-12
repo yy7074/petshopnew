@@ -15,7 +15,7 @@ class CustomBottomNav extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Container(
-      height: 80.h + MediaQuery.of(context).padding.bottom, // 增加高度以容纳突出按钮
+      height: 70.h + MediaQuery.of(context).padding.bottom, // 降低整体高度
       decoration: BoxDecoration(
         color: Colors.white,
         boxShadow: [
@@ -35,7 +35,7 @@ class CustomBottomNav extends StatelessWidget {
             right: 0,
             bottom: 0,
             child: Container(
-              height: 60.h + MediaQuery.of(context).padding.bottom,
+              height: 50.h + MediaQuery.of(context).padding.bottom, // 降低主体高度
               padding: EdgeInsets.only(
                   bottom: MediaQuery.of(context).padding.bottom),
               child: Row(
@@ -61,7 +61,7 @@ class CustomBottomNav extends StatelessWidget {
           Positioned(
             left: 0,
             right: 0,
-            top: -20.h, // 向上突出更多
+            top: -15.h, // 调整位置以适应新的高度
             child: Center(
               child: GestureDetector(
                 onTap: () => onTap(2),
