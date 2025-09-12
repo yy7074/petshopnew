@@ -20,8 +20,8 @@ class _MainPageState extends State<MainPage> {
   final List<Widget> _pages = [
     const HomePage(), // 0: 首页
     const CategoryPage(), // 1: 分类
-    const MessagePage(), // 2: 消息（原来的index 3）
-    const ProfilePage(), // 3: 我的（原来的index 4）
+    const MessagePage(), // 2: 消息
+    const ProfilePage(), // 3: 我的
   ];
 
   @override
@@ -60,9 +60,11 @@ class _MainPageState extends State<MainPage> {
           } else {
             // 其他按钮 - 切换tab
             setState(() {
-              // 重新映射索引：消息和我的页面的索引需要调整
-              if (index >= 3) {
-                _currentIndex = index - 1; // 消息(3->2), 我的(4->3)
+              // 直接映射索引：首页(0), 分类(1), 消息(3), 我的(4)
+              if (index == 3) {
+                _currentIndex = 2; // 消息页面
+              } else if (index == 4) {
+                _currentIndex = 3; // 我的页面
               } else {
                 _currentIndex = index; // 首页(0), 分类(1)
               }

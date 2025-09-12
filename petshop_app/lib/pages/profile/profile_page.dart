@@ -1,6 +1,5 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
-import '../../constants/app_colors.dart';
 
 class ProfilePage extends StatefulWidget {
   const ProfilePage({super.key});
@@ -44,6 +43,7 @@ class _ProfilePageState extends State<ProfilePage>
             child: Column(
               children: [
                 _buildHeaderSection(),
+                _buildOrderSection(), // 普通的订单卡片
                 _buildShopPromoBanner(),
                 _buildFunctionRows(),
                 _buildDepositSection(),
@@ -51,14 +51,6 @@ class _ProfilePageState extends State<ProfilePage>
                 SizedBox(height: 100.h), // 给底部导航栏留出空间
               ],
             ),
-          ),
-
-          // 悬浮的订单卡片 - 使用Positioned定位
-          Positioned(
-            top: 310.h, // 定位在header底部附近
-            left: 16.w,
-            right: 16.w,
-            child: _buildFloatingOrderSection(),
           ),
         ],
       ),
@@ -133,102 +125,28 @@ class _ProfilePageState extends State<ProfilePage>
                   left: 16.w,
                   right: 16.w,
                 ),
-                child: Row(
-                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                  children: [
-                    Text(
-                      '9:41',
-                      style: TextStyle(
-                        fontSize: 15.sp,
-                        color: Colors.white,
-                        fontWeight: FontWeight.w600,
-                      ),
+                child: Center(
+                  child: Text(
+                    '买家中心',
+                    style: TextStyle(
+                      fontSize: 18.sp,
+                      color: Colors.white,
+                      fontWeight: FontWeight.w600,
                     ),
-                    Text(
-                      '买家中心',
-                      style: TextStyle(
-                        fontSize: 17.sp,
-                        color: Colors.white,
-                        fontWeight: FontWeight.w600,
-                      ),
-                    ),
-                    Row(
-                      children: [
-                        // 信号和wifi图标
-                        Container(
-                          width: 20.w,
-                          height: 12.h,
-                          decoration: BoxDecoration(
-                            border: Border.all(color: Colors.white, width: 1),
-                            borderRadius: BorderRadius.circular(2.r),
-                          ),
-                          child: Align(
-                            alignment: Alignment.centerRight,
-                            child: Container(
-                              width: 16.w,
-                              height: 8.h,
-                              decoration: BoxDecoration(
-                                color: Colors.white,
-                                borderRadius: BorderRadius.circular(1.r),
-                              ),
-                            ),
-                          ),
-                        ),
-                        SizedBox(width: 4.w),
-                        Icon(
-                          Icons.wifi,
-                          size: 16.w,
-                          color: Colors.white,
-                        ),
-                        SizedBox(width: 4.w),
-                        // 电池图标
-                        Container(
-                          width: 22.w,
-                          height: 11.h,
-                          decoration: BoxDecoration(
-                            border: Border.all(color: Colors.white, width: 1),
-                            borderRadius: BorderRadius.circular(2.r),
-                          ),
-                          child: Align(
-                            alignment: Alignment.centerRight,
-                            child: Container(
-                              width: 18.w,
-                              height: 7.h,
-                              decoration: BoxDecoration(
-                                color: Colors.white,
-                                borderRadius: BorderRadius.circular(1.r),
-                              ),
-                            ),
-                          ),
-                        ),
-                      ],
-                    ),
-                  ],
+                  ),
                 ),
               ),
 
-              // 标题和设置区域
+              // 设置区域
               Padding(
                 padding: EdgeInsets.symmetric(horizontal: 16.w),
                 child: Row(
-                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                  mainAxisAlignment: MainAxisAlignment.end,
                   children: [
-                    Text(
-                      '买家中心',
-                      style: TextStyle(
-                        fontSize: 18.sp,
-                        color: Colors.white,
-                        fontWeight: FontWeight.w600,
-                      ),
-                    ),
-                    Row(
-                      children: [
-                        Icon(
-                          Icons.settings,
-                          size: 22.w,
-                          color: Colors.white,
-                        ),
-                      ],
+                    Icon(
+                      Icons.settings,
+                      size: 22.w,
+                      color: Colors.white,
                     ),
                   ],
                 ),
@@ -838,95 +756,6 @@ class _ProfilePageState extends State<ProfilePage>
                 ),
               ],
             ),
-          ),
-        ],
-      ),
-    );
-  }
-
-  Widget _buildFloatingOrderSection() {
-    return Container(
-      padding: EdgeInsets.all(20.w),
-      decoration: BoxDecoration(
-        color: Colors.white,
-        borderRadius: BorderRadius.circular(16.r),
-        boxShadow: [
-          BoxShadow(
-            color: Colors.black.withOpacity(0.08),
-            blurRadius: 20,
-            offset: const Offset(0, 8),
-          ),
-          BoxShadow(
-            color: Colors.black.withOpacity(0.04),
-            blurRadius: 8,
-            offset: const Offset(0, 4),
-          ),
-        ],
-      ),
-      child: Column(
-        children: [
-          // 标题行
-          Row(
-            mainAxisAlignment: MainAxisAlignment.spaceBetween,
-            children: [
-              Text(
-                '我买进的',
-                style: TextStyle(
-                  fontSize: 16.sp,
-                  fontWeight: FontWeight.w600,
-                  color: const Color(0xFF333333),
-                ),
-              ),
-              GestureDetector(
-                onTap: () {},
-                child: Row(
-                  children: [
-                    Text(
-                      '全部',
-                      style: TextStyle(
-                        fontSize: 14.sp,
-                        color: const Color(0xFF999999),
-                      ),
-                    ),
-                    SizedBox(width: 4.w),
-                    Icon(
-                      Icons.arrow_forward_ios,
-                      size: 12.w,
-                      color: const Color(0xFF999999),
-                    ),
-                  ],
-                ),
-              ),
-            ],
-          ),
-
-          SizedBox(height: 20.h),
-
-          // 订单状态图标行
-          Row(
-            mainAxisAlignment: MainAxisAlignment.spaceAround,
-            children: [
-              _buildOrderStatusItem(
-                icon: Icons.credit_card,
-                label: '待付款',
-                badgeCount: 2,
-              ),
-              _buildOrderStatusItem(
-                icon: Icons.card_giftcard,
-                label: '待发货',
-                badgeCount: 0,
-              ),
-              _buildOrderStatusItem(
-                icon: Icons.local_shipping,
-                label: '待收货',
-                badgeCount: 0,
-              ),
-              _buildOrderStatusItem(
-                icon: Icons.account_balance_wallet,
-                label: '退款售后',
-                badgeCount: 0,
-              ),
-            ],
           ),
         ],
       ),
