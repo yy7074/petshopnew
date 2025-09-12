@@ -1,0 +1,92 @@
+name: petshop_app
+description: "宠物拍卖App - 一个功能完整的宠物拍卖平台"
+publish_to: 'none'
+
+version: 1.0.0+1
+
+environment:
+  sdk: '>=3.1.0 <4.0.0'
+
+dependencies:
+  flutter:
+    sdk: flutter
+  
+  # UI组件
+  cupertino_icons: ^1.0.2
+  flutter_screenutil: ^5.9.0
+  cached_network_image: ^3.3.0
+  flutter_staggered_grid_view: ^0.7.0
+  pull_to_refresh: ^2.0.0
+  card_swiper: ^3.0.1
+  photo_view: ^0.14.0
+  
+  # 状态管理
+  provider: ^6.1.1
+  get: ^4.6.6
+  
+  # 网络请求
+  dio: ^5.3.2
+  pretty_dio_logger: ^1.3.1
+  
+  # 本地存储
+  shared_preferences: ^2.2.2
+  sqflite: ^2.3.0
+  
+  # 工具类
+  intl: ^0.18.1
+  fluttertoast: ^8.2.4
+  permission_handler: ^11.0.1
+  image_picker: ^1.0.4
+  url_launcher: ^6.2.1
+  package_info_plus: ^4.2.0
+  device_info_plus: ^9.1.0
+  
+  # 支付
+  # alipay_kit: ^3.0.0
+  # wechat_kit: ^2.0.0
+  
+  # 推送
+  # jpush_flutter: ^2.6.0
+  
+  # 地图定位
+  # amap_flutter_location: ^3.0.0
+  # amap_flutter_map: ^3.0.0
+  
+  # 二维码
+  qr_flutter: ^4.1.0
+  mobile_scanner: ^3.5.6
+  
+  # 图片处理
+  image: ^4.1.3
+  
+  # WebSocket
+  web_socket_channel: ^2.4.0
+  
+  # 动画
+  lottie: ^2.7.0
+  
+  # 日期时间
+  date_format: ^2.0.7
+
+dev_dependencies:
+  flutter_test:
+    sdk: flutter
+  flutter_lints: ^2.0.0
+  build_runner: ^2.4.7
+
+flutter:
+  uses-material-design: true
+  
+  assets:
+    - assets/images/
+    - assets/icons/
+    - assets/animations/
+  
+  fonts:
+    - family: PingFang
+      fonts:
+        - asset: assets/fonts/PingFang-Regular.ttf
+        - asset: assets/fonts/PingFang-Medium.ttf
+          weight: 500
+        - asset: assets/fonts/PingFang-Bold.ttf
+          weight: 700
