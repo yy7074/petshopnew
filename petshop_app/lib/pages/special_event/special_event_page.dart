@@ -6,7 +6,7 @@ import '../search/search_page.dart';
 class SpecialEventPage extends StatefulWidget {
   final String? title;
   final String? eventId;
-  
+
   const SpecialEventPage({
     super.key,
     this.title,
@@ -490,9 +490,9 @@ class _SpecialEventPageState extends State<SpecialEventPage> {
                       maxLines: 1,
                       overflow: TextOverflow.ellipsis,
                     ),
-                    
+
                     SizedBox(height: 2.h),
-                    
+
                     // 出价和观看数 - 优化布局
                     Row(
                       children: [
@@ -529,7 +529,7 @@ class _SpecialEventPageState extends State<SpecialEventPage> {
                     ),
 
                     SizedBox(height: 4.h),
-                    
+
                     // 商品标题 - 优化显示
                     Text(
                       product['name'],
@@ -544,7 +544,7 @@ class _SpecialEventPageState extends State<SpecialEventPage> {
                     ),
 
                     SizedBox(height: 6.h),
-                    
+
                     // 价格和出价按钮 - 优化布局
                     Row(
                       mainAxisAlignment: MainAxisAlignment.spaceBetween,
@@ -583,7 +583,7 @@ class _SpecialEventPageState extends State<SpecialEventPage> {
                     ),
 
                     SizedBox(height: 4.h),
-                    
+
                     // 倒计时 - 优化显示
                     Row(
                       children: [

@@ -117,7 +117,22 @@ class CustomBottomNav extends StatelessWidget {
 
   Widget _buildNavItem(
       int index, IconData unselectedIcon, IconData selectedIcon, String label) {
-    final isSelected = currentIndex == index;
+    // 转换页面索引到导航栏索引进行正确的选中判断
+    // 页面索引: 首页(0), 分类(1), 消息(2), 我的(3)
+    // 导航栏索引: 首页(0), 分类(1), 中间按钮(2), 消息(3), 我的(4)
+    bool isSelected;
+    if (index == 0 || index == 1) {
+      // 首页和分类直接对应
+      isSelected = currentIndex == index;
+    } else if (index == 3) {
+      // 消息: 导航栏索引 3 对应页面索引 2
+      isSelected = currentIndex == 2;
+    } else if (index == 4) {
+      // 我的: 导航栏索引 4 对应页面索引 3
+      isSelected = currentIndex == 3;
+    } else {
+      isSelected = false;
+    }
 
     return Expanded(
       child: GestureDetector(

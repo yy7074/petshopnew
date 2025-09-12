@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
-import '../../constants/app_colors.dart';
-import '../../widgets/custom_app_bar.dart';
+import 'package:cached_network_image/cached_network_image.dart';
+import 'publish_type_page.dart';
 
 class PublishPage extends StatefulWidget {
   const PublishPage({super.key});
@@ -11,21 +11,13 @@ class PublishPage extends StatefulWidget {
 }
 
 class _PublishPageState extends State<PublishPage> {
-  final _titleController = TextEditingController();
-  final _descriptionController = TextEditingController();
-  final _startPriceController = TextEditingController();
-
-  String selectedCategory = '宠物';
-  String selectedAuctionType = '限时拍卖';
-
-  final List<String> categories = ['宠物', '水族', '用品', '食物', '其他'];
-  final List<String> auctionTypes = ['限时拍卖', '一口价', '今日专场'];
+  final TextEditingController _titleController = TextEditingController();
+  String _price = '¥0.00';
+  String _shippingMethod = '包邮';
 
   @override
   void dispose() {
     _titleController.dispose();
-    _descriptionController.dispose();
-    _startPriceController.dispose();
     super.dispose();
   }
 
@@ -33,228 +25,230 @@ class _PublishPageState extends State<PublishPage> {
   Widget build(BuildContext context) {
     return Scaffold(
       backgroundColor: const Color(0xFFF5F5F5),
-      appBar: CustomAppBar(
-        title: '发布拍品',
-        showBack: true,
-        actions: [
-          TextButton(
-            onPressed: _publishItem,
+      body: SafeArea(
+        child: Column(
+          children: [
+            SizedBox(height: 16.h),
+            _buildHeader(),
+            SizedBox(height: 20.h),
+            _buildImageUpload(),
+            SizedBox(height: 20.h),
+            _buildProductTitle(),
+            SizedBox(height: 20.h),
+            _buildPriceSection(),
+            SizedBox(height: 20.h),
+            _buildShippingSection(),
+            const Spacer(),
+            _buildPublishButton(),
+            SizedBox(height: 100.h),
+          ],
+        ),
+      ),
+    );
+  }
+
+  // 构建头部
+  Widget _buildHeader() {
+    return Container(
+      margin: EdgeInsets.symmetric(horizontal: 16.w),
+      child: Row(
+        children: [
+          // 返回按钮
+          GestureDetector(
+            onTap: () {
+              Navigator.pop(context);
+            },
+            child: Container(
+              width: 36.w,
+              height: 36.w,
+              decoration: BoxDecoration(
+                color: Colors.white,
+                borderRadius: BorderRadius.circular(18.r),
+                boxShadow: [
+                  BoxShadow(
+                    color: Colors.black.withOpacity(0.08),
+                    blurRadius: 6,
+                    offset: const Offset(0, 2),
+                  ),
+                ],
+              ),
+              child: Icon(
+                Icons.arrow_back_ios_new,
+                size: 18.w,
+                color: const Color(0xFF333333),
+              ),
+            ),
+          ),
+          SizedBox(width: 16.w),
+          // 标题
+          Expanded(
             child: Text(
               '发布',
               style: TextStyle(
-                color: AppColors.primary,
-                fontSize: 16.sp,
+                fontSize: 18.sp,
+                color: const Color(0xFF333333),
                 fontWeight: FontWeight.w600,
               ),
+              textAlign: TextAlign.center,
             ),
+          ),
+          SizedBox(width: 52.w), // 占位，保持标题居中
+        ],
+      ),
+    );
+  }
+
+  // 构建图片上传
+  Widget _buildImageUpload() {
+    return Container(
+      margin: EdgeInsets.symmetric(horizontal: 16.w),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Text(
+            '产品图片',
+            style: TextStyle(
+              fontSize: 16.sp,
+              color: const Color(0xFF333333),
+              fontWeight: FontWeight.w600,
+            ),
+          ),
+          SizedBox(height: 12.h),
+          Row(
+            children: [
+              // 第一张图片
+              _buildImageItem('https://picsum.photos/200/200?random=1'),
+              SizedBox(width: 12.w),
+              // 第二张图片
+              _buildImageItem('https://picsum.photos/200/200?random=2'),
+              SizedBox(width: 12.w),
+              // 添加图片按钮
+              _buildAddImageButton(),
+            ],
           ),
         ],
       ),
-      body: SingleChildScrollView(
-        padding: EdgeInsets.all(16.w),
+    );
+  }
+
+  // 构建图片项目
+  Widget _buildImageItem(String imageUrl) {
+    return Container(
+      width: 80.w,
+      height: 80.w,
+      decoration: BoxDecoration(
+        borderRadius: BorderRadius.circular(8.r),
+        color: const Color(0xFFF5F5F5),
+      ),
+      child: ClipRRect(
+        borderRadius: BorderRadius.circular(8.r),
+        child: CachedNetworkImage(
+          imageUrl: imageUrl,
+          fit: BoxFit.cover,
+          placeholder: (context, url) => Container(
+            color: const Color(0xFFF5F5F5),
+            child: const Center(
+              child: CircularProgressIndicator(),
+            ),
+          ),
+          errorWidget: (context, url, error) => Container(
+            color: const Color(0xFFF5F5F5),
+            child: const Icon(Icons.error),
+          ),
+        ),
+      ),
+    );
+  }
+
+  // 构建添加图片按钮
+  Widget _buildAddImageButton() {
+    return GestureDetector(
+      onTap: () {
+        _showPublishTypeDialog();
+      },
+      child: Container(
+        width: 80.w,
+        height: 80.w,
+        decoration: BoxDecoration(
+          color: const Color(0xFFF5F5F5),
+          borderRadius: BorderRadius.circular(8.r),
+          border: Border.all(
+            color: const Color(0xFFE0E0E0),
+            width: 1,
+            style: BorderStyle.solid,
+          ),
+        ),
         child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
+          mainAxisAlignment: MainAxisAlignment.center,
           children: [
-            // App Logo 展示区域
-            _buildLogoSection(),
-            SizedBox(height: 24.h),
-
-            // 照片上传区域
-            _buildPhotoSection(),
-            SizedBox(height: 20.h),
-
-            // 标题输入
-            _buildInputSection('拍品标题', _titleController, '请输入拍品标题'),
-            SizedBox(height: 16.h),
-
-            // 分类选择
-            _buildCategorySection(),
-            SizedBox(height: 16.h),
-
-            // 拍卖类型选择
-            _buildAuctionTypeSection(),
-            SizedBox(height: 16.h),
-
-            // 起拍价输入
-            _buildInputSection('起拍价', _startPriceController, '请输入起拍价',
-                isNumber: true),
-            SizedBox(height: 16.h),
-
-            // 描述输入
-            _buildDescriptionSection(),
-            SizedBox(height: 32.h),
-
-            // 发布按钮
-            _buildPublishButton(),
-            SizedBox(height: 32.h),
+            Icon(
+              Icons.add,
+              size: 24.w,
+              color: const Color(0xFF999999),
+            ),
+            SizedBox(height: 4.h),
+            Text(
+              '添加',
+              style: TextStyle(
+                fontSize: 10.sp,
+                color: const Color(0xFF999999),
+              ),
+            ),
           ],
         ),
       ),
     );
   }
 
-  Widget _buildLogoSection() {
+  // 构建产品标题
+  Widget _buildProductTitle() {
     return Container(
-      width: double.infinity,
-      padding: EdgeInsets.all(24.w),
-      decoration: BoxDecoration(
-        color: Colors.white,
-        borderRadius: BorderRadius.circular(16.r),
-        boxShadow: [
-          BoxShadow(
-            color: Colors.black.withOpacity(0.05),
-            blurRadius: 10,
-            offset: const Offset(0, 2),
-          ),
-        ],
-      ),
-      child: Column(
-        children: [
-          Container(
-            width: 80.w,
-            height: 80.w,
-            decoration: BoxDecoration(
-              shape: BoxShape.circle,
-              gradient: const LinearGradient(
-                begin: Alignment.topLeft,
-                end: Alignment.bottomRight,
-                colors: [
-                  Color(0xFF66D9FF),
-                  Color(0xFF4FC3F7),
-                  Color(0xFF29B6F6),
-                ],
-              ),
-            ),
-            child: Padding(
-              padding: EdgeInsets.all(8.w),
-              child: Image.asset(
-                'assets/images/app_logo.png',
-                fit: BoxFit.contain,
-              ),
-            ),
-          ),
-          SizedBox(height: 12.h),
-          Text(
-            '拍宠有道',
-            style: TextStyle(
-              fontSize: 20.sp,
-              fontWeight: FontWeight.bold,
-              color: const Color(0xFF333333),
-            ),
-          ),
-          SizedBox(height: 4.h),
-          Text(
-            '宠物拍卖·品质保障',
-            style: TextStyle(
-              fontSize: 14.sp,
-              color: AppColors.textSecondary,
-            ),
-          ),
-        ],
-      ),
-    );
-  }
-
-  Widget _buildPhotoSection() {
-    return Container(
-      width: double.infinity,
-      padding: EdgeInsets.all(16.w),
-      decoration: BoxDecoration(
-        color: Colors.white,
-        borderRadius: BorderRadius.circular(12.r),
-      ),
+      margin: EdgeInsets.symmetric(horizontal: 16.w),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           Text(
-            '拍品照片',
+            '产品标题',
             style: TextStyle(
               fontSize: 16.sp,
-              fontWeight: FontWeight.w600,
               color: const Color(0xFF333333),
-            ),
-          ),
-          SizedBox(height: 12.h),
-          Container(
-            height: 120.h,
-            decoration: BoxDecoration(
-              color: const Color(0xFFF8F9FA),
-              borderRadius: BorderRadius.circular(8.r),
-              border: Border.all(
-                color: AppColors.border,
-                style: BorderStyle.solid,
-              ),
-            ),
-            child: Center(
-              child: Column(
-                mainAxisAlignment: MainAxisAlignment.center,
-                children: [
-                  Icon(
-                    Icons.add_photo_alternate_outlined,
-                    size: 32.w,
-                    color: AppColors.textSecondary,
-                  ),
-                  SizedBox(height: 8.h),
-                  Text(
-                    '点击添加照片',
-                    style: TextStyle(
-                      fontSize: 14.sp,
-                      color: AppColors.textSecondary,
-                    ),
-                  ),
-                ],
-              ),
-            ),
-          ),
-        ],
-      ),
-    );
-  }
-
-  Widget _buildInputSection(
-      String label, TextEditingController controller, String hint,
-      {bool isNumber = false}) {
-    return Container(
-      padding: EdgeInsets.all(16.w),
-      decoration: BoxDecoration(
-        color: Colors.white,
-        borderRadius: BorderRadius.circular(12.r),
-      ),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          Text(
-            label,
-            style: TextStyle(
-              fontSize: 16.sp,
               fontWeight: FontWeight.w600,
-              color: const Color(0xFF333333),
             ),
           ),
           SizedBox(height: 12.h),
           TextField(
-            controller: controller,
-            keyboardType: isNumber ? TextInputType.number : TextInputType.text,
+            controller: _titleController,
             decoration: InputDecoration(
-              hintText: hint,
+              hintText: '描述一下产品...',
               hintStyle: TextStyle(
-                color: AppColors.textSecondary,
                 fontSize: 14.sp,
+                color: const Color(0xFF999999),
               ),
               border: OutlineInputBorder(
                 borderRadius: BorderRadius.circular(8.r),
-                borderSide: BorderSide(color: AppColors.border),
+                borderSide: const BorderSide(
+                  color: Color(0xFFE0E0E0),
+                  width: 1,
+                ),
               ),
               enabledBorder: OutlineInputBorder(
                 borderRadius: BorderRadius.circular(8.r),
-                borderSide: BorderSide(color: AppColors.border),
+                borderSide: const BorderSide(
+                  color: Color(0xFFE0E0E0),
+                  width: 1,
+                ),
               ),
               focusedBorder: OutlineInputBorder(
                 borderRadius: BorderRadius.circular(8.r),
-                borderSide: BorderSide(color: AppColors.primary),
+                borderSide: const BorderSide(
+                  color: Color(0xFF9C4DFF),
+                  width: 2,
+                ),
               ),
-              contentPadding:
-                  EdgeInsets.symmetric(horizontal: 12.w, vertical: 16.h),
+              contentPadding: EdgeInsets.symmetric(
+                horizontal: 12.w,
+                vertical: 12.h,
+              ),
             ),
           ),
         ],
@@ -262,178 +256,85 @@ class _PublishPageState extends State<PublishPage> {
     );
   }
 
-  Widget _buildCategorySection() {
+  // 构建价格区域
+  Widget _buildPriceSection() {
     return Container(
-      padding: EdgeInsets.all(16.w),
-      decoration: BoxDecoration(
-        color: Colors.white,
-        borderRadius: BorderRadius.circular(12.r),
-      ),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
+      margin: EdgeInsets.symmetric(horizontal: 16.w),
+      child: Row(
         children: [
           Text(
-            '拍品分类',
+            '价格',
             style: TextStyle(
               fontSize: 16.sp,
-              fontWeight: FontWeight.w600,
               color: const Color(0xFF333333),
+              fontWeight: FontWeight.w600,
             ),
           ),
-          SizedBox(height: 12.h),
-          Wrap(
-            spacing: 8.w,
-            runSpacing: 8.h,
-            children: categories.map((category) {
-              final isSelected = selectedCategory == category;
-              return GestureDetector(
-                onTap: () {
-                  setState(() {
-                    selectedCategory = category;
-                  });
-                },
-                child: Container(
-                  padding:
-                      EdgeInsets.symmetric(horizontal: 16.w, vertical: 8.h),
-                  decoration: BoxDecoration(
-                    color: isSelected ? AppColors.primary : Colors.transparent,
-                    borderRadius: BorderRadius.circular(20.r),
-                    border: Border.all(
-                      color: isSelected ? AppColors.primary : AppColors.border,
-                    ),
-                  ),
-                  child: Text(
-                    category,
-                    style: TextStyle(
-                      fontSize: 14.sp,
-                      color:
-                          isSelected ? Colors.white : AppColors.textSecondary,
-                    ),
+          const Spacer(),
+          GestureDetector(
+            onTap: () {
+              _showPriceDialog();
+            },
+            child: Row(
+              children: [
+                Text(
+                  _price,
+                  style: TextStyle(
+                    fontSize: 16.sp,
+                    color: const Color(0xFF333333),
+                    fontWeight: FontWeight.w600,
                   ),
                 ),
-              );
-            }).toList(),
+                SizedBox(width: 4.w),
+                Icon(
+                  Icons.arrow_forward_ios,
+                  size: 14.w,
+                  color: const Color(0xFF999999),
+                ),
+              ],
+            ),
           ),
         ],
       ),
     );
   }
 
-  Widget _buildAuctionTypeSection() {
+  // 构建发货方式区域
+  Widget _buildShippingSection() {
     return Container(
-      padding: EdgeInsets.all(16.w),
-      decoration: BoxDecoration(
-        color: Colors.white,
-        borderRadius: BorderRadius.circular(12.r),
-      ),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
+      margin: EdgeInsets.symmetric(horizontal: 16.w),
+      child: Row(
         children: [
           Text(
-            '拍卖类型',
+            '发货方式',
             style: TextStyle(
               fontSize: 16.sp,
-              fontWeight: FontWeight.w600,
               color: const Color(0xFF333333),
+              fontWeight: FontWeight.w600,
             ),
           ),
-          SizedBox(height: 12.h),
-          Column(
-            children: auctionTypes.map((type) {
-              final isSelected = selectedAuctionType == type;
-              return GestureDetector(
-                onTap: () {
-                  setState(() {
-                    selectedAuctionType = type;
-                  });
-                },
-                child: Container(
-                  width: double.infinity,
-                  margin: EdgeInsets.only(bottom: 8.h),
-                  padding: EdgeInsets.all(12.w),
-                  decoration: BoxDecoration(
-                    color: isSelected
-                        ? AppColors.primary.withOpacity(0.1)
-                        : Colors.transparent,
-                    borderRadius: BorderRadius.circular(8.r),
-                    border: Border.all(
-                      color: isSelected ? AppColors.primary : AppColors.border,
-                    ),
-                  ),
-                  child: Row(
-                    children: [
-                      Icon(
-                        isSelected
-                            ? Icons.radio_button_checked
-                            : Icons.radio_button_unchecked,
-                        color: isSelected
-                            ? AppColors.primary
-                            : AppColors.textSecondary,
-                        size: 20.w,
-                      ),
-                      SizedBox(width: 12.w),
-                      Text(
-                        type,
-                        style: TextStyle(
-                          fontSize: 14.sp,
-                          color: isSelected
-                              ? AppColors.primary
-                              : AppColors.textSecondary,
-                        ),
-                      ),
-                    ],
+          const Spacer(),
+          GestureDetector(
+            onTap: () {
+              _showShippingDialog();
+            },
+            child: Row(
+              children: [
+                Text(
+                  _shippingMethod,
+                  style: TextStyle(
+                    fontSize: 16.sp,
+                    color: const Color(0xFF333333),
+                    fontWeight: FontWeight.w600,
                   ),
                 ),
-              );
-            }).toList(),
-          ),
-        ],
-      ),
-    );
-  }
-
-  Widget _buildDescriptionSection() {
-    return Container(
-      padding: EdgeInsets.all(16.w),
-      decoration: BoxDecoration(
-        color: Colors.white,
-        borderRadius: BorderRadius.circular(12.r),
-      ),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          Text(
-            '拍品描述',
-            style: TextStyle(
-              fontSize: 16.sp,
-              fontWeight: FontWeight.w600,
-              color: const Color(0xFF333333),
-            ),
-          ),
-          SizedBox(height: 12.h),
-          TextField(
-            controller: _descriptionController,
-            maxLines: 4,
-            decoration: InputDecoration(
-              hintText: '请详细描述您的拍品信息...',
-              hintStyle: TextStyle(
-                color: AppColors.textSecondary,
-                fontSize: 14.sp,
-              ),
-              border: OutlineInputBorder(
-                borderRadius: BorderRadius.circular(8.r),
-                borderSide: BorderSide(color: AppColors.border),
-              ),
-              enabledBorder: OutlineInputBorder(
-                borderRadius: BorderRadius.circular(8.r),
-                borderSide: BorderSide(color: AppColors.border),
-              ),
-              focusedBorder: OutlineInputBorder(
-                borderRadius: BorderRadius.circular(8.r),
-                borderSide: BorderSide(color: AppColors.primary),
-              ),
-              contentPadding:
-                  EdgeInsets.symmetric(horizontal: 12.w, vertical: 16.h),
+                SizedBox(width: 4.w),
+                Icon(
+                  Icons.arrow_forward_ios,
+                  size: 14.w,
+                  color: const Color(0xFF999999),
+                ),
+              ],
             ),
           ),
         ],
@@ -441,74 +342,206 @@ class _PublishPageState extends State<PublishPage> {
     );
   }
 
+  // 构建发布按钮
   Widget _buildPublishButton() {
     return Container(
-      width: double.infinity,
-      height: 48.h,
-      decoration: BoxDecoration(
-        gradient: const LinearGradient(
-          begin: Alignment.centerLeft,
-          end: Alignment.centerRight,
-          colors: [
-            Color(0xFF66D9FF),
-            Color(0xFF4FC3F7),
-            Color(0xFF29B6F6),
-          ],
-        ),
-        borderRadius: BorderRadius.circular(24.r),
-        boxShadow: [
-          BoxShadow(
-            color: const Color(0xFF66D9FF).withOpacity(0.3),
-            blurRadius: 12,
-            offset: const Offset(0, 4),
-          ),
-        ],
-      ),
-      child: Material(
-        color: Colors.transparent,
-        child: InkWell(
-          borderRadius: BorderRadius.circular(24.r),
-          onTap: _publishItem,
-          child: Center(
-            child: Text(
-              '立即发布',
-              style: TextStyle(
-                color: Colors.white,
-                fontSize: 16.sp,
-                fontWeight: FontWeight.w600,
+      margin: EdgeInsets.symmetric(horizontal: 16.w),
+      child: GestureDetector(
+        onTap: () {
+          _publishProduct();
+        },
+        child: Container(
+          width: double.infinity,
+          padding: EdgeInsets.symmetric(vertical: 16.h),
+          decoration: BoxDecoration(
+            color: const Color(0xFF2196F3),
+            borderRadius: BorderRadius.circular(12.r),
+            boxShadow: [
+              BoxShadow(
+                color: const Color(0xFF2196F3).withOpacity(0.3),
+                blurRadius: 8,
+                offset: const Offset(0, 4),
               ),
+            ],
+          ),
+          child: Text(
+            '发布',
+            style: TextStyle(
+              fontSize: 16.sp,
+              color: Colors.white,
+              fontWeight: FontWeight.w600,
             ),
+            textAlign: TextAlign.center,
           ),
         ),
       ),
     );
   }
 
-  void _publishItem() {
-    // 发布拍品逻辑
-    if (_titleController.text.isEmpty) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('请输入拍品标题')),
-      );
-      return;
-    }
+  // 显示发布类型对话框
+  void _showPublishTypeDialog() {
+    showModalBottomSheet(
+      context: context,
+      shape: RoundedRectangleBorder(
+        borderRadius: BorderRadius.only(
+          topLeft: Radius.circular(20.r),
+          topRight: Radius.circular(20.r),
+        ),
+      ),
+      builder: (context) => const PublishTypePage(),
+    );
+  }
 
-    if (_startPriceController.text.isEmpty) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('请输入起拍价')),
-      );
-      return;
-    }
-
-    // 模拟发布成功
-    ScaffoldMessenger.of(context).showSnackBar(
-      const SnackBar(
-        content: Text('拍品发布成功！'),
-        backgroundColor: Colors.green,
+  // 显示价格对话框
+  void _showPriceDialog() {
+    showDialog(
+      context: context,
+      builder: (context) => AlertDialog(
+        shape: RoundedRectangleBorder(
+          borderRadius: BorderRadius.circular(16.r),
+        ),
+        title: Text(
+          '设置价格',
+          style: TextStyle(
+            fontSize: 16.sp,
+            color: const Color(0xFF333333),
+            fontWeight: FontWeight.w600,
+          ),
+        ),
+        content: Column(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            TextField(
+              keyboardType: TextInputType.number,
+              decoration: InputDecoration(
+                hintText: '请输入价格',
+                prefixText: '¥',
+                border: OutlineInputBorder(
+                  borderRadius: BorderRadius.circular(8.r),
+                ),
+              ),
+            ),
+          ],
+        ),
+        actions: [
+          TextButton(
+            onPressed: () {
+              Navigator.pop(context);
+            },
+            child: Text(
+              '取消',
+              style: TextStyle(
+                fontSize: 14.sp,
+                color: const Color(0xFF999999),
+              ),
+            ),
+          ),
+          TextButton(
+            onPressed: () {
+              setState(() {
+                _price = '¥199.99';
+              });
+              Navigator.pop(context);
+            },
+            child: Text(
+              '确定',
+              style: TextStyle(
+                fontSize: 14.sp,
+                color: const Color(0xFF9C4DFF),
+                fontWeight: FontWeight.w600,
+              ),
+            ),
+          ),
+        ],
       ),
     );
+  }
 
-    // 返回上一页
-    Navigator.of(context).pop();
+  // 显示发货方式对话框
+  void _showShippingDialog() {
+    showDialog(
+      context: context,
+      builder: (context) => AlertDialog(
+        shape: RoundedRectangleBorder(
+          borderRadius: BorderRadius.circular(16.r),
+        ),
+        title: Text(
+          '选择发货方式',
+          style: TextStyle(
+            fontSize: 16.sp,
+            color: const Color(0xFF333333),
+            fontWeight: FontWeight.w600,
+          ),
+        ),
+        content: Column(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            _buildShippingOption('包邮', '包邮'),
+            _buildShippingOption('到付', '到付'),
+            _buildShippingOption('自提', '自提'),
+          ],
+        ),
+        actions: [
+          TextButton(
+            onPressed: () {
+              Navigator.pop(context);
+            },
+            child: Text(
+              '取消',
+              style: TextStyle(
+                fontSize: 14.sp,
+                color: const Color(0xFF999999),
+              ),
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
+  // 构建发货方式选项
+  Widget _buildShippingOption(String title, String value) {
+    return GestureDetector(
+      onTap: () {
+        setState(() {
+          _shippingMethod = value;
+        });
+        Navigator.pop(context);
+      },
+      child: Container(
+        width: double.infinity,
+        padding: EdgeInsets.symmetric(vertical: 12.h),
+        decoration: BoxDecoration(
+          border: Border(
+            bottom: BorderSide(
+              color: const Color(0xFFF0F0F0),
+              width: 1,
+            ),
+          ),
+        ),
+        child: Text(
+          title,
+          style: TextStyle(
+            fontSize: 14.sp,
+            color: const Color(0xFF333333),
+          ),
+        ),
+      ),
+    );
+  }
+
+  // 发布产品
+  void _publishProduct() {
+    if (_titleController.text.isEmpty) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text('请输入产品标题')),
+      );
+      return;
+    }
+
+    ScaffoldMessenger.of(context).showSnackBar(
+      const SnackBar(content: Text('产品发布成功')),
+    );
+    Navigator.pop(context);
   }
 }

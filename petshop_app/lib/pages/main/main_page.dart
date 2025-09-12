@@ -44,7 +44,7 @@ class _MainPageState extends State<MainPage> {
         physics: const NeverScrollableScrollPhysics(), // 禁用PageView的滑动
         onPageChanged: (index) {
           setState(() {
-            _currentIndex = index;
+            _currentIndex = index; // 直接使用页面索引
           });
         },
         children: _pages,
@@ -59,21 +59,25 @@ class _MainPageState extends State<MainPage> {
             );
           } else {
             // 其他按钮 - 切换tab
+            int pageIndex;
+            // 映射底部导航栏索引到页面索引：首页(0), 分类(1), 消息(3→2), 我的(4→3)
+            if (index == 3) {
+              pageIndex = 2; // 消息页面
+            } else if (index == 4) {
+              pageIndex = 3; // 我的页面
+            } else {
+              pageIndex = index; // 首页(0), 分类(1)
+            }
+
             setState(() {
-              // 直接映射索引：首页(0), 分类(1), 消息(3), 我的(4)
-              if (index == 3) {
-                _currentIndex = 2; // 消息页面
-              } else if (index == 4) {
-                _currentIndex = 3; // 我的页面
-              } else {
-                _currentIndex = index; // 首页(0), 分类(1)
-              }
-              _pageController.animateToPage(
-                _currentIndex,
-                duration: const Duration(milliseconds: 300),
-                curve: Curves.easeInOut,
-              );
+              _currentIndex = pageIndex;
             });
+
+            _pageController.animateToPage(
+              pageIndex,
+              duration: const Duration(milliseconds: 300),
+              curve: Curves.easeInOut,
+            );
           }
         },
       ),

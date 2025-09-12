@@ -1,5 +1,10 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
+import '../checkin/checkin_page.dart';
+import '../settings/settings_page.dart';
+import '../orders/order_list_page.dart';
+import '../seller/seller_center_page.dart';
+import '../shop/shop_entry_page.dart';
 
 class ProfilePage extends StatefulWidget {
   const ProfilePage({super.key});
@@ -125,15 +130,45 @@ class _ProfilePageState extends State<ProfilePage>
                   left: 16.w,
                   right: 16.w,
                 ),
-                child: Center(
-                  child: Text(
-                    '买家中心',
-                    style: TextStyle(
-                      fontSize: 18.sp,
-                      color: Colors.white,
-                      fontWeight: FontWeight.w600,
+                child: Row(
+                  mainAxisAlignment: MainAxisAlignment.center,
+                  children: [
+                    Text(
+                      '买家中心',
+                      style: TextStyle(
+                        fontSize: 18.sp,
+                        color: Colors.white,
+                        fontWeight: FontWeight.w600,
+                      ),
                     ),
-                  ),
+                    SizedBox(width: 8.w),
+                    GestureDetector(
+                      onTap: () {
+                        Navigator.push(
+                          context,
+                          MaterialPageRoute(
+                            builder: (context) => const SellerCenterPage(),
+                          ),
+                        );
+                      },
+                      child: Container(
+                        padding: EdgeInsets.symmetric(
+                            horizontal: 8.w, vertical: 4.h),
+                        decoration: BoxDecoration(
+                          color: Colors.white.withOpacity(0.2),
+                          borderRadius: BorderRadius.circular(12.r),
+                        ),
+                        child: Text(
+                          '切换卖家',
+                          style: TextStyle(
+                            fontSize: 12.sp,
+                            color: Colors.white,
+                            fontWeight: FontWeight.w500,
+                          ),
+                        ),
+                      ),
+                    ),
+                  ],
                 ),
               ),
 
@@ -143,10 +178,20 @@ class _ProfilePageState extends State<ProfilePage>
                 child: Row(
                   mainAxisAlignment: MainAxisAlignment.end,
                   children: [
-                    Icon(
-                      Icons.settings,
-                      size: 22.w,
-                      color: Colors.white,
+                    GestureDetector(
+                      onTap: () {
+                        Navigator.push(
+                          context,
+                          MaterialPageRoute(
+                            builder: (context) => const SettingsPage(),
+                          ),
+                        );
+                      },
+                      child: Icon(
+                        Icons.settings,
+                        size: 22.w,
+                        color: Colors.white,
+                      ),
                     ),
                   ],
                 ),
@@ -186,34 +231,44 @@ class _ProfilePageState extends State<ProfilePage>
                       ),
                     ),
                     // 签到按钮
-                    Container(
-                      padding:
-                          EdgeInsets.symmetric(horizontal: 20.w, vertical: 8.h),
-                      decoration: BoxDecoration(
-                        color: Colors.white.withOpacity(0.9),
-                        borderRadius: BorderRadius.circular(20.r),
-                      ),
-                      child: Row(
-                        mainAxisSize: MainAxisSize.min,
-                        children: [
-                          Text(
-                            '签到',
-                            style: TextStyle(
-                              fontSize: 13.sp,
-                              color: const Color(0xFF9C4DFF),
-                              fontWeight: FontWeight.w600,
-                            ),
+                    GestureDetector(
+                      onTap: () {
+                        Navigator.push(
+                          context,
+                          MaterialPageRoute(
+                            builder: (context) => const CheckinPage(),
                           ),
-                          SizedBox(width: 4.w),
-                          Container(
-                            width: 6.w,
-                            height: 6.w,
-                            decoration: const BoxDecoration(
-                              color: Colors.red,
-                              shape: BoxShape.circle,
+                        );
+                      },
+                      child: Container(
+                        padding: EdgeInsets.symmetric(
+                            horizontal: 20.w, vertical: 8.h),
+                        decoration: BoxDecoration(
+                          color: Colors.white.withOpacity(0.9),
+                          borderRadius: BorderRadius.circular(20.r),
+                        ),
+                        child: Row(
+                          mainAxisSize: MainAxisSize.min,
+                          children: [
+                            Text(
+                              '签到',
+                              style: TextStyle(
+                                fontSize: 13.sp,
+                                color: const Color(0xFF9C4DFF),
+                                fontWeight: FontWeight.w600,
+                              ),
                             ),
-                          ),
-                        ],
+                            SizedBox(width: 4.w),
+                            Container(
+                              width: 6.w,
+                              height: 6.w,
+                              decoration: const BoxDecoration(
+                                color: Colors.red,
+                                shape: BoxShape.circle,
+                              ),
+                            ),
+                          ],
+                        ),
                       ),
                     ),
                   ],
@@ -297,7 +352,14 @@ class _ProfilePageState extends State<ProfilePage>
                 ),
               ),
               GestureDetector(
-                onTap: () {},
+                onTap: () {
+                  Navigator.push(
+                    context,
+                    MaterialPageRoute(
+                      builder: (context) => const OrderListPage(),
+                    ),
+                  );
+                },
                 child: Row(
                   children: [
                     Text(
@@ -443,7 +505,14 @@ class _ProfilePageState extends State<ProfilePage>
           ),
           SizedBox(width: 12.w),
           GestureDetector(
-            onTap: () {},
+            onTap: () {
+              Navigator.push(
+                context,
+                MaterialPageRoute(
+                  builder: (context) => const ShopEntryPage(),
+                ),
+              );
+            },
             child: Container(
               padding: EdgeInsets.symmetric(horizontal: 20.w, vertical: 8.h),
               decoration: BoxDecoration(
