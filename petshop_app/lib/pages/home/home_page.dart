@@ -420,7 +420,9 @@ class _HomePageState extends State<HomePage> {
                 Navigator.push(
                   context,
                   MaterialPageRoute(
-                    builder: (context) => const SpecialEventPage(),
+                    builder: (context) => const SpecialEventPage(
+                      title: '限时拍卖专场',
+                    ),
                   ),
                 );
               } else {
@@ -641,7 +643,9 @@ class _HomePageState extends State<HomePage> {
         Navigator.push(
           context,
           MaterialPageRoute(
-            builder: (context) => const SpecialEventPage(),
+            builder: (context) => SpecialEventPage(
+              title: title,
+            ),
           ),
         );
       },

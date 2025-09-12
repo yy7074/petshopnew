@@ -4,7 +4,14 @@ import 'package:cached_network_image/cached_network_image.dart';
 import '../search/search_page.dart';
 
 class SpecialEventPage extends StatefulWidget {
-  const SpecialEventPage({super.key});
+  final String? title;
+  final String? eventId;
+  
+  const SpecialEventPage({
+    super.key,
+    this.title,
+    this.eventId,
+  });
 
   @override
   State<SpecialEventPage> createState() => _SpecialEventPageState();
@@ -140,22 +147,22 @@ class _SpecialEventPageState extends State<SpecialEventPage> {
               Navigator.pop(context);
             },
             child: Container(
-              width: 32.w,
-              height: 32.w,
+              width: 36.w,
+              height: 36.w,
               decoration: BoxDecoration(
                 color: Colors.white,
-                borderRadius: BorderRadius.circular(16.r),
+                borderRadius: BorderRadius.circular(18.r),
                 boxShadow: [
                   BoxShadow(
-                    color: Colors.black.withOpacity(0.1),
-                    blurRadius: 4,
+                    color: Colors.black.withOpacity(0.08),
+                    blurRadius: 6,
                     offset: const Offset(0, 2),
                   ),
                 ],
               ),
               child: Icon(
-                Icons.arrow_back_ios,
-                size: 16.w,
+                Icons.arrow_back_ios_new,
+                size: 18.w,
                 color: const Color(0xFF333333),
               ),
             ),
@@ -165,7 +172,7 @@ class _SpecialEventPageState extends State<SpecialEventPage> {
           // 标题
           Expanded(
             child: Text(
-              '山东鱼宠专场',
+              widget.title ?? '山东鱼宠专场',
               style: TextStyle(
                 fontSize: 18.sp,
                 fontWeight: FontWeight.w600,
@@ -184,17 +191,17 @@ class _SpecialEventPageState extends State<SpecialEventPage> {
               );
             },
             child: Container(
-              padding: EdgeInsets.symmetric(horizontal: 12.w, vertical: 6.h),
+              padding: EdgeInsets.symmetric(horizontal: 12.w, vertical: 8.h),
               decoration: BoxDecoration(
                 color: const Color(0xFFF5F5F5),
-                borderRadius: BorderRadius.circular(16.r),
+                borderRadius: BorderRadius.circular(18.r),
               ),
               child: Row(
                 mainAxisSize: MainAxisSize.min,
                 children: [
                   Icon(
                     Icons.search,
-                    size: 14.w,
+                    size: 16.w,
                     color: const Color(0xFF999999),
                   ),
                   SizedBox(width: 4.w),
@@ -301,14 +308,14 @@ class _SpecialEventPageState extends State<SpecialEventPage> {
   Widget _buildFilterTags() {
     final tags = [
       {'name': '全部(500)', 'isSelected': _selectedTag == '全部(500)'},
-      {'name': '标签', 'isSelected': _selectedTag == '标签'},
-      {'name': '标签', 'isSelected': _selectedTag == '标签'},
-      {'name': '标签', 'isSelected': _selectedTag == '标签'},
-      {'name': '标签', 'isSelected': _selectedTag == '标签'},
-      {'name': '标签', 'isSelected': _selectedTag == '标签'},
-      {'name': '标签', 'isSelected': _selectedTag == '标签'},
-      {'name': '标签', 'isSelected': _selectedTag == '标签'},
-      {'name': '标签', 'isSelected': _selectedTag == '标签'},
+      {'name': '竞价中', 'isSelected': _selectedTag == '竞价中'},
+      {'name': '即将结束', 'isSelected': _selectedTag == '即将结束'},
+      {'name': '热门推荐', 'isSelected': _selectedTag == '热门推荐'},
+      {'name': '新品上架', 'isSelected': _selectedTag == '新品上架'},
+      {'name': '犬类', 'isSelected': _selectedTag == '犬类'},
+      {'name': '猫类', 'isSelected': _selectedTag == '猫类'},
+      {'name': '鱼类', 'isSelected': _selectedTag == '鱼类'},
+      {'name': '爬宠', 'isSelected': _selectedTag == '爬宠'},
     ];
 
     return Container(
@@ -363,9 +370,9 @@ class _SpecialEventPageState extends State<SpecialEventPage> {
         physics: const NeverScrollableScrollPhysics(),
         gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
           crossAxisCount: 2,
-          crossAxisSpacing: 12.w,
+          crossAxisSpacing: 8.w,
           mainAxisSpacing: 12.h,
-          childAspectRatio: 0.75,
+          childAspectRatio: 0.72, // 调整比例以匹配设计
         ),
         itemCount: _products.length,
         itemBuilder: (context, index) {
@@ -399,7 +406,7 @@ class _SpecialEventPageState extends State<SpecialEventPage> {
           children: [
             // 商品图片
             Expanded(
-              flex: 3,
+              flex: 5, // 增加图片区域比例
               child: Stack(
                 children: [
                   ClipRRect(
@@ -424,9 +431,9 @@ class _SpecialEventPageState extends State<SpecialEventPage> {
                       ),
                     ),
                   ),
-                  // 收藏按钮
+                  // 收藏按钮 - 位置调整为右上角
                   Positioned(
-                    bottom: 8.h,
+                    top: 8.h,
                     right: 8.w,
                     child: GestureDetector(
                       onTap: () {
@@ -435,19 +442,26 @@ class _SpecialEventPageState extends State<SpecialEventPage> {
                         });
                       },
                       child: Container(
-                        width: 24.w,
-                        height: 24.w,
+                        width: 28.w,
+                        height: 28.w,
                         decoration: BoxDecoration(
                           color: Colors.white.withOpacity(0.9),
                           shape: BoxShape.circle,
+                          boxShadow: [
+                            BoxShadow(
+                              color: Colors.black.withOpacity(0.1),
+                              blurRadius: 4,
+                              offset: const Offset(0, 1),
+                            ),
+                          ],
                         ),
                         child: Icon(
                           product['isFavorite']
                               ? Icons.favorite
                               : Icons.favorite_border,
-                          size: 14.w,
+                          size: 16.w,
                           color: product['isFavorite']
-                              ? const Color(0xFFFFEB3B)
+                              ? const Color(0xFFFFEB3B) // 黄色心形
                               : const Color(0xFF999999),
                         ),
                       ),
@@ -456,34 +470,35 @@ class _SpecialEventPageState extends State<SpecialEventPage> {
                 ],
               ),
             ),
-            // 商品信息
+            // 商品信息区域
             Expanded(
-              flex: 2,
+              flex: 4, // 调整信息区域比例
               child: Padding(
-                padding: EdgeInsets.all(10.w),
+                padding: EdgeInsets.all(8.w),
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   mainAxisAlignment: MainAxisAlignment.spaceBetween,
                   children: [
-                    // 商品标题 - 优化显示
+                    // 编号
                     Text(
-                      product['name'],
+                      '编号： ${product['id']}',
                       style: TextStyle(
-                        fontSize: 13.sp,
-                        color: const Color(0xFF333333),
-                        fontWeight: FontWeight.w600,
-                        height: 1.3,
+                        fontSize: 10.sp,
+                        color: const Color(0xFF9C4DFF),
+                        fontWeight: FontWeight.w500,
                       ),
-                      maxLines: 2,
+                      maxLines: 1,
                       overflow: TextOverflow.ellipsis,
                     ),
-
+                    
+                    SizedBox(height: 2.h),
+                    
                     // 出价和观看数 - 优化布局
                     Row(
                       children: [
                         Icon(
                           Icons.person,
-                          size: 11.w,
+                          size: 12.w,
                           color: const Color(0xFF999999),
                         ),
                         SizedBox(width: 3.w),
@@ -492,13 +507,13 @@ class _SpecialEventPageState extends State<SpecialEventPage> {
                           style: TextStyle(
                             fontSize: 11.sp,
                             color: const Color(0xFF999999),
-                            fontWeight: FontWeight.w500,
+                            fontWeight: FontWeight.w400,
                           ),
                         ),
-                        SizedBox(width: 12.w),
+                        SizedBox(width: 10.w),
                         Icon(
                           Icons.visibility,
-                          size: 11.w,
+                          size: 12.w,
                           color: const Color(0xFF999999),
                         ),
                         SizedBox(width: 3.w),
@@ -507,22 +522,40 @@ class _SpecialEventPageState extends State<SpecialEventPage> {
                           style: TextStyle(
                             fontSize: 11.sp,
                             color: const Color(0xFF999999),
-                            fontWeight: FontWeight.w500,
+                            fontWeight: FontWeight.w400,
                           ),
                         ),
                       ],
                     ),
 
+                    SizedBox(height: 4.h),
+                    
+                    // 商品标题 - 优化显示
+                    Text(
+                      product['name'],
+                      style: TextStyle(
+                        fontSize: 12.sp,
+                        color: const Color(0xFF333333),
+                        fontWeight: FontWeight.w600,
+                        height: 1.2,
+                      ),
+                      maxLines: 2,
+                      overflow: TextOverflow.ellipsis,
+                    ),
+
+                    SizedBox(height: 6.h),
+                    
                     // 价格和出价按钮 - 优化布局
                     Row(
                       mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                      crossAxisAlignment: CrossAxisAlignment.center,
                       children: [
                         Text(
                           '¥${product['price']}',
                           style: TextStyle(
-                            fontSize: 18.sp,
+                            fontSize: 16.sp,
                             color: const Color(0xFFFF5722),
-                            fontWeight: FontWeight.w700,
+                            fontWeight: FontWeight.bold,
                           ),
                         ),
                         GestureDetector(
@@ -531,10 +564,10 @@ class _SpecialEventPageState extends State<SpecialEventPage> {
                           },
                           child: Container(
                             padding: EdgeInsets.symmetric(
-                                horizontal: 10.w, vertical: 6.h),
+                                horizontal: 12.w, vertical: 6.h),
                             decoration: BoxDecoration(
                               color: const Color(0xFF9C4DFF),
-                              borderRadius: BorderRadius.circular(6.r),
+                              borderRadius: BorderRadius.circular(15.r),
                             ),
                             child: Text(
                               '出价',
@@ -549,33 +582,26 @@ class _SpecialEventPageState extends State<SpecialEventPage> {
                       ],
                     ),
 
+                    SizedBox(height: 4.h),
+                    
                     // 倒计时 - 优化显示
-                    Container(
-                      padding:
-                          EdgeInsets.symmetric(horizontal: 8.w, vertical: 4.h),
-                      decoration: BoxDecoration(
-                        color: const Color(0xFF9C4DFF).withOpacity(0.1),
-                        borderRadius: BorderRadius.circular(4.r),
-                      ),
-                      child: Row(
-                        mainAxisSize: MainAxisSize.min,
-                        children: [
-                          Icon(
-                            Icons.access_time,
-                            size: 12.w,
-                            color: const Color(0xFF9C4DFF),
+                    Row(
+                      children: [
+                        Icon(
+                          Icons.access_time,
+                          size: 12.w,
+                          color: const Color(0xFF999999),
+                        ),
+                        SizedBox(width: 4.w),
+                        Text(
+                          product['timeLeft'],
+                          style: TextStyle(
+                            fontSize: 11.sp,
+                            color: const Color(0xFF999999),
+                            fontWeight: FontWeight.w500,
                           ),
-                          SizedBox(width: 4.w),
-                          Text(
-                            product['timeLeft'],
-                            style: TextStyle(
-                              fontSize: 11.sp,
-                              color: const Color(0xFF9C4DFF),
-                              fontWeight: FontWeight.w600,
-                            ),
-                          ),
-                        ],
-                      ),
+                        ),
+                      ],
                     ),
                   ],
                 ),
