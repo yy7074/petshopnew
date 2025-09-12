@@ -435,7 +435,7 @@ class _ProfilePageState extends State<ProfilePage>
             child: Text(
               '即刻开店 | 首次发拍立享30天流量扶持',
               style: TextStyle(
-                fontSize: 14.sp,
+                fontSize: 12.sp,
                 color: Colors.white,
                 fontWeight: FontWeight.w500,
               ),
