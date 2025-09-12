@@ -329,8 +329,10 @@ class _HomePageState extends State<HomePage> with TickerProviderStateMixin {
 
   Widget _buildFunctionGrid() {
     return Container(
-      margin: EdgeInsets.symmetric(horizontal: 16.w, vertical: 6.h), // 进一步减少垂直边距
-      padding: EdgeInsets.symmetric(horizontal: 8.w, vertical: 8.h), // 减少内边距让卡片更小
+      margin:
+          EdgeInsets.symmetric(horizontal: 16.w, vertical: 6.h), // 进一步减少垂直边距
+      padding: EdgeInsets.only(
+          left: 8.w, right: 8.w, top: 0, bottom: 0), // 完全移除上下内边距
       decoration: BoxDecoration(
         color: Colors.white,
         borderRadius: BorderRadius.circular(12.r),
@@ -347,9 +349,9 @@ class _HomePageState extends State<HomePage> with TickerProviderStateMixin {
         physics: const NeverScrollableScrollPhysics(),
         gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
           crossAxisCount: 4,
-          childAspectRatio: 0.9, // 稍微高一些，给文字更多空间
-          crossAxisSpacing: 8.w, // 减少水平间距
-          mainAxisSpacing: 8.h, // 减少垂直间距
+          childAspectRatio: 1.1, // 参照参考图片，稍微宽一些
+          crossAxisSpacing: 4.w, // 进一步减少水平间距
+          mainAxisSpacing: 12.h, // 增加上下两行之间的间距
         ),
         itemCount: functionGrid.length,
         itemBuilder: (context, index) {
@@ -361,48 +363,46 @@ class _HomePageState extends State<HomePage> with TickerProviderStateMixin {
             },
             child: Column(
               mainAxisAlignment: MainAxisAlignment.center,
-              mainAxisSize: MainAxisSize.min, // 最小化占用空间
               children: [
+                // 图标容器 - 参照参考图片，图标更大更突出
                 Container(
-                  width: 42.w, // 稍微减小图标容器
-                  height: 42.w,
+                  width: 52.w, // 增大图标容器，接近参考图片比例
+                  height: 52.w,
                   decoration: BoxDecoration(
                     color: (item['color'] as Color).withOpacity(0.1),
-                    borderRadius: BorderRadius.circular(10.r),
+                    borderRadius: BorderRadius.circular(12.r), // 稍微增大圆角
                   ),
                   child: Padding(
-                    padding: EdgeInsets.all(6.w), // 减少内边距
+                    padding: EdgeInsets.all(8.w), // 适当内边距
                     child: Image.asset(
                       item['icon'],
-                      width: 30.w,
-                      height: 30.w,
+                      width: 36.w, // 增大图标尺寸
+                      height: 36.w,
                       fit: BoxFit.contain,
                       errorBuilder: (context, error, stackTrace) {
                         // 如果图片加载失败，显示默认图标
                         return Icon(
                           _getIconByName(item['name']),
                           color: item['color'] as Color,
-                          size: 20.w,
+                          size: 28.w, // 增大默认图标尺寸
                         );
                       },
                     ),
                   ),
                 ),
-                SizedBox(height: 4.h), // 减少间距
-                Expanded(
-                  // 让文字部分可以填充剩余空间
-                  child: Text(
-                    item['name'],
-                    style: TextStyle(
-                      fontSize: 10.sp, // 稍微减小字体
-                      color: const Color(0xFF333333),
-                      fontWeight: FontWeight.w500,
-                      height: 1.2, // 设置行高
-                    ),
-                    textAlign: TextAlign.center,
-                    maxLines: 2, // 允许两行显示
-                    overflow: TextOverflow.ellipsis,
+                SizedBox(height: 6.h), // 适当的间距
+                // 文字 - 参照参考图片，文字更大更清晰
+                Text(
+                  item['name'],
+                  style: TextStyle(
+                    fontSize: 12.sp, // 增大文字，接近参考图片
+                    color: const Color(0xFF333333),
+                    fontWeight: FontWeight.w500,
+                    height: 1.1, // 紧凑的行高
                   ),
+                  textAlign: TextAlign.center,
+                  maxLines: 2, // 保持两行显示
+                  overflow: TextOverflow.ellipsis,
                 ),
               ],
             ),
