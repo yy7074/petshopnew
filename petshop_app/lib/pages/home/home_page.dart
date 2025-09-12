@@ -34,42 +34,42 @@ class _HomePageState extends State<HomePage> with TickerProviderStateMixin {
     {
       'name': 'AI识宠',
       'icon': 'assets/icons/ai_pet.png',
-      'color': Color(0xFFFF9500)
+      'color': Color(0xFFFFB74D)
     },
     {
       'name': '限时拍卖',
       'icon': 'assets/icons/limited_auction.png',
-      'color': Color(0xFF9C27B0)
+      'color': Color(0xFF9C4DFF)
     },
     {
       'name': '品牌专区',
       'icon': 'assets/icons/brand_zone.png',
-      'color': Color(0xFFF44336)
+      'color': Color(0xFFFF7043)
     },
     {
       'name': '一口价专区',
       'icon': 'assets/icons/fixed_price.png',
-      'color': Color(0xFF2196F3)
+      'color': Color(0xFF42A5F5)
     },
     {
       'name': '成交查询',
       'icon': 'assets/icons/transaction_query.png',
-      'color': Color(0xFF9C27B0)
+      'color': Color(0xFF9C4DFF)
     },
     {
       'name': '同城送达',
       'icon': 'assets/icons/local_delivery.png',
-      'color': Color(0xFF4CAF50)
+      'color': Color(0xFF66BB6A)
     },
     {
       'name': '回收查询',
       'icon': 'assets/icons/recycle_query.png',
-      'color': Color(0xFFFF9800)
+      'color': Color(0xFFFFCA28)
     },
     {
       'name': '合作方及代理',
       'icon': 'assets/icons/cooperation.png',
-      'color': Color(0xFF673AB7)
+      'color': Color(0xFFAB47BC)
     },
   ];
 
@@ -308,31 +308,200 @@ class _HomePageState extends State<HomePage> with TickerProviderStateMixin {
     );
   }
 
+  // 推广横幅
+  Widget _buildPromoBanner() {
+    return Container(
+      margin: EdgeInsets.symmetric(horizontal: 16.w, vertical: 8.h),
+      height: 120.h, // 稍微降低高度
+      decoration: BoxDecoration(
+        borderRadius: BorderRadius.circular(16.r),
+        gradient: const LinearGradient(
+          begin: Alignment.centerLeft,
+          end: Alignment.centerRight,
+          colors: [
+            Color(0xFFFFB74D), // Orange
+            Color(0xFFFF9800), // Deeper orange
+          ],
+        ),
+      ),
+      child: Stack(
+        children: [
+          // Decorative pattern background
+          Positioned(
+            right: 0,
+            top: 0,
+            bottom: 0,
+            child: Container(
+              width: 180.w,
+              decoration: BoxDecoration(
+                borderRadius: BorderRadius.only(
+                  topRight: Radius.circular(16.r),
+                  bottomRight: Radius.circular(16.r),
+                ),
+                gradient: LinearGradient(
+                  begin: Alignment.centerLeft,
+                  end: Alignment.centerRight,
+                  colors: [
+                    Colors.orange.withOpacity(0.1),
+                    Colors.orange.withOpacity(0.3),
+                  ],
+                ),
+              ),
+            ),
+          ),
+          
+          // Pet images (placeholder)
+          Positioned(
+            left: 20.w,
+            top: 15.h,
+            child: Container(
+              width: 70.w,
+              height: 70.w,
+              decoration: BoxDecoration(
+                borderRadius: BorderRadius.circular(12.r),
+                color: Colors.white.withOpacity(0.2),
+              ),
+              child: Icon(
+                Icons.pets,
+                size: 35.w,
+                color: Colors.white,
+              ),
+            ),
+          ),
+          
+          // Main promotional text
+          Positioned(
+            right: 20.w,
+            top: 20.h,
+            child: Container(
+              padding: EdgeInsets.symmetric(horizontal: 12.w, vertical: 6.h),
+              decoration: BoxDecoration(
+                color: Colors.white,
+                borderRadius: BorderRadius.circular(16.r),
+              ),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  Row(
+                    mainAxisSize: MainAxisSize.min,
+                    children: [
+                      Text(
+                        '买卖宠物就到',
+                        style: TextStyle(
+                          fontSize: 12.sp,
+                          color: Colors.black87,
+                          fontWeight: FontWeight.w500,
+                        ),
+                      ),
+                      Text(
+                        '拍宠有道',
+                        style: TextStyle(
+                          fontSize: 14.sp,
+                          color: Colors.black,
+                          fontWeight: FontWeight.bold,
+                        ),
+                      ),
+                      Text(
+                        ',',
+                        style: TextStyle(
+                          fontSize: 12.sp,
+                          color: Colors.black87,
+                          fontWeight: FontWeight.w500,
+                        ),
+                      ),
+                    ],
+                  ),
+                  Text(
+                    '质量价格有保障！',
+                    style: TextStyle(
+                      fontSize: 12.sp,
+                      color: Colors.black87,
+                      fontWeight: FontWeight.w500,
+                    ),
+                  ),
+                ],
+              ),
+            ),
+          ),
+          
+          // Bottom promotional button
+          Positioned(
+            right: 20.w,
+            bottom: 15.h,
+            child: Container(
+              padding: EdgeInsets.symmetric(horizontal: 10.w, vertical: 4.h),
+              decoration: BoxDecoration(
+                color: Colors.white,
+                borderRadius: BorderRadius.circular(10.r),
+              ),
+              child: Row(
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  Text(
+                    '禁止虐待宠物',
+                    style: TextStyle(
+                      fontSize: 9.sp,
+                      color: Colors.orange[800],
+                      fontWeight: FontWeight.w500,
+                    ),
+                  ),
+                  SizedBox(width: 3.w),
+                  Text(
+                    '从我做起',
+                    style: TextStyle(
+                      fontSize: 9.sp,
+                      color: Colors.orange[800],
+                      fontWeight: FontWeight.w500,
+                    ),
+                  ),
+                ],
+              ),
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
+  // 轮播图部分 - 与推广横幅同样大小
   Widget _buildBannerSection() {
     return Container(
-      margin:
-          EdgeInsets.symmetric(horizontal: 16.w, vertical: 8.h), // 与功能网格保持一致的边距
-      child: BannerSwiper(
-        images: [
-          'https://picsum.photos/400/200?random=1&sig=banner1',
-          'https://picsum.photos/400/200?random=2&sig=banner2',
-          'https://picsum.photos/400/200?random=3&sig=banner3',
-          'https://picsum.photos/400/200?random=4&sig=banner4',
+      margin: EdgeInsets.symmetric(horizontal: 16.w, vertical: 8.h),
+      height: 120.h, // 与推广横幅相同高度
+      width: double.infinity, // 宽度更大
+      decoration: BoxDecoration(
+        borderRadius: BorderRadius.circular(16.r),
+        boxShadow: [
+          BoxShadow(
+            color: Colors.black.withOpacity(0.08),
+            blurRadius: 8,
+            offset: const Offset(0, 2),
+          ),
         ],
-        onTap: (index) {
-          // 轮播图点击事件
-          print('Banner clicked: $index');
-        },
+      ),
+      child: ClipRRect(
+        borderRadius: BorderRadius.circular(16.r),
+        child: BannerSwiper(
+          images: [
+            'https://picsum.photos/400/200?random=1&sig=banner1',
+            'https://picsum.photos/400/200?random=2&sig=banner2',
+            'https://picsum.photos/400/200?random=3&sig=banner3',
+            'https://picsum.photos/400/200?random=4&sig=banner4',
+          ],
+          onTap: (index) {
+            // 轮播图点击事件
+            debugPrint('Banner clicked: $index');
+          },
+        ),
       ),
     );
   }
 
   Widget _buildFunctionGrid() {
     return Container(
-      margin:
-          EdgeInsets.symmetric(horizontal: 16.w, vertical: 6.h), // 进一步减少垂直边距
-      padding: EdgeInsets.only(
-          left: 8.w, right: 8.w, top: 0, bottom: 0), // 完全移除上下内边距
+      margin: EdgeInsets.symmetric(horizontal: 16.w, vertical: 8.h),
+      padding: EdgeInsets.symmetric(horizontal: 0, vertical: 8.h), // 减少内边距，移除水平内边距
       decoration: BoxDecoration(
         color: Colors.white,
         borderRadius: BorderRadius.circular(12.r),
@@ -347,11 +516,12 @@ class _HomePageState extends State<HomePage> with TickerProviderStateMixin {
       child: GridView.builder(
         shrinkWrap: true,
         physics: const NeverScrollableScrollPhysics(),
+        padding: EdgeInsets.symmetric(horizontal: 8.w), // 只给GridView加水平内边距
         gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
           crossAxisCount: 4,
-          childAspectRatio: 1.1, // 参照参考图片，稍微宽一些
-          crossAxisSpacing: 4.w, // 进一步减少水平间距
-          mainAxisSpacing: 12.h, // 增加上下两行之间的间距
+          childAspectRatio: 1.2, // 调整比例，让高度更紧凑
+          crossAxisSpacing: 0, // 移除水平间距
+          mainAxisSpacing: 8.h, // 减少主轴间距
         ),
         itemCount: functionGrid.length,
         itemBuilder: (context, index) {
@@ -359,52 +529,51 @@ class _HomePageState extends State<HomePage> with TickerProviderStateMixin {
           return GestureDetector(
             onTap: () {
               // 处理功能点击
-              print('点击了：${item['name']}');
+              debugPrint('点击了：${item['name']}');
             },
-            child: Column(
-              mainAxisAlignment: MainAxisAlignment.center,
-              children: [
-                // 图标容器 - 参照参考图片，图标更大更突出
-                Container(
-                  width: 52.w, // 增大图标容器，接近参考图片比例
-                  height: 52.w,
-                  decoration: BoxDecoration(
-                    color: (item['color'] as Color).withOpacity(0.1),
-                    borderRadius: BorderRadius.circular(12.r), // 稍微增大圆角
-                  ),
-                  child: Padding(
-                    padding: EdgeInsets.all(8.w), // 适当内边距
+            child: Container(
+              margin: EdgeInsets.symmetric(horizontal: 4.w), // 给每个按钮加小间距
+              child: Column(
+                mainAxisAlignment: MainAxisAlignment.center,
+                children: [
+                  // 图标容器 - 背景图片占满按钮
+                  Container(
+                    width: 40.w,
+                    height: 40.w,
+                    decoration: BoxDecoration(
+                      color: item['color'] as Color, // 直接使用颜色，不透明
+                      borderRadius: BorderRadius.circular(10.r),
+                    ),
                     child: Image.asset(
                       item['icon'],
-                      width: 36.w, // 增大图标尺寸
-                      height: 36.w,
+                      width: 40.w, // 图片占满整个容器
+                      height: 40.w,
                       fit: BoxFit.contain,
                       errorBuilder: (context, error, stackTrace) {
-                        // 如果图片加载失败，显示默认图标
                         return Icon(
                           _getIconByName(item['name']),
-                          color: item['color'] as Color,
-                          size: 28.w, // 增大默认图标尺寸
+                          color: Colors.white,
+                          size: 20.w,
                         );
                       },
                     ),
                   ),
-                ),
-                SizedBox(height: 6.h), // 适当的间距
-                // 文字 - 参照参考图片，文字更大更清晰
-                Text(
-                  item['name'],
-                  style: TextStyle(
-                    fontSize: 12.sp, // 增大文字，接近参考图片
-                    color: const Color(0xFF333333),
-                    fontWeight: FontWeight.w500,
-                    height: 1.1, // 紧凑的行高
+                  SizedBox(height: 4.h), // 减少间距
+                  // 文字
+                  Text(
+                    item['name'],
+                    style: TextStyle(
+                      fontSize: 9.sp, // 减小字体
+                      color: const Color(0xFF333333),
+                      fontWeight: FontWeight.w500,
+                      height: 1.1,
+                    ),
+                    textAlign: TextAlign.center,
+                    maxLines: 2,
+                    overflow: TextOverflow.ellipsis,
                   ),
-                  textAlign: TextAlign.center,
-                  maxLines: 2, // 保持两行显示
-                  overflow: TextOverflow.ellipsis,
-                ),
-              ],
+                ],
+              ),
             ),
           );
         },
@@ -472,16 +641,21 @@ class _HomePageState extends State<HomePage> with TickerProviderStateMixin {
 
           // 标签筛选
           Container(
-            height: 32.h,
+            height: 36.h,
             child: ListView(
               scrollDirection: Axis.horizontal,
+              padding: EdgeInsets.symmetric(horizontal: 4.w),
               children: [
-                _buildFilterTag('全部', true),
+                _buildFilterTag('自定义', true, isPrimary: true),
                 _buildFilterTag('比熊', false),
                 _buildFilterTag('标赛', false),
                 _buildFilterTag('标赛', false),
                 _buildFilterTag('标赛', false),
-                _buildFilterTag('新秀', false),
+                _buildFilterTag('标赛', false),
+                _buildFilterTag('标赛', false),
+                _buildFilterTag('标赛', false),
+                _buildFilterTag('标赛', false),
+                _buildFilterTag('标赛', false),
               ],
             ),
           ),
@@ -558,22 +732,29 @@ class _HomePageState extends State<HomePage> with TickerProviderStateMixin {
     );
   }
 
-  Widget _buildFilterTag(String text, bool isSelected) {
+  Widget _buildFilterTag(String text, bool isSelected, {bool isPrimary = false}) {
     return Container(
       margin: EdgeInsets.only(right: 8.w),
-      padding: EdgeInsets.symmetric(horizontal: 12.w, vertical: 6.h),
+      padding: EdgeInsets.symmetric(horizontal: 16.w, vertical: 8.h),
       decoration: BoxDecoration(
-        color: isSelected ? AppColors.primary : Colors.white,
-        borderRadius: BorderRadius.circular(16.r),
+        color: isSelected 
+            ? (isPrimary ? const Color(0xFF9C4DFF) : Colors.white)
+            : Colors.white,
+        borderRadius: BorderRadius.circular(18.r),
         border: Border.all(
-          color: isSelected ? AppColors.primary : AppColors.border,
+          color: isSelected 
+              ? (isPrimary ? const Color(0xFF9C4DFF) : const Color(0xFFE0E0E0))
+              : const Color(0xFFE0E0E0),
+          width: 1,
         ),
       ),
       child: Text(
         text,
         style: TextStyle(
           fontSize: 12.sp,
-          color: isSelected ? Colors.white : AppColors.textSecondary,
+          color: isSelected 
+              ? (isPrimary ? Colors.white : const Color(0xFF666666))
+              : const Color(0xFF666666),
           fontWeight: isSelected ? FontWeight.w500 : FontWeight.normal,
         ),
       ),
@@ -589,103 +770,142 @@ class _HomePageState extends State<HomePage> with TickerProviderStateMixin {
     Color accentColor,
   ) {
     return Container(
-      height: 120.h,
+      height: 140.h, // Increased height to match design
       decoration: BoxDecoration(
         borderRadius: BorderRadius.circular(12.r),
-        gradient: LinearGradient(
-          begin: Alignment.topLeft,
-          end: Alignment.bottomRight,
-          colors: [
-            accentColor.withOpacity(0.8),
-            accentColor,
-          ],
-        ),
+        boxShadow: [
+          BoxShadow(
+            color: Colors.black.withOpacity(0.1),
+            blurRadius: 8,
+            offset: const Offset(0, 2),
+          ),
+        ],
       ),
-      child: Stack(
-        children: [
-          // 背景图片
-          Positioned(
-            right: 0,
-            top: 0,
-            bottom: 0,
-            child: ClipRRect(
-              borderRadius: BorderRadius.only(
-                topRight: Radius.circular(12.r),
-                bottomRight: Radius.circular(12.r),
-              ),
+      child: ClipRRect(
+        borderRadius: BorderRadius.circular(12.r),
+        child: Stack(
+          children: [
+            // Background image covering the entire card
+            Positioned.fill(
               child: CachedNetworkImage(
                 imageUrl: imageUrl,
-                width: 80.w,
-                height: double.infinity,
                 fit: BoxFit.cover,
                 placeholder: (context, url) => Container(
-                  color: Colors.white.withOpacity(0.3),
+                  color: accentColor.withOpacity(0.3),
+                ),
+                errorWidget: (context, url, error) => Container(
+                  decoration: BoxDecoration(
+                    gradient: LinearGradient(
+                      begin: Alignment.topLeft,
+                      end: Alignment.bottomRight,
+                      colors: [
+                        accentColor.withOpacity(0.8),
+                        accentColor,
+                      ],
+                    ),
+                  ),
                 ),
               ),
             ),
-          ),
+            
+            // Gradient overlay
+            Positioned.fill(
+              child: Container(
+                decoration: BoxDecoration(
+                  gradient: LinearGradient(
+                    begin: Alignment.topCenter,
+                    end: Alignment.bottomCenter,
+                    colors: [
+                      Colors.black.withOpacity(0.2),
+                      Colors.black.withOpacity(0.6),
+                    ],
+                  ),
+                ),
+              ),
+            ),
 
-          // 文字内容
-          Padding(
-            padding: EdgeInsets.all(12.w),
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Container(
-                  padding: EdgeInsets.symmetric(horizontal: 6.w, vertical: 2.h),
-                  decoration: BoxDecoration(
-                    color: Colors.white.withOpacity(0.9),
-                    borderRadius: BorderRadius.circular(8.r),
-                  ),
-                  child: Text(
-                    tag,
-                    style: TextStyle(
-                      fontSize: 10.sp,
+            // Content
+            Padding(
+              padding: EdgeInsets.all(12.w),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Container(
+                    padding: EdgeInsets.symmetric(horizontal: 8.w, vertical: 3.h),
+                    decoration: BoxDecoration(
                       color: accentColor,
-                      fontWeight: FontWeight.bold,
+                      borderRadius: BorderRadius.circular(10.r),
                     ),
-                  ),
-                ),
-                SizedBox(height: 4.h),
-                Text(
-                  title,
-                  style: TextStyle(
-                    fontSize: 14.sp,
-                    fontWeight: FontWeight.bold,
-                    color: Colors.white,
-                  ),
-                ),
-                const Spacer(),
-                Row(
-                  children: [
-                    Icon(
-                      Icons.access_time,
-                      size: 12.w,
-                      color: Colors.white,
-                    ),
-                    SizedBox(width: 2.w),
-                    Text(
-                      endTime,
+                    child: Text(
+                      tag,
                       style: TextStyle(
                         fontSize: 10.sp,
                         color: Colors.white,
+                        fontWeight: FontWeight.bold,
                       ),
                     ),
-                  ],
-                ),
-                SizedBox(height: 2.h),
-                Text(
-                  count,
-                  style: TextStyle(
-                    fontSize: 12.sp,
-                    fontWeight: FontWeight.w600,
-                    color: Colors.white,
                   ),
-                ),
-              ],
+                  SizedBox(height: 8.h),
+                  Text(
+                    title,
+                    style: TextStyle(
+                      fontSize: 16.sp,
+                      fontWeight: FontWeight.bold,
+                      color: Colors.white,
+                    ),
+                  ),
+                  const Spacer(),
+                  Row(
+                    children: [
+                      Icon(
+                        Icons.access_time,
+                        size: 14.w,
+                        color: Colors.white,
+                      ),
+                      SizedBox(width: 4.w),
+                      Text(
+                        endTime,
+                        style: TextStyle(
+                          fontSize: 12.sp,
+                          color: Colors.white,
+                        ),
+                      ),
+                    ],
+                  ),
+                  SizedBox(height: 4.h),
+                  RichText(
+                    text: TextSpan(
+                      children: [
+                        TextSpan(
+                          text: count.split('：')[0],
+                          style: TextStyle(
+                            fontSize: 12.sp,
+                            color: Colors.white,
+                          ),
+                        ),
+                        TextSpan(
+                          text: '：',
+                          style: TextStyle(
+                            fontSize: 12.sp,
+                            color: Colors.white,
+                          ),
+                        ),
+                        TextSpan(
+                          text: count.split('：')[1],
+                          style: TextStyle(
+                            fontSize: 16.sp,
+                            fontWeight: FontWeight.bold,
+                            color: Colors.red,
+                          ),
+                        ),
+                      ],
+                    ),
+                  ),
+                ],
+              ),
             ),
-          ),
-        ],
+          ],
+        ),
       ),
     );
   }
@@ -697,6 +917,7 @@ class _HomePageState extends State<HomePage> with TickerProviderStateMixin {
         children: [
           // 首页内容 (index 0)
           if (tabIndex == 0) ...[
+            _buildPromoBanner(),
             _buildBannerSection(),
             _buildFunctionGrid(),
             _buildProductList(),

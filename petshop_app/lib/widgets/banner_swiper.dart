@@ -21,23 +21,10 @@ class BannerSwiper extends StatefulWidget {
 class _BannerSwiperState extends State<BannerSwiper> {
   @override
   Widget build(BuildContext context) {
-    return Container(
-      width: double.infinity, // 确保轮播图宽度占满
-      height: 160.h, // 调整为合适高度
-      margin: EdgeInsets.symmetric(horizontal: 8.w), // 减少左右边距
-      decoration: BoxDecoration(
-        borderRadius: BorderRadius.circular(16.r), // 增加圆角
-        boxShadow: [
-          BoxShadow(
-            color: Colors.black.withOpacity(0.15),
-            blurRadius: 12,
-            offset: const Offset(0, 4),
-          ),
-        ],
-      ),
-      child: ClipRRect(
-        borderRadius: BorderRadius.circular(16.r), // 匹配外层圆角
-        child: Swiper(
+    return SizedBox(
+      width: double.infinity, // 宽度占满父容器
+      height: double.infinity, // 高度也占满父容器
+      child: Swiper(
           itemBuilder: (BuildContext context, int index) {
             return GestureDetector(
               onTap: () {
@@ -83,12 +70,12 @@ class _BannerSwiperState extends State<BannerSwiper> {
           itemCount: widget.images.length,
           pagination: SwiperPagination(
             alignment: Alignment.bottomCenter,
-            margin: EdgeInsets.only(bottom: 16.h),
+            margin: EdgeInsets.only(bottom: 8.h), // 减小底部边距
             builder: DotSwiperPaginationBuilder(
               color: Colors.white.withOpacity(0.5),
               activeColor: Colors.white,
-              size: 8.w,
-              activeSize: 8.w,
+              size: 6.w, // 减小指示点
+              activeSize: 6.w,
             ),
           ),
           control: null, // 隐藏左右箭头
@@ -100,7 +87,6 @@ class _BannerSwiperState extends State<BannerSwiper> {
           viewportFraction: 1.0, // 确保轮播图占满宽度
           scale: 1.0, // 不缩放
         ),
-      ),
     );
   }
 }
