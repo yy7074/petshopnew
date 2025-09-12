@@ -26,20 +26,18 @@ class _LoginPageState extends State<LoginPage> {
   }
 
   void _login() async {
-    if (!_formKey.currentState!.validate()) return;
-
     setState(() {
       _isLoading = true;
     });
 
-    // 模拟登录请求
-    await Future.delayed(const Duration(seconds: 2));
+    // 模拟短暂加载
+    await Future.delayed(const Duration(milliseconds: 500));
 
     setState(() {
       _isLoading = false;
     });
 
-    // 登录成功，跳转到主页
+    // 直接跳转到主页，无需任何验证
     Get.offAllNamed(AppRoutes.main);
   }
 
@@ -102,15 +100,6 @@ class _LoginPageState extends State<LoginPage> {
                     hintText: '请输入手机号',
                     prefixIcon: const Icon(Icons.phone),
                   ),
-                  validator: (value) {
-                    if (value == null || value.isEmpty) {
-                      return '请输入手机号';
-                    }
-                    if (value.length != 11) {
-                      return '请输入正确的手机号';
-                    }
-                    return null;
-                  },
                 ),
                 SizedBox(height: 16.h),
                 // 密码输入框
@@ -134,15 +123,6 @@ class _LoginPageState extends State<LoginPage> {
                       },
                     ),
                   ),
-                  validator: (value) {
-                    if (value == null || value.isEmpty) {
-                      return '请输入密码';
-                    }
-                    if (value.length < 6) {
-                      return '密码至少6位';
-                    }
-                    return null;
-                  },
                 ),
                 SizedBox(height: 24.h),
                 // 登录按钮
@@ -291,6 +271,3 @@ class _LoginPageState extends State<LoginPage> {
     );
   }
 }
-
-
-

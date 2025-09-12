@@ -7,7 +7,7 @@ import '../constants/app_colors.dart';
 class BannerSwiper extends StatefulWidget {
   final List<String> images;
   final Function(int)? onTap;
-  
+
   const BannerSwiper({
     super.key,
     required this.images,
@@ -19,23 +19,24 @@ class BannerSwiper extends StatefulWidget {
 }
 
 class _BannerSwiperState extends State<BannerSwiper> {
-
   @override
   Widget build(BuildContext context) {
     return Container(
-      height: 180.h,
+      width: double.infinity, // 确保轮播图宽度占满
+      height: 200.h, // 增加高度
+      margin: EdgeInsets.symmetric(horizontal: 8.w), // 减少左右边距
       decoration: BoxDecoration(
-        borderRadius: BorderRadius.circular(12.r),
+        borderRadius: BorderRadius.circular(16.r), // 增加圆角
         boxShadow: [
           BoxShadow(
-            color: Colors.black.withOpacity(0.1),
-            blurRadius: 10,
-            offset: const Offset(0, 2),
+            color: Colors.black.withOpacity(0.15),
+            blurRadius: 12,
+            offset: const Offset(0, 4),
           ),
         ],
       ),
       child: ClipRRect(
-        borderRadius: BorderRadius.circular(12.r),
+        borderRadius: BorderRadius.circular(16.r), // 匹配外层圆角
         child: Swiper(
           itemBuilder: (BuildContext context, int index) {
             return GestureDetector(
@@ -91,13 +92,15 @@ class _BannerSwiperState extends State<BannerSwiper> {
             ),
           ),
           control: null, // 隐藏左右箭头
-          autoplay: true,
-          autoplayDelay: 3000,
-          duration: 800,
-          curve: Curves.easeInOut,
+          autoplay: true, // 开启自动播放
+          autoplayDelay: 4000, // 4秒切换一次
+          autoplayDisableOnInteraction: false, // 用户交互后继续自动播放
+          duration: 600, // 切换动画时长
+          curve: Curves.easeInOutCubic, // 更流畅的动画曲线
+          viewportFraction: 1.0, // 确保轮播图占满宽度
+          scale: 1.0, // 不缩放
         ),
       ),
     );
   }
 }
-
