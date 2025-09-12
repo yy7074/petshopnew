@@ -13,18 +13,18 @@ import 'utils/app_routes.dart';
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
-  
+
   // 初始化本地存储
   await StorageService.init();
-  
+
   // 设置状态栏样式
   SystemChrome.setSystemUIOverlayStyle(
     const SystemUiOverlayStyle(
       statusBarColor: Colors.transparent,
-      statusBarIconBrightness: Brightness.dark,
+      statusBarIconBrightness: Brightness.light, // 白色图标适配紫色背景
     ),
   );
-  
+
   runApp(const MyApp());
 }
 

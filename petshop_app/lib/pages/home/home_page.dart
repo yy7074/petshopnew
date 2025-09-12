@@ -38,7 +38,7 @@ class _HomePageState extends State<HomePage> with TickerProviderStateMixin {
     },
     {
       'name': '限时拍卖',
-      'icon': 'assets/icons/time_auction.png',
+      'icon': 'assets/icons/limited_auction.png',
       'color': Color(0xFF9C27B0)
     },
     {
@@ -53,7 +53,7 @@ class _HomePageState extends State<HomePage> with TickerProviderStateMixin {
     },
     {
       'name': '成交查询',
-      'icon': 'assets/icons/deal_query.png',
+      'icon': 'assets/icons/transaction_query.png',
       'color': Color(0xFF9C27B0)
     },
     {
@@ -68,7 +68,7 @@ class _HomePageState extends State<HomePage> with TickerProviderStateMixin {
     },
     {
       'name': '合作方及代理',
-      'icon': 'assets/icons/partnership.png',
+      'icon': 'assets/icons/cooperation.png',
       'color': Color(0xFF673AB7)
     },
   ];
@@ -311,7 +311,7 @@ class _HomePageState extends State<HomePage> with TickerProviderStateMixin {
   Widget _buildBannerSection() {
     return Container(
       margin:
-          EdgeInsets.symmetric(horizontal: 8.w, vertical: 12.h), // 减少边距让轮播图更宽
+          EdgeInsets.symmetric(horizontal: 16.w, vertical: 8.h), // 与功能网格保持一致的边距
       child: BannerSwiper(
         images: [
           'https://picsum.photos/400/200?random=1&sig=banner1',
@@ -329,8 +329,8 @@ class _HomePageState extends State<HomePage> with TickerProviderStateMixin {
 
   Widget _buildFunctionGrid() {
     return Container(
-      margin: EdgeInsets.symmetric(horizontal: 16.w),
-      padding: EdgeInsets.all(16.w),
+      margin: EdgeInsets.symmetric(horizontal: 16.w, vertical: 6.h), // 进一步减少垂直边距
+      padding: EdgeInsets.symmetric(horizontal: 8.w, vertical: 8.h), // 减少内边距让卡片更小
       decoration: BoxDecoration(
         color: Colors.white,
         borderRadius: BorderRadius.circular(12.r),
@@ -347,9 +347,9 @@ class _HomePageState extends State<HomePage> with TickerProviderStateMixin {
         physics: const NeverScrollableScrollPhysics(),
         gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
           crossAxisCount: 4,
-          childAspectRatio: 1,
-          crossAxisSpacing: 16.w,
-          mainAxisSpacing: 16.h,
+          childAspectRatio: 0.9, // 稍微高一些，给文字更多空间
+          crossAxisSpacing: 8.w, // 减少水平间距
+          mainAxisSpacing: 8.h, // 减少垂直间距
         ),
         itemCount: functionGrid.length,
         itemBuilder: (context, index) {
@@ -361,31 +361,48 @@ class _HomePageState extends State<HomePage> with TickerProviderStateMixin {
             },
             child: Column(
               mainAxisAlignment: MainAxisAlignment.center,
+              mainAxisSize: MainAxisSize.min, // 最小化占用空间
               children: [
                 Container(
-                  width: 48.w,
-                  height: 48.w,
+                  width: 42.w, // 稍微减小图标容器
+                  height: 42.w,
                   decoration: BoxDecoration(
                     color: (item['color'] as Color).withOpacity(0.1),
-                    borderRadius: BorderRadius.circular(12.r),
+                    borderRadius: BorderRadius.circular(10.r),
                   ),
-                  child: Icon(
-                    _getIconByName(item['name']),
-                    color: item['color'] as Color,
-                    size: 24.w,
+                  child: Padding(
+                    padding: EdgeInsets.all(6.w), // 减少内边距
+                    child: Image.asset(
+                      item['icon'],
+                      width: 30.w,
+                      height: 30.w,
+                      fit: BoxFit.contain,
+                      errorBuilder: (context, error, stackTrace) {
+                        // 如果图片加载失败，显示默认图标
+                        return Icon(
+                          _getIconByName(item['name']),
+                          color: item['color'] as Color,
+                          size: 20.w,
+                        );
+                      },
+                    ),
                   ),
                 ),
-                SizedBox(height: 8.h),
-                Text(
-                  item['name'],
-                  style: TextStyle(
-                    fontSize: 11.sp,
-                    color: const Color(0xFF333333),
-                    fontWeight: FontWeight.w500,
+                SizedBox(height: 4.h), // 减少间距
+                Expanded(
+                  // 让文字部分可以填充剩余空间
+                  child: Text(
+                    item['name'],
+                    style: TextStyle(
+                      fontSize: 10.sp, // 稍微减小字体
+                      color: const Color(0xFF333333),
+                      fontWeight: FontWeight.w500,
+                      height: 1.2, // 设置行高
+                    ),
+                    textAlign: TextAlign.center,
+                    maxLines: 2, // 允许两行显示
+                    overflow: TextOverflow.ellipsis,
                   ),
-                  textAlign: TextAlign.center,
-                  maxLines: 1,
-                  overflow: TextOverflow.ellipsis,
                 ),
               ],
             ),

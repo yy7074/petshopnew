@@ -23,7 +23,7 @@ class _BannerSwiperState extends State<BannerSwiper> {
   Widget build(BuildContext context) {
     return Container(
       width: double.infinity, // 确保轮播图宽度占满
-      height: 200.h, // 增加高度
+      height: 160.h, // 调整为合适高度
       margin: EdgeInsets.symmetric(horizontal: 8.w), // 减少左右边距
       decoration: BoxDecoration(
         borderRadius: BorderRadius.circular(16.r), // 增加圆角
