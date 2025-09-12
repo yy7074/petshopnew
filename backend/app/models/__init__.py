@@ -7,3 +7,4 @@ __all__ = [
     "Category", "Product", "Bid", "ProductFavorite", "Shop", "LocalService", "SpecialEvent", "EventProduct",
     "Order", "Message"
 ]
+

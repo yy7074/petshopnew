@@ -3,20 +3,17 @@ import 'package:flutter_screenutil/flutter_screenutil.dart';
 import '../constants/app_colors.dart';
 
 class CategoryGrid extends StatelessWidget {
-  const CategoryGrid({super.key});
+  final List<Map<String, dynamic>> categories;
+  final Function(Map<String, dynamic>)? onCategoryTap;
+  
+  const CategoryGrid({
+    super.key,
+    required this.categories,
+    this.onCategoryTap,
+  });
 
   @override
   Widget build(BuildContext context) {
-    final categories = [
-      {'name': '宠物', 'icon': Icons.pets, 'color': AppColors.primary},
-      {'name': '水族', 'icon': Icons.water, 'color': AppColors.info},
-      {'name': '用品', 'icon': Icons.shopping_bag, 'color': AppColors.success},
-      {'name': '食品', 'icon': Icons.restaurant, 'color': AppColors.warning},
-      {'name': '玩具', 'icon': Icons.toys, 'color': AppColors.accent},
-      {'name': '医疗', 'icon': Icons.medical_services, 'color': AppColors.error},
-      {'name': '美容', 'icon': Icons.content_cut, 'color': AppColors.primary},
-      {'name': '更多', 'icon': Icons.more_horiz, 'color': AppColors.textSecondary},
-    ];
 
     return Container(
       padding: EdgeInsets.all(16.w),
@@ -45,8 +42,7 @@ class CategoryGrid extends StatelessWidget {
           final category = categories[index];
           return GestureDetector(
             onTap: () {
-              // TODO: 处理分类点击
-              debugPrint('Category ${category['name']} clicked');
+              onCategoryTap?.call(category);
             },
             child: Column(
               mainAxisAlignment: MainAxisAlignment.center,
@@ -81,3 +77,4 @@ class CategoryGrid extends StatelessWidget {
     );
   }
 }
+

@@ -70,3 +70,4 @@ class UserAddressResponse(UserAddressBase):
 
     class Config:
         from_attributes = True
+

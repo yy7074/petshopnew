@@ -67,3 +67,4 @@ class KeywordSubscription(Base):
     keyword = Column(String(100), nullable=False)
     is_active = Column(Boolean, default=True)
     created_at = Column(DateTime, server_default=func.now())
+

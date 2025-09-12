@@ -4,25 +4,13 @@ import 'package:cached_network_image/cached_network_image.dart';
 import '../constants/app_colors.dart';
 
 class ProductCard extends StatelessWidget {
-  final String? imageUrl;
-  final String? title;
-  final String? currentPrice;
-  final String? originalPrice;
-  final String? location;
-  final int? bidCount;
-  final bool? isFavorite;
+  final Map<String, dynamic> product;
   final VoidCallback? onTap;
   final VoidCallback? onFavorite;
 
   const ProductCard({
     super.key,
-    this.imageUrl,
-    this.title,
-    this.currentPrice,
-    this.originalPrice,
-    this.location,
-    this.bidCount,
-    this.isFavorite,
+    required this.product,
     this.onTap,
     this.onFavorite,
   });
@@ -56,7 +44,7 @@ class ProductCard extends StatelessWidget {
                       top: Radius.circular(12.r),
                     ),
                     child: CachedNetworkImage(
-                      imageUrl: imageUrl ?? 'https://via.placeholder.com/200x150/FF6B35/FFFFFF?text=Pet',
+                      imageUrl: product['image'] ?? 'https://via.placeholder.com/200x150/FF6B35/FFFFFF?text=Pet',
                       width: double.infinity,
                       height: double.infinity,
                       fit: BoxFit.cover,
@@ -94,11 +82,11 @@ class ProductCard extends StatelessWidget {
                           shape: BoxShape.circle,
                         ),
                         child: Icon(
-                          isFavorite == true
+                          product['isFavorite'] == true
                               ? Icons.favorite
                               : Icons.favorite_border,
                           size: 18.w,
-                          color: isFavorite == true
+                          color: product['isFavorite'] == true
                               ? AppColors.error
                               : AppColors.textSecondary,
                         ),
@@ -118,7 +106,7 @@ class ProductCard extends StatelessWidget {
                   children: [
                     // 商品标题
                     Text(
-                      title ?? '可爱宠物等你带回家',
+                      product['name'] ?? '可爱宠物等你带回家',
                       style: TextStyle(
                         fontSize: 14.sp,
                         fontWeight: FontWeight.w500,
@@ -132,17 +120,17 @@ class ProductCard extends StatelessWidget {
                     Row(
                       children: [
                         Text(
-                          '¥${currentPrice ?? '999'}',
+                          '¥${product['price'] ?? '999'}',
                           style: TextStyle(
                             fontSize: 16.sp,
                             fontWeight: FontWeight.bold,
                             color: AppColors.price,
                           ),
                         ),
-                        if (originalPrice != null) ...[
+                        if (product['originalPrice'] != null) ...[
                           SizedBox(width: 8.w),
                           Text(
-                            '¥$originalPrice',
+                            '¥${product['originalPrice']}',
                             style: TextStyle(
                               fontSize: 12.sp,
                               color: AppColors.textHint,
@@ -157,7 +145,7 @@ class ProductCard extends StatelessWidget {
                     Row(
                       mainAxisAlignment: MainAxisAlignment.spaceBetween,
                       children: [
-                        if (location != null)
+                        if (product['location'] != null)
                           Expanded(
                             child: Row(
                               children: [
@@ -169,7 +157,7 @@ class ProductCard extends StatelessWidget {
                                 SizedBox(width: 2.w),
                                 Expanded(
                                   child: Text(
-                                    location!,
+                                    product['location'],
                                     style: TextStyle(
                                       fontSize: 10.sp,
                                       color: AppColors.textHint,
@@ -180,7 +168,7 @@ class ProductCard extends StatelessWidget {
                               ],
                             ),
                           ),
-                        if (bidCount != null && bidCount! > 0)
+                        if (product['bidCount'] != null && product['bidCount'] > 0)
                           Container(
                             padding: EdgeInsets.symmetric(
                               horizontal: 6.w,
@@ -191,7 +179,7 @@ class ProductCard extends StatelessWidget {
                               borderRadius: BorderRadius.circular(8.r),
                             ),
                             child: Text(
-                              '${bidCount}人出价',
+                              '${product['bidCount']}人出价',
                               style: TextStyle(
                                 fontSize: 10.sp,
                                 color: AppColors.primary,
@@ -210,3 +198,4 @@ class ProductCard extends StatelessWidget {
     );
   }
 }
+

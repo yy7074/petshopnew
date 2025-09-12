@@ -36,3 +36,4 @@ class Message(Base):
     related_id = Column(Integer, comment="关联的商品或订单ID")
     is_read = Column(Boolean, default=False)
     created_at = Column(DateTime, server_default=func.now())
+

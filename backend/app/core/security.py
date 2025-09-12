@@ -46,3 +46,4 @@ def verify_token(token: str) -> dict:
             detail="无效的认证凭据",
             headers={"WWW-Authenticate": "Bearer"},
         )
+

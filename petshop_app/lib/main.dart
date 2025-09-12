@@ -43,7 +43,7 @@ class MyApp extends StatelessWidget {
             ChangeNotifierProvider(create: (_) => ApiService()),
           ],
           child: GetMaterialApp(
-            title: '宠物拍卖',
+            title: '拍宠有道',
             theme: AppTheme.lightTheme,
             darkTheme: AppTheme.darkTheme,
             themeMode: ThemeMode.light,

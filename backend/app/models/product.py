@@ -116,3 +116,4 @@ class EventProduct(Base):
     product_id = Column(Integer, nullable=False, index=True)
     sort_order = Column(Integer, default=0)
     created_at = Column(DateTime, server_default=func.now())
+

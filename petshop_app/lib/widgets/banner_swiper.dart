@@ -5,18 +5,20 @@ import 'package:cached_network_image/cached_network_image.dart';
 import '../constants/app_colors.dart';
 
 class BannerSwiper extends StatefulWidget {
-  const BannerSwiper({super.key});
+  final List<String> images;
+  final Function(int)? onTap;
+  
+  const BannerSwiper({
+    super.key,
+    required this.images,
+    this.onTap,
+  });
 
   @override
   State<BannerSwiper> createState() => _BannerSwiperState();
 }
 
 class _BannerSwiperState extends State<BannerSwiper> {
-  final List<String> bannerImages = [
-    'https://via.placeholder.com/375x180/FF6B35/FFFFFF?text=Banner+1',
-    'https://via.placeholder.com/375x180/4CAF50/FFFFFF?text=Banner+2',
-    'https://via.placeholder.com/375x180/2196F3/FFFFFF?text=Banner+3',
-  ];
 
   @override
   Widget build(BuildContext context) {
@@ -38,11 +40,10 @@ class _BannerSwiperState extends State<BannerSwiper> {
           itemBuilder: (BuildContext context, int index) {
             return GestureDetector(
               onTap: () {
-                // TODO: 处理轮播图点击
-                debugPrint('Banner $index clicked');
+                widget.onTap?.call(index);
               },
               child: CachedNetworkImage(
-                imageUrl: bannerImages[index],
+                imageUrl: widget.images[index],
                 fit: BoxFit.cover,
                 placeholder: (context, url) => Container(
                   color: AppColors.background,
@@ -78,7 +79,7 @@ class _BannerSwiperState extends State<BannerSwiper> {
               ),
             );
           },
-          itemCount: bannerImages.length,
+          itemCount: widget.images.length,
           pagination: SwiperPagination(
             alignment: Alignment.bottomCenter,
             margin: EdgeInsets.only(bottom: 16.h),
@@ -99,3 +100,4 @@ class _BannerSwiperState extends State<BannerSwiper> {
     );
   }
 }
+
