@@ -15,7 +15,7 @@ class CustomBottomNav extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Container(
-      height: 95.h + MediaQuery.of(context).padding.bottom, // 增加高度适应突出按钮
+      height: 80.h + MediaQuery.of(context).padding.bottom,
       decoration: BoxDecoration(
         color: Colors.white,
         boxShadow: [
@@ -34,7 +34,7 @@ class CustomBottomNav extends StatelessWidget {
             right: 0,
             bottom: 0,
             child: Container(
-              height: 95.h + MediaQuery.of(context).padding.bottom,
+              height: 80.h + MediaQuery.of(context).padding.bottom,
               padding: EdgeInsets.only(
                   bottom: MediaQuery.of(context).padding.bottom),
               child: Row(
@@ -56,11 +56,11 @@ class CustomBottomNav extends StatelessWidget {
             ),
           ),
 
-          // 中间圆形按钮 - 拍宠有道Logo，高出顶部
+          // 中间圆形按钮 - 宠物拍卖图标
           Positioned(
             left: 0,
             right: 0,
-            top: -10.h, // 向上突出10px
+            top: 0,
             child: Center(
               child: GestureDetector(
                 onTap: () => onTap(2),
@@ -73,9 +73,9 @@ class CustomBottomNav extends StatelessWidget {
                       begin: Alignment.topLeft,
                       end: Alignment.bottomRight,
                       colors: [
-                        Color(0xFF9C4DFF), // 紫色主题
-                        Color(0xFF7B1FA2),
-                        Color(0xFF6A1B9A),
+                        Color(0xFFFF9800), // 橙色
+                        Color(0xFFF57C00),
+                        Color(0xFFE65100),
                       ],
                     ),
                     boxShadow: [
@@ -85,7 +85,7 @@ class CustomBottomNav extends StatelessWidget {
                         offset: const Offset(0, 4),
                       ),
                       BoxShadow(
-                        color: const Color(0xFF9C4DFF).withOpacity(0.3),
+                        color: const Color(0xFFFF9800).withOpacity(0.3),
                         blurRadius: 8,
                         offset: const Offset(0, 2),
                       ),
@@ -96,28 +96,19 @@ class CustomBottomNav extends StatelessWidget {
                       shape: BoxShape.circle,
                       color: Colors.white,
                     ),
-                    margin: EdgeInsets.all(3.w),
-                    child: Padding(
-                      padding: EdgeInsets.all(8.w),
-                      child: Image.asset(
-                        'assets/images/app_logo.png',
-                        fit: BoxFit.contain,
-                        errorBuilder: (context, error, stackTrace) {
-                          // 如果图片加载失败，显示文字
-                          return Center(
-                            child: Text(
-                              '拍宠\n有道',
-                              style: TextStyle(
-                                fontSize: 10.sp,
-                                fontWeight: FontWeight.bold,
-                                color: const Color(0xFF9C4DFF),
-                                height: 1.0,
-                              ),
-                              textAlign: TextAlign.center,
+                    margin: EdgeInsets.all(4.w),
+                    child: Stack(
+                      children: [
+                        // 锦鲤装饰图案
+                        Positioned.fill(
+                          child: Padding(
+                            padding: EdgeInsets.all(8.w),
+                            child: CustomPaint(
+                              painter: KoiFishPainter(),
                             ),
-                          );
-                        },
-                      ),
+                          ),
+                        ),
+                      ],
                     ),
                   ),
                 ),
@@ -172,7 +163,7 @@ class KoiFishPainter extends CustomPainter {
     final paint = Paint()
       ..color = const Color(0xFFFF6B35) // 橙红色
       ..style = PaintingStyle.fill;
-    
+
     final outlinePaint = Paint()
       ..color = const Color(0xFFF57C00)
       ..style = PaintingStyle.stroke
@@ -180,50 +171,44 @@ class KoiFishPainter extends CustomPainter {
 
     final center = Offset(size.width / 2, size.height / 2);
     final radius = size.width * 0.35;
-    
+
     // 绘制简化的锦鲤鱼形状
     final fishPath = Path();
-    
+
     // 鱼身（椭圆）
     final fishBodyRect = Rect.fromCenter(
-      center: center, 
-      width: radius * 1.6, 
-      height: radius * 0.8
-    );
+        center: center, width: radius * 1.6, height: radius * 0.8);
     fishPath.addOval(fishBodyRect);
-    
+
     // 鱼尾
     final tailPath = Path();
     tailPath.moveTo(center.dx + radius * 0.8, center.dy);
     tailPath.lineTo(center.dx + radius * 1.2, center.dy - radius * 0.4);
     tailPath.lineTo(center.dx + radius * 1.2, center.dy + radius * 0.4);
     tailPath.close();
-    
+
     canvas.drawPath(fishPath, paint);
     canvas.drawPath(tailPath, paint);
     canvas.drawPath(fishPath, outlinePaint);
     canvas.drawPath(tailPath, outlinePaint);
-    
+
     // 鱼眼
     final eyePaint = Paint()..color = Colors.white;
-    final eyeCenter = Offset(center.dx - radius * 0.3, center.dy - radius * 0.1);
+    final eyeCenter =
+        Offset(center.dx - radius * 0.3, center.dy - radius * 0.1);
     canvas.drawCircle(eyeCenter, radius * 0.15, eyePaint);
-    
+
     final pupilPaint = Paint()..color = Colors.black;
     canvas.drawCircle(eyeCenter, radius * 0.08, pupilPaint);
-    
+
     // 装饰性波纹
     final wavePaint = Paint()
       ..color = const Color(0xFFFF9800).withOpacity(0.3)
       ..style = PaintingStyle.stroke
       ..strokeWidth = 2;
-      
+
     for (int i = 0; i < 3; i++) {
-      canvas.drawCircle(
-        center, 
-        radius * 0.3 + (i * radius * 0.2), 
-        wavePaint
-      );
+      canvas.drawCircle(center, radius * 0.3 + (i * radius * 0.2), wavePaint);
     }
   }
 

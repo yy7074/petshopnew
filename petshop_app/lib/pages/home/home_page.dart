@@ -13,6 +13,7 @@ class HomePage extends StatefulWidget {
 }
 
 class _HomePageState extends State<HomePage> {
+  late PageController _pageController;
   int _currentTabIndex = 0;
 
   final List<String> tabs = [
@@ -107,10 +108,12 @@ class _HomePageState extends State<HomePage> {
   @override
   void initState() {
     super.initState();
+    _pageController = PageController(initialPage: 0);
   }
 
   @override
   void dispose() {
+    _pageController.dispose();
     super.dispose();
   }
 
@@ -151,109 +154,104 @@ class _HomePageState extends State<HomePage> {
           Expanded(
             child: Container(
               color: const Color(0xFFF5F5F5),
-              child: IndexedStack(
-                index: _currentTabIndex,
-                children: [
-                  // 首页·AI (index 0)
-                  Scrollbar(
-                    child: SingleChildScrollView(
-                      physics: const AlwaysScrollableScrollPhysics(),
-                      child: Column(
-                        children: [
-                          _buildBannerSection(),
-                          _buildFunctionGrid(),
-                          _buildProductList(),
-                          // 添加足够的空间确保可以滚动
-                          SizedBox(height: 200.h),
-                          Container(
-                            padding: EdgeInsets.all(16.w),
-                            child: Text(
-                              '--- 已到底部 ---',
-                              style: TextStyle(
-                                fontSize: 14.sp,
-                                color: Colors.grey,
-                              ),
-                              textAlign: TextAlign.center,
-                            ),
-                          ),
-                          SizedBox(height: 100.h),
-                        ],
-                      ),
-                    ),
-                  ),
-                  // 宠物 (index 1)
-                  _buildCategoryContent('宠物', [
-                    {
-                      'name': '英短蓝猫',
-                      'price': 1200,
-                      'image': 'https://picsum.photos/200/200?random=30'
-                    },
-                    {
-                      'name': '金毛犬',
-                      'price': 2500,
-                      'image': 'https://picsum.photos/200/200?random=31'
-                    },
-                    {
-                      'name': '布偶猫',
-                      'price': 3800,
-                      'image': 'https://picsum.photos/200/200?random=32'
-                    },
-                  ]),
-                  // 水族 (index 2)
-                  _buildCategoryContent('水族', [
-                    {
-                      'name': '红绿灯鱼',
-                      'price': 25,
-                      'image': 'https://picsum.photos/200/200?random=33'
-                    },
-                    {
-                      'name': '龙鱼',
-                      'price': 1500,
-                      'image': 'https://picsum.photos/200/200?random=34'
-                    },
-                    {
-                      'name': '锦鲤',
-                      'price': 800,
-                      'image': 'https://picsum.photos/200/200?random=35'
-                    },
-                  ]),
-                  // 一口价 (index 3)
-                  _buildCategoryContent('一口价专区', [
-                    {
-                      'name': '萨摩耶',
-                      'price': 1800,
-                      'image': 'https://picsum.photos/200/200?random=36'
-                    },
-                    {
-                      'name': '柯基',
-                      'price': 1500,
-                      'image': 'https://picsum.photos/200/200?random=37'
-                    },
-                    {
-                      'name': '比熊',
-                      'price': 1200,
-                      'image': 'https://picsum.photos/200/200?random=38'
-                    },
-                  ]),
-                  // 同城 (index 4)
-                  _buildCategoryContent('同城服务', [
-                    {
-                      'name': '宠物美容',
-                      'price': 100,
-                      'image': 'https://picsum.photos/200/200?random=39'
-                    },
-                    {
-                      'name': '宠物医疗',
-                      'price': 200,
-                      'image': 'https://picsum.photos/200/200?random=40'
-                    },
-                    {
-                      'name': '宠物寄养',
-                      'price': 50,
-                      'image': 'https://picsum.photos/200/200?random=41'
-                    },
-                  ]),
-                ],
+              child: PageView.builder(
+                controller: _pageController,
+                physics: const ClampingScrollPhysics(), // 保持左右滑动，但优化滚动行为
+                onPageChanged: (index) {
+                  setState(() {
+                    _currentTabIndex = index;
+                  });
+                },
+                itemCount: 5, // 5个标签页
+                itemBuilder: (context, index) {
+                  switch (index) {
+                    case 0:
+                      return SingleChildScrollView(
+                        physics: const ClampingScrollPhysics(),
+                        child: Column(
+                          children: [
+                            _buildBannerSection(),
+                            _buildFunctionGrid(),
+                            _buildProductList(),
+                          ],
+                        ),
+                      );
+                    case 1:
+                      return _buildCategoryContent('宠物', [
+                        {
+                          'name': '英短蓝猫',
+                          'price': 1200,
+                          'image': 'https://picsum.photos/200/200?random=30'
+                        },
+                        {
+                          'name': '金毛犬',
+                          'price': 2500,
+                          'image': 'https://picsum.photos/200/200?random=31'
+                        },
+                        {
+                          'name': '布偶猫',
+                          'price': 3800,
+                          'image': 'https://picsum.photos/200/200?random=32'
+                        },
+                      ]);
+                    case 2:
+                      return _buildCategoryContent('水族', [
+                        {
+                          'name': '红绿灯鱼',
+                          'price': 25,
+                          'image': 'https://picsum.photos/200/200?random=33'
+                        },
+                        {
+                          'name': '龙鱼',
+                          'price': 1500,
+                          'image': 'https://picsum.photos/200/200?random=34'
+                        },
+                        {
+                          'name': '锦鲤',
+                          'price': 800,
+                          'image': 'https://picsum.photos/200/200?random=35'
+                        },
+                      ]);
+                    case 3:
+                      return _buildCategoryContent('一口价专区', [
+                        {
+                          'name': '萨摩耶',
+                          'price': 1800,
+                          'image': 'https://picsum.photos/200/200?random=36'
+                        },
+                        {
+                          'name': '柯基',
+                          'price': 1500,
+                          'image': 'https://picsum.photos/200/200?random=37'
+                        },
+                        {
+                          'name': '比熊',
+                          'price': 1200,
+                          'image': 'https://picsum.photos/200/200?random=38'
+                        },
+                      ]);
+                    case 4:
+                      return _buildCategoryContent('同城服务', [
+                        {
+                          'name': '宠物美容',
+                          'price': 100,
+                          'image': 'https://picsum.photos/200/200?random=39'
+                        },
+                        {
+                          'name': '宠物医疗',
+                          'price': 200,
+                          'image': 'https://picsum.photos/200/200?random=40'
+                        },
+                        {
+                          'name': '宠物寄养',
+                          'price': 50,
+                          'image': 'https://picsum.photos/200/200?random=41'
+                        },
+                      ]);
+                    default:
+                      return Container();
+                  }
+                },
               ),
             ),
           ),
@@ -313,84 +311,90 @@ class _HomePageState extends State<HomePage> {
 
   Widget _buildTabBar() {
     return Container(
-      height: 50.h, // 固定高度，包含底部横条空间
+      height: 38.h, // 减少高度，使tabbar更紧凑
       margin: EdgeInsets.symmetric(horizontal: 16.w),
       child: Row(
         mainAxisAlignment: MainAxisAlignment.spaceBetween, // 固定5个标签平均分布
-          children: tabs.asMap().entries.map((entry) {
-            final index = entry.key;
-            final tab = entry.value;
-            final isSelected = index == _currentTabIndex;
+        children: tabs.asMap().entries.map((entry) {
+          final index = entry.key;
+          final tab = entry.value;
+          final isSelected = index == _currentTabIndex;
 
-            return GestureDetector(
-              onTap: () {
-                if (_currentTabIndex != index) {
-                  setState(() {
-                    _currentTabIndex = index;
-                  });
-                }
-              },
-              child: Column(
-                mainAxisSize: MainAxisSize.min,
-                children: [
-                  Container(
-                    padding: EdgeInsets.symmetric(horizontal: 12.w, vertical: 8.h),
-                    decoration: const BoxDecoration(
-                      color: Colors.transparent, // 去掉白色背景
-                    ),
-                    child: Stack(
-                      clipBehavior: Clip.none,
-                      children: [
-                        Text(
-                          tab,
-                          style: TextStyle(
-                            fontSize: 15.sp,
-                            color: Colors.white, // 始终保持白色，不改变
-                            fontWeight: isSelected ? FontWeight.w600 : FontWeight.w500,
-                          ),
+          return GestureDetector(
+            onTap: () {
+              if (_currentTabIndex != index) {
+                _pageController.animateToPage(
+                  index,
+                  duration: const Duration(milliseconds: 200),
+                  curve: Curves.easeInOut,
+                );
+              }
+            },
+            child: Column(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                Container(
+                  padding: EdgeInsets.symmetric(
+                      horizontal: 10.w, vertical: 6.h), // 减少内边距
+                  decoration: const BoxDecoration(
+                    color: Colors.transparent, // 去掉白色背景
+                  ),
+                  child: Stack(
+                    clipBehavior: Clip.none,
+                    children: [
+                      Text(
+                        tab,
+                        style: TextStyle(
+                          fontSize: 14.sp, // 稍小字体
+                          color: Colors.white, // 始终保持白色，不改变
+                          fontWeight:
+                              isSelected ? FontWeight.w600 : FontWeight.w500,
                         ),
-                        // 为“宠物”添加右上角“捡漏”图标
-                        if (index == 1) // 宠物是第二个标签（索引为1）
-                          Positioned(
-                            top: -10.h, // 调高位置
-                            right: -8.w,
-                            child: Container(
-                              padding: EdgeInsets.symmetric(horizontal: 4.w, vertical: 1.h),
-                              decoration: BoxDecoration(
-                                color: const Color(0xFFFFEB3B),
-                                borderRadius: BorderRadius.circular(6.r),
-                              ),
-                              child: Text(
-                                '捡漏',
-                                style: TextStyle(
-                                  fontSize: 8.sp,
-                                  color: Colors.black87,
-                                  fontWeight: FontWeight.w600,
-                                ),
+                      ),
+                      // 为"宠物"添加右上角"捡漏"图标
+                      if (index == 1) // 宠物是第二个标签（索引为1）
+                        Positioned(
+                          top: -12.h, // 调高位置确保可见
+                          right: -6.w,
+                          child: Container(
+                            padding: EdgeInsets.symmetric(
+                                horizontal: 3.w, vertical: 1.h),
+                            decoration: BoxDecoration(
+                              color: const Color(0xFFFFEB3B),
+                              borderRadius: BorderRadius.circular(4.r),
+                            ),
+                            child: Text(
+                              '捡漏',
+                              style: TextStyle(
+                                fontSize: 7.sp,
+                                color: Colors.black87,
+                                fontWeight: FontWeight.w600,
                               ),
                             ),
                           ),
-                      ],
-                    ),
+                        ),
+                    ],
                   ),
-                  SizedBox(height: 4.h),
-                  // 选中时显示底部黄色横条
-                  Container(
-                    width: isSelected ? 30.w : 0,
-                    height: 3.h,
-                    decoration: BoxDecoration(
-                      color: isSelected ? const Color(0xFFFFEB3B) : Colors.transparent, // 黄色横条
-                      borderRadius: BorderRadius.circular(1.5.r),
-                    ),
+                ),
+                SizedBox(height: 2.h), // 减少间距
+                // 选中时显示底部黄色横条
+                Container(
+                  width: isSelected ? 24.w : 0,
+                  height: 2.h,
+                  decoration: BoxDecoration(
+                    color: isSelected
+                        ? const Color(0xFFFFEB3B)
+                        : Colors.transparent, // 黄色横条
+                    borderRadius: BorderRadius.circular(1.r),
                   ),
-                ],
-              ),
-            );
-          }).toList(),
+                ),
+              ],
+            ),
+          );
+        }).toList(),
       ),
     );
   }
-
 
   // 轮播图部分 - 与推广横幅同样大小
   Widget _buildBannerSection() {
@@ -429,7 +433,8 @@ class _HomePageState extends State<HomePage> {
   Widget _buildFunctionGrid() {
     return Container(
       margin: EdgeInsets.symmetric(horizontal: 16.w, vertical: 8.h),
-      padding: EdgeInsets.symmetric(horizontal: 0, vertical: 8.h), // 减少内边距，移除水平内边距
+      padding:
+          EdgeInsets.symmetric(horizontal: 0, vertical: 8.h), // 减少内边距，移除水平内边距
       decoration: BoxDecoration(
         color: Colors.white,
         borderRadius: BorderRadius.circular(12.r),
@@ -627,19 +632,22 @@ class _HomePageState extends State<HomePage> {
     );
   }
 
-  Widget _buildFilterTag(String text, bool isSelected, {bool isPrimary = false}) {
+  Widget _buildFilterTag(String text, bool isSelected,
+      {bool isPrimary = false}) {
     return Expanded(
       child: Container(
         margin: EdgeInsets.symmetric(horizontal: 2.w),
         padding: EdgeInsets.symmetric(horizontal: 12.w, vertical: 6.h),
         decoration: BoxDecoration(
-          color: isSelected 
+          color: isSelected
               ? (isPrimary ? const Color(0xFF9C4DFF) : Colors.white)
               : Colors.white,
           borderRadius: BorderRadius.circular(18.r),
           border: Border.all(
-            color: isSelected 
-                ? (isPrimary ? const Color(0xFF9C4DFF) : const Color(0xFF9C4DFF))
+            color: isSelected
+                ? (isPrimary
+                    ? const Color(0xFF9C4DFF)
+                    : const Color(0xFF9C4DFF))
                 : const Color(0xFF9C4DFF),
             width: 1,
           ),
@@ -649,7 +657,7 @@ class _HomePageState extends State<HomePage> {
           textAlign: TextAlign.center,
           style: TextStyle(
             fontSize: 11.sp,
-            color: isSelected 
+            color: isSelected
                 ? (isPrimary ? Colors.white : const Color(0xFF9C4DFF))
                 : const Color(0xFF9C4DFF),
             fontWeight: isSelected ? FontWeight.w500 : FontWeight.normal,
@@ -705,7 +713,7 @@ class _HomePageState extends State<HomePage> {
                 ),
               ),
             ),
-            
+
             // Gradient overlay
             Positioned.fill(
               child: Container(
@@ -729,7 +737,8 @@ class _HomePageState extends State<HomePage> {
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
                   Container(
-                    padding: EdgeInsets.symmetric(horizontal: 8.w, vertical: 3.h),
+                    padding:
+                        EdgeInsets.symmetric(horizontal: 8.w, vertical: 3.h),
                     decoration: BoxDecoration(
                       color: accentColor,
                       borderRadius: BorderRadius.circular(10.r),
@@ -808,7 +817,6 @@ class _HomePageState extends State<HomePage> {
     );
   }
 
-
   // 构建分类内容
   Widget _buildCategoryContent(String title, List<Map<String, dynamic>> items) {
     return SingleChildScrollView(
@@ -818,94 +826,94 @@ class _HomePageState extends State<HomePage> {
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-          Text(
-            title,
-            style: TextStyle(
-              fontSize: 20.sp,
-              fontWeight: FontWeight.bold,
-              color: const Color(0xFF333333),
+            Text(
+              title,
+              style: TextStyle(
+                fontSize: 20.sp,
+                fontWeight: FontWeight.bold,
+                color: const Color(0xFF333333),
+              ),
             ),
-          ),
-          SizedBox(height: 16.h),
-          GridView.builder(
-            shrinkWrap: true,
-            physics: const NeverScrollableScrollPhysics(),
-            gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
-              crossAxisCount: 2,
-              crossAxisSpacing: 12.w,
-              mainAxisSpacing: 12.w,
-              childAspectRatio: 0.8,
-            ),
-            itemCount: items.length,
-            itemBuilder: (context, index) {
-              final item = items[index];
-              return Container(
-                decoration: BoxDecoration(
-                  color: Colors.white,
-                  borderRadius: BorderRadius.circular(12.r),
-                  boxShadow: [
-                    BoxShadow(
-                      color: Colors.black.withOpacity(0.05),
-                      blurRadius: 8,
-                      offset: const Offset(0, 2),
-                    ),
-                  ],
-                ),
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    Expanded(
-                      child: ClipRRect(
-                        borderRadius:
-                            BorderRadius.vertical(top: Radius.circular(12.r)),
-                        child: CachedNetworkImage(
-                          imageUrl: item['image'],
-                          width: double.infinity,
-                          fit: BoxFit.cover,
-                          placeholder: (context, url) => Container(
-                            color: AppColors.background,
-                            child: Center(
-                              child: CircularProgressIndicator(
-                                valueColor: AlwaysStoppedAnimation<Color>(
-                                    AppColors.primary),
+            SizedBox(height: 16.h),
+            GridView.builder(
+              shrinkWrap: true,
+              physics: const NeverScrollableScrollPhysics(),
+              gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
+                crossAxisCount: 2,
+                crossAxisSpacing: 12.w,
+                mainAxisSpacing: 12.w,
+                childAspectRatio: 0.8,
+              ),
+              itemCount: items.length,
+              itemBuilder: (context, index) {
+                final item = items[index];
+                return Container(
+                  decoration: BoxDecoration(
+                    color: Colors.white,
+                    borderRadius: BorderRadius.circular(12.r),
+                    boxShadow: [
+                      BoxShadow(
+                        color: Colors.black.withOpacity(0.05),
+                        blurRadius: 8,
+                        offset: const Offset(0, 2),
+                      ),
+                    ],
+                  ),
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Expanded(
+                        child: ClipRRect(
+                          borderRadius:
+                              BorderRadius.vertical(top: Radius.circular(12.r)),
+                          child: CachedNetworkImage(
+                            imageUrl: item['image'],
+                            width: double.infinity,
+                            fit: BoxFit.cover,
+                            placeholder: (context, url) => Container(
+                              color: AppColors.background,
+                              child: Center(
+                                child: CircularProgressIndicator(
+                                  valueColor: AlwaysStoppedAnimation<Color>(
+                                      AppColors.primary),
+                                ),
                               ),
                             ),
                           ),
                         ),
                       ),
-                    ),
-                    Padding(
-                      padding: EdgeInsets.all(8.w),
-                      child: Column(
-                        crossAxisAlignment: CrossAxisAlignment.start,
-                        children: [
-                          Text(
-                            item['name'],
-                            style: TextStyle(
-                              fontSize: 14.sp,
-                              fontWeight: FontWeight.w500,
-                              color: const Color(0xFF333333),
+                      Padding(
+                        padding: EdgeInsets.all(8.w),
+                        child: Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            Text(
+                              item['name'],
+                              style: TextStyle(
+                                fontSize: 14.sp,
+                                fontWeight: FontWeight.w500,
+                                color: const Color(0xFF333333),
+                              ),
                             ),
-                          ),
-                          SizedBox(height: 4.h),
-                          Text(
-                            '¥${item['price']}',
-                            style: TextStyle(
-                              fontSize: 16.sp,
-                              fontWeight: FontWeight.bold,
-                              color: Colors.red,
+                            SizedBox(height: 4.h),
+                            Text(
+                              '¥${item['price']}',
+                              style: TextStyle(
+                                fontSize: 16.sp,
+                                fontWeight: FontWeight.bold,
+                                color: Colors.red,
+                              ),
                             ),
-                          ),
-                        ],
+                          ],
+                        ),
                       ),
-                    ),
-                  ],
-                ),
-              );
-            },
-          ),
-          SizedBox(height: 16.h),
-        ],
+                    ],
+                  ),
+                );
+              },
+            ),
+            SizedBox(height: 16.h),
+          ],
         ),
       ),
     );
