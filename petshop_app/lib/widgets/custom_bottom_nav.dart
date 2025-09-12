@@ -15,7 +15,7 @@ class CustomBottomNav extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Container(
-      height: 70.h + MediaQuery.of(context).padding.bottom, // 降低整体高度
+      height: 60.h + MediaQuery.of(context).padding.bottom, // 进一步降低整体高度
       decoration: BoxDecoration(
         color: Colors.white,
         boxShadow: [
@@ -35,7 +35,7 @@ class CustomBottomNav extends StatelessWidget {
             right: 0,
             bottom: 0,
             child: Container(
-              height: 50.h + MediaQuery.of(context).padding.bottom, // 降低主体高度
+              height: 45.h + MediaQuery.of(context).padding.bottom, // 进一步降低主体高度
               padding: EdgeInsets.only(
                   bottom: MediaQuery.of(context).padding.bottom),
               child: Row(
@@ -61,13 +61,13 @@ class CustomBottomNav extends StatelessWidget {
           Positioned(
             left: 0,
             right: 0,
-            top: -15.h, // 调整位置以适应新的高度
+            top: -10.h, // 调整位置以适应新的高度，减少伸出高度
             child: Center(
               child: GestureDetector(
                 onTap: () => onTap(2),
                 child: Container(
-                  width: 70.w, // 恢复原始尺寸
-                  height: 70.w,
+                  width: 60.w, // 稍微减小尺寸避免边界问题
+                  height: 60.w,
                   decoration: BoxDecoration(
                     shape: BoxShape.circle,
                     gradient: const LinearGradient(
@@ -81,14 +81,14 @@ class CustomBottomNav extends StatelessWidget {
                     ),
                     boxShadow: [
                       BoxShadow(
-                        color: Colors.black.withOpacity(0.2),
-                        blurRadius: 15,
-                        offset: const Offset(0, 5),
+                        color: Colors.black.withOpacity(0.15), // 减少阴影透明度
+                        blurRadius: 10, // 减小模糊半径
+                        offset: const Offset(0, 3), // 减小偏移
                       ),
                       BoxShadow(
-                        color: const Color(0xFF29B6F6).withOpacity(0.4),
-                        blurRadius: 10,
-                        offset: const Offset(0, 3),
+                        color: const Color(0xFF29B6F6).withOpacity(0.3),
+                        blurRadius: 8,
+                        offset: const Offset(0, 2),
                       ),
                     ],
                   ),
@@ -97,16 +97,16 @@ class CustomBottomNav extends StatelessWidget {
                       shape: BoxShape.circle,
                       color: Colors.white,
                     ),
-                    margin: EdgeInsets.all(4.w),
+                    margin: EdgeInsets.all(3.w), // 减小边距
                     child: Padding(
-                      padding: EdgeInsets.all(12.w),
+                      padding: EdgeInsets.all(10.w), // 减小内边距
                       child: Image.asset(
                         'assets/images/app_logo.png',
                         fit: BoxFit.contain,
                         errorBuilder: (context, error, stackTrace) {
                           return Icon(
                             Icons.pets,
-                            size: 32.w,
+                            size: 28.w, // 减小图标尺寸
                             color: const Color(0xFF29B6F6),
                           );
                         },
@@ -131,20 +131,20 @@ class CustomBottomNav extends StatelessWidget {
         onTap: () => onTap(index),
         behavior: HitTestBehavior.opaque,
         child: Container(
-          padding: EdgeInsets.symmetric(vertical: 8.h),
+          padding: EdgeInsets.symmetric(vertical: 4.h), // 减小垂直内边距
           child: Column(
             mainAxisSize: MainAxisSize.min,
             children: [
               Icon(
                 isSelected ? selectedIcon : unselectedIcon,
-                size: 24.w,
+                size: 22.w, // 稍微减小图标尺寸
                 color: isSelected ? AppColors.primary : AppColors.textSecondary,
               ),
-              SizedBox(height: 4.h),
+              SizedBox(height: 2.h), // 减小间距
               Text(
                 label,
                 style: TextStyle(
-                  fontSize: 10.sp,
+                  fontSize: 9.sp, // 稍微减小字体
                   color:
                       isSelected ? AppColors.primary : AppColors.textSecondary,
                   fontWeight: isSelected ? FontWeight.w600 : FontWeight.normal,
