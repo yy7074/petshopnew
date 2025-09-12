@@ -156,7 +156,8 @@ class _HomePageState extends State<HomePage> {
               color: const Color(0xFFF5F5F5),
               child: PageView.builder(
                 controller: _pageController,
-                physics: const ClampingScrollPhysics(), // 保持左右滑动，但优化滚动行为
+                physics:
+                    const NeverScrollableScrollPhysics(), // 禁用PageView的垂直滚动
                 onPageChanged: (index) {
                   setState(() {
                     _currentTabIndex = index;
@@ -167,7 +168,7 @@ class _HomePageState extends State<HomePage> {
                   switch (index) {
                     case 0:
                       return SingleChildScrollView(
-                        physics: const ClampingScrollPhysics(),
+                        physics: const BouncingScrollPhysics(), // 使用弹性滚动
                         child: Column(
                           children: [
                             _buildBannerSection(),
@@ -820,7 +821,7 @@ class _HomePageState extends State<HomePage> {
   // 构建分类内容
   Widget _buildCategoryContent(String title, List<Map<String, dynamic>> items) {
     return SingleChildScrollView(
-      physics: const ClampingScrollPhysics(),
+      physics: const BouncingScrollPhysics(), // 使用弹性滚动
       child: Container(
         padding: EdgeInsets.all(16.w),
         child: Column(

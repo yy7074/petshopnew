@@ -15,7 +15,7 @@ class CustomBottomNav extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Container(
-      height: 80.h + MediaQuery.of(context).padding.bottom,
+      height: 80.h + MediaQuery.of(context).padding.bottom, // 增加高度以容纳突出按钮
       decoration: BoxDecoration(
         color: Colors.white,
         boxShadow: [
@@ -27,6 +27,7 @@ class CustomBottomNav extends StatelessWidget {
         ],
       ),
       child: Stack(
+        clipBehavior: Clip.none, // 允许子组件超出边界
         children: [
           // 底部导航栏主体
           Positioned(
@@ -34,7 +35,7 @@ class CustomBottomNav extends StatelessWidget {
             right: 0,
             bottom: 0,
             child: Container(
-              height: 80.h + MediaQuery.of(context).padding.bottom,
+              height: 60.h + MediaQuery.of(context).padding.bottom,
               padding: EdgeInsets.only(
                   bottom: MediaQuery.of(context).padding.bottom),
               child: Row(
@@ -56,16 +57,16 @@ class CustomBottomNav extends StatelessWidget {
             ),
           ),
 
-          // 中间圆形按钮 - 宠物拍卖图标
+          // 中间圆形按钮 - 使用app logo
           Positioned(
             left: 0,
             right: 0,
-            top: 0,
+            top: -20.h, // 向上突出更多
             child: Center(
               child: GestureDetector(
                 onTap: () => onTap(2),
                 child: Container(
-                  width: 70.w,
+                  width: 70.w, // 恢复原始尺寸
                   height: 70.w,
                   decoration: BoxDecoration(
                     shape: BoxShape.circle,
@@ -73,21 +74,21 @@ class CustomBottomNav extends StatelessWidget {
                       begin: Alignment.topLeft,
                       end: Alignment.bottomRight,
                       colors: [
-                        Color(0xFFFF9800), // 橙色
-                        Color(0xFFF57C00),
-                        Color(0xFFE65100),
+                        Color(0xFF66D9FF), // 蓝色渐变
+                        Color(0xFF4FC3F7),
+                        Color(0xFF29B6F6),
                       ],
                     ),
                     boxShadow: [
                       BoxShadow(
-                        color: Colors.black.withOpacity(0.15),
-                        blurRadius: 12,
-                        offset: const Offset(0, 4),
+                        color: Colors.black.withOpacity(0.2),
+                        blurRadius: 15,
+                        offset: const Offset(0, 5),
                       ),
                       BoxShadow(
-                        color: const Color(0xFFFF9800).withOpacity(0.3),
-                        blurRadius: 8,
-                        offset: const Offset(0, 2),
+                        color: const Color(0xFF29B6F6).withOpacity(0.4),
+                        blurRadius: 10,
+                        offset: const Offset(0, 3),
                       ),
                     ],
                   ),
@@ -97,18 +98,19 @@ class CustomBottomNav extends StatelessWidget {
                       color: Colors.white,
                     ),
                     margin: EdgeInsets.all(4.w),
-                    child: Stack(
-                      children: [
-                        // 锦鲤装饰图案
-                        Positioned.fill(
-                          child: Padding(
-                            padding: EdgeInsets.all(8.w),
-                            child: CustomPaint(
-                              painter: KoiFishPainter(),
-                            ),
-                          ),
-                        ),
-                      ],
+                    child: Padding(
+                      padding: EdgeInsets.all(12.w),
+                      child: Image.asset(
+                        'assets/images/app_logo.png',
+                        fit: BoxFit.contain,
+                        errorBuilder: (context, error, stackTrace) {
+                          return Icon(
+                            Icons.pets,
+                            size: 32.w,
+                            color: const Color(0xFF29B6F6),
+                          );
+                        },
+                      ),
                     ),
                   ),
                 ),
@@ -154,64 +156,4 @@ class CustomBottomNav extends StatelessWidget {
       ),
     );
   }
-}
-
-// 锦鲤装饰画笔
-class KoiFishPainter extends CustomPainter {
-  @override
-  void paint(Canvas canvas, Size size) {
-    final paint = Paint()
-      ..color = const Color(0xFFFF6B35) // 橙红色
-      ..style = PaintingStyle.fill;
-
-    final outlinePaint = Paint()
-      ..color = const Color(0xFFF57C00)
-      ..style = PaintingStyle.stroke
-      ..strokeWidth = 1.5;
-
-    final center = Offset(size.width / 2, size.height / 2);
-    final radius = size.width * 0.35;
-
-    // 绘制简化的锦鲤鱼形状
-    final fishPath = Path();
-
-    // 鱼身（椭圆）
-    final fishBodyRect = Rect.fromCenter(
-        center: center, width: radius * 1.6, height: radius * 0.8);
-    fishPath.addOval(fishBodyRect);
-
-    // 鱼尾
-    final tailPath = Path();
-    tailPath.moveTo(center.dx + radius * 0.8, center.dy);
-    tailPath.lineTo(center.dx + radius * 1.2, center.dy - radius * 0.4);
-    tailPath.lineTo(center.dx + radius * 1.2, center.dy + radius * 0.4);
-    tailPath.close();
-
-    canvas.drawPath(fishPath, paint);
-    canvas.drawPath(tailPath, paint);
-    canvas.drawPath(fishPath, outlinePaint);
-    canvas.drawPath(tailPath, outlinePaint);
-
-    // 鱼眼
-    final eyePaint = Paint()..color = Colors.white;
-    final eyeCenter =
-        Offset(center.dx - radius * 0.3, center.dy - radius * 0.1);
-    canvas.drawCircle(eyeCenter, radius * 0.15, eyePaint);
-
-    final pupilPaint = Paint()..color = Colors.black;
-    canvas.drawCircle(eyeCenter, radius * 0.08, pupilPaint);
-
-    // 装饰性波纹
-    final wavePaint = Paint()
-      ..color = const Color(0xFFFF9800).withOpacity(0.3)
-      ..style = PaintingStyle.stroke
-      ..strokeWidth = 2;
-
-    for (int i = 0; i < 3; i++) {
-      canvas.drawCircle(center, radius * 0.3 + (i * radius * 0.2), wavePaint);
-    }
-  }
-
-  @override
-  bool shouldRepaint(CustomPainter oldDelegate) => false;
 }
