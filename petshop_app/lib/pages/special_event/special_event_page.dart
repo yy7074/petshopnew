@@ -3,6 +3,10 @@ import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:cached_network_image/cached_network_image.dart';
 import '../search/search_page.dart';
 import '../product/product_detail_page.dart';
+import '../../services/event_service.dart';
+import '../../services/auction_service.dart';
+import '../../services/favorite_service.dart';
+import '../../models/product.dart' as product_models;
 
 class SpecialEventPage extends StatefulWidget {
   final String? title;
@@ -19,6 +23,10 @@ class SpecialEventPage extends StatefulWidget {
 }
 
 class _SpecialEventPageState extends State<SpecialEventPage> {
+  final EventService _eventService = EventService();
+  final AuctionService _auctionService = AuctionService();
+  final FavoriteService _favoriteService = FavoriteService();
+  
   // 排序状态管理
   String _selectedSort = '默认排序';
   bool _priceAscending = true;
@@ -27,81 +35,66 @@ class _SpecialEventPageState extends State<SpecialEventPage> {
   // 标签筛选状态
   String _selectedTag = '全部(500)';
 
+  // 加载状态
+  bool _isLoading = true;
+  String? _errorMessage;
+
   // 商品数据
-  List<Map<String, dynamic>> _products = [
-    {
-      'id': '1869863017137013',
-      'name': '精品金毛幼犬 纯种血统',
-      'price': 924.9,
-      'image': 'https://picsum.photos/200/200?random=80',
-      'bids': 39,
-      'views': 394,
-      'timeLeft': '00时34分23秒',
-      'isFavorite': false,
-      'endTime': DateTime.now()
-          .add(const Duration(hours: 2, minutes: 34, seconds: 23)),
-    },
-    {
-      'id': '1869863017137014',
-      'name': '英短蓝猫 健康活泼',
-      'price': 1200.5,
-      'image': 'https://picsum.photos/200/200?random=81',
-      'bids': 25,
-      'views': 156,
-      'timeLeft': '01时15分45秒',
-      'isFavorite': true,
-      'endTime': DateTime.now()
-          .add(const Duration(hours: 3, minutes: 15, seconds: 45)),
-    },
-    {
-      'id': '1869863017137015',
-      'name': '布偶猫 温顺可爱',
-      'price': 650.0,
-      'image': 'https://picsum.photos/200/200?random=82',
-      'bids': 67,
-      'views': 289,
-      'timeLeft': '02时08分12秒',
-      'isFavorite': false,
-      'endTime':
-          DateTime.now().add(const Duration(hours: 4, minutes: 8, seconds: 12)),
-    },
-    {
-      'id': '1869863017137016',
-      'name': '萨摩耶 雪白毛色',
-      'price': 1800.0,
-      'image': 'https://picsum.photos/200/200?random=83',
-      'bids': 12,
-      'views': 78,
-      'timeLeft': '03时22分56秒',
-      'isFavorite': true,
-      'endTime': DateTime.now()
-          .add(const Duration(hours: 5, minutes: 22, seconds: 56)),
-    },
-    {
-      'id': '1869863017137017',
-      'name': '柯基犬 短腿萌宠',
-      'price': 450.0,
-      'image': 'https://picsum.photos/200/200?random=84',
-      'bids': 89,
-      'views': 445,
-      'timeLeft': '00时45分30秒',
-      'isFavorite': false,
-      'endTime': DateTime.now()
-          .add(const Duration(hours: 1, minutes: 45, seconds: 30)),
-    },
-    {
-      'id': '1869863017137018',
-      'name': '比熊犬 卷毛可爱',
-      'price': 2100.0,
-      'image': 'https://picsum.photos/200/200?random=85',
-      'bids': 5,
-      'views': 23,
-      'timeLeft': '04时15分18秒',
-      'isFavorite': false,
-      'endTime': DateTime.now()
-          .add(const Duration(hours: 6, minutes: 15, seconds: 18)),
-    },
-  ];
+  List<product_models.Product> _products = [];
+  List<product_models.Product> _allProducts = []; // 存储所有商品用于筛选
+
+  @override
+  void initState() {
+    super.initState();
+    _loadEventProducts();
+  }
+
+  /// 加载专场商品
+  Future<void> _loadEventProducts() async {
+    if (widget.eventId == null) {
+      setState(() {
+        _isLoading = false;
+        _errorMessage = '专场 ID 不能为空';
+      });
+      return;
+    }
+
+    setState(() {
+      _isLoading = true;
+      _errorMessage = null;
+    });
+
+    try {
+      final result = await _eventService.getEventProducts(
+        eventId: int.parse(widget.eventId!),
+        page: 1,
+        pageSize: 50,
+      );
+
+      if (result.success && result.data != null) {
+        final productList = result.data!
+            .map((item) => product_models.Product.fromJson(item))
+            .toList();
+        
+        setState(() {
+          _allProducts = productList;
+          _products = List.from(productList);
+          _isLoading = false;
+          _selectedTag = '全部(${_products.length})';
+        });
+      } else {
+        setState(() {
+          _isLoading = false;
+          _errorMessage = result.message ?? '加载商品失败';
+        });
+      }
+    } catch (e) {
+      setState(() {
+        _isLoading = false;
+        _errorMessage = '加载商品失败: $e';
+      });
+    }
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -364,6 +357,98 @@ class _SpecialEventPageState extends State<SpecialEventPage> {
 
   // 构建商品网格
   Widget _buildProductGrid() {
+    if (_isLoading) {
+      return Container(
+        margin: EdgeInsets.symmetric(horizontal: 16.w),
+        height: 400.h,
+        child: const Center(
+          child: CircularProgressIndicator(
+            color: Color(0xFF9C4DFF),
+          ),
+        ),
+      );
+    }
+
+    if (_errorMessage != null) {
+      return Container(
+        margin: EdgeInsets.symmetric(horizontal: 16.w),
+        height: 400.h,
+        child: Center(
+          child: Column(
+            mainAxisAlignment: MainAxisAlignment.center,
+            children: [
+              Icon(
+                Icons.error_outline,
+                size: 64.w,
+                color: const Color(0xFF999999),
+              ),
+              SizedBox(height: 16.h),
+              Text(
+                _errorMessage!,
+                style: TextStyle(
+                  fontSize: 14.sp,
+                  color: const Color(0xFF999999),
+                ),
+                textAlign: TextAlign.center,
+              ),
+              SizedBox(height: 16.h),
+              ElevatedButton(
+                onPressed: _loadEventProducts,
+                style: ElevatedButton.styleFrom(
+                  backgroundColor: const Color(0xFF9C4DFF),
+                  shape: RoundedRectangleBorder(
+                    borderRadius: BorderRadius.circular(8.r),
+                  ),
+                ),
+                child: Text(
+                  '重试',
+                  style: TextStyle(
+                    fontSize: 14.sp,
+                    color: Colors.white,
+                  ),
+                ),
+              ),
+            ],
+          ),
+        ),
+      );
+    }
+
+    if (_products.isEmpty) {
+      return Container(
+        margin: EdgeInsets.symmetric(horizontal: 16.w),
+        height: 400.h,
+        child: Center(
+          child: Column(
+            mainAxisAlignment: MainAxisAlignment.center,
+            children: [
+              Icon(
+                Icons.pets,
+                size: 64.w,
+                color: const Color(0xFF999999),
+              ),
+              SizedBox(height: 16.h),
+              Text(
+                '暂无商品',
+                style: TextStyle(
+                  fontSize: 16.sp,
+                  color: const Color(0xFF999999),
+                ),
+              ),
+              SizedBox(height: 8.h),
+              Text(
+                '请稍后再来看看吧',
+                style: TextStyle(
+                  fontSize: 14.sp,
+                  color: const Color(0xFFCCCCCC),
+                ),
+              ),
+            ],
+          ),
+        ),
+      );
+    }
+
     return Container(
       margin: EdgeInsets.symmetric(horizontal: 16.w),
       child: GridView.builder(
@@ -385,13 +470,15 @@ class _SpecialEventPageState extends State<SpecialEventPage> {
   }
 
   // 构建商品卡片
-  Widget _buildProductCard(Map<String, dynamic> product) {
+  Widget _buildProductCard(product_models.Product product) {
     return GestureDetector(
       onTap: () {
         Navigator.push(
           context,
           MaterialPageRoute(
-            builder: (context) => ProductDetailPage(productData: product),
+            builder: (context) => ProductDetailPage(
+              productData: _convertProductToMap(product),
+            ),
           ),
         );
       },
@@ -421,7 +508,9 @@ class _SpecialEventPageState extends State<SpecialEventPage> {
                       topRight: Radius.circular(12.r),
                     ),
                     child: CachedNetworkImage(
-                      imageUrl: product['image'],
+                      imageUrl: product.images.isNotEmpty 
+                          ? product.images.first 
+                          : 'https://picsum.photos/200/200?random=${product.id}',
                       fit: BoxFit.cover,
                       width: double.infinity,
                       height: double.infinity,
@@ -443,9 +532,7 @@ class _SpecialEventPageState extends State<SpecialEventPage> {
                     right: 8.w,
                     child: GestureDetector(
                       onTap: () {
-                        setState(() {
-                          product['isFavorite'] = !product['isFavorite'];
-                        });
+                        _toggleFavorite(product.id);
                       },
                       child: Container(
                         width: 28.w,
@@ -462,13 +549,9 @@ class _SpecialEventPageState extends State<SpecialEventPage> {
                           ],
                         ),
                         child: Icon(
-                          product['isFavorite']
-                              ? Icons.favorite
-                              : Icons.favorite_border,
+                          Icons.favorite_border, // 暂时显示未收藏状态
                           size: 16.w,
-                          color: product['isFavorite']
-                              ? const Color(0xFFFFEB3B) // 黄色心形
-                              : const Color(0xFF999999),
+                          color: const Color(0xFF999999),
                         ),
                       ),
                     ),
@@ -487,7 +570,7 @@ class _SpecialEventPageState extends State<SpecialEventPage> {
                   children: [
                     // 编号
                     Text(
-                      '编号： ${product['id']}',
+                      '编号： ${product.id}',
                       style: TextStyle(
                         fontSize: 10.sp,
                         color: const Color(0xFF9C4DFF),
@@ -509,7 +592,7 @@ class _SpecialEventPageState extends State<SpecialEventPage> {
                         ),
                         SizedBox(width: 3.w),
                         Text(
-                          '${product['bids']}次出价',
+                          '${product.auctionInfo?.bidCount ?? 0}次出价',
                           style: TextStyle(
                             fontSize: 11.sp,
                             color: const Color(0xFF999999),
@@ -524,7 +607,7 @@ class _SpecialEventPageState extends State<SpecialEventPage> {
                         ),
                         SizedBox(width: 3.w),
                         Text(
-                          '${product['views']}人已看',
+                          '${product.auctionInfo?.bidCount ?? 0}人已看',
                           style: TextStyle(
                             fontSize: 11.sp,
                             color: const Color(0xFF999999),
@@ -538,7 +621,7 @@ class _SpecialEventPageState extends State<SpecialEventPage> {
 
                     // 商品标题 - 优化显示
                     Text(
-                      product['name'],
+                      product.title,
                       style: TextStyle(
                         fontSize: 12.sp,
                         color: const Color(0xFF333333),
@@ -557,7 +640,7 @@ class _SpecialEventPageState extends State<SpecialEventPage> {
                       crossAxisAlignment: CrossAxisAlignment.center,
                       children: [
                         Text(
-                          '¥${product['price']}',
+                          '¥${product.currentPrice.toStringAsFixed(2)}',
                           style: TextStyle(
                             fontSize: 16.sp,
                             color: const Color(0xFFFF5722),
@@ -566,7 +649,8 @@ class _SpecialEventPageState extends State<SpecialEventPage> {
                         ),
                         GestureDetector(
                           onTap: () {
-                            print('点击出价');
+                            // TODO: 实现出价功能
+                            _showBidDialog(product);
                           },
                           child: Container(
                             padding: EdgeInsets.symmetric(
@@ -600,7 +684,7 @@ class _SpecialEventPageState extends State<SpecialEventPage> {
                         ),
                         SizedBox(width: 4.w),
                         Text(
-                          product['timeLeft'],
+                          _formatTimeLeft(product.auctionInfo?.endTime),
                           style: TextStyle(
                             fontSize: 11.sp,
                             color: const Color(0xFF999999),
@@ -626,29 +710,31 @@ class _SpecialEventPageState extends State<SpecialEventPage> {
         case '价格':
           _products.sort((a, b) {
             if (_priceAscending) {
-              return (a['price'] as double).compareTo(b['price'] as double);
+              return a.currentPrice.compareTo(b.currentPrice);
             } else {
-              return (b['price'] as double).compareTo(a['price'] as double);
+              return b.currentPrice.compareTo(a.currentPrice);
             }
           });
           break;
         case '结标时间':
           _products.sort((a, b) {
+            final aEndTime = a.auctionInfo?.endTime ?? DateTime.now();
+            final bEndTime = b.auctionInfo?.endTime ?? DateTime.now();
             if (_timeAscending) {
-              return (a['endTime'] as DateTime)
-                  .compareTo(b['endTime'] as DateTime);
+              return aEndTime.compareTo(bEndTime);
             } else {
-              return (b['endTime'] as DateTime)
-                  .compareTo(a['endTime'] as DateTime);
+              return bEndTime.compareTo(aEndTime);
             }
           });
           break;
         case '我的关注':
           _products.sort((a, b) {
-            if ((a['isFavorite'] as bool) && !(b['isFavorite'] as bool)) {
+            // 假设收藏状态暂时为false，后续需要实现收藏功能
+            final aFavorite = false; // TODO: 从用户收藏列表获取
+            final bFavorite = false; // TODO: 从用户收藏列表获取
+            if (aFavorite && !bFavorite) {
               return -1;
-            } else if (!(a['isFavorite'] as bool) &&
-                (b['isFavorite'] as bool)) {
+            } else if (!aFavorite && bFavorite) {
               return 1;
             } else {
               return 0;
@@ -657,9 +743,297 @@ class _SpecialEventPageState extends State<SpecialEventPage> {
           break;
         case '默认排序':
         default:
-          // 按原始顺序排序
+          // 恢复原始顺序
+          _products = List.from(_allProducts);
           break;
       }
     });
+  }
+
+  // 将Product对象转换为Map用于ProductDetailPage
+  Map<String, dynamic> _convertProductToMap(product_models.Product product) {
+    return {
+      'id': product.id,
+      'title': product.title,
+      'description': product.description,
+      'images': product.images,
+      'price': product.currentPrice,
+      'original_price': product.auctionInfo?.startPrice ?? product.fixedInfo?.price ?? 0,
+      'status': product.status,
+      'category': product.categoryId.toString(),
+      'breed': '', // Product模型中没有breed字段，使用空字符串
+      'age': 0, // Product模型中没有age字段，使用默认值
+      'gender': '', // Product模型中没有gender字段，使用空字符串
+      'location': product.location ?? '',
+      'seller_id': product.sellerId,
+      'seller_name': product.seller?.name ?? '',
+      'auction_type': product.type == product_models.ProductType.auction ? 1 : 2,
+      'starting_price': product.auctionInfo?.startPrice ?? 0,
+      'current_price': product.currentPrice,
+      'bid_increment': product.auctionInfo?.bidIncrement ?? 10.0,
+      'auction_info': product.auctionInfo != null ? {
+        'start_time': product.auctionInfo!.startTime.toIso8601String(),
+        'end_time': product.auctionInfo!.endTime.toIso8601String(),
+        'bid_count': product.auctionInfo!.bidCount,
+        'current_price': product.auctionInfo!.currentPrice,
+        'bid_increment': product.auctionInfo!.bidIncrement,
+      } : null,
+      'created_at': product.createdAt.toIso8601String(),
+      'updated_at': product.updatedAt.toIso8601String(),
+    };
+  }
+
+  // 格式化剩余时间
+  String _formatTimeLeft(DateTime? endTime) {
+    if (endTime == null) {
+      return '已结束';
+    }
+
+    final now = DateTime.now();
+    final difference = endTime.difference(now);
+
+    if (difference.isNegative) {
+      return '已结束';
+    }
+
+    final days = difference.inDays;
+    final hours = difference.inHours % 24;
+    final minutes = difference.inMinutes % 60;
+
+    if (days > 0) {
+      return '${days}天${hours}小时';
+    } else if (hours > 0) {
+      return '${hours}小时${minutes}分钟';
+    } else {
+      return '${minutes}分钟';
+    }
+  }
+
+  // 显示出价对话框
+  void _showBidDialog(product_models.Product product) {
+    final TextEditingController bidController = TextEditingController();
+    final double minBid = product.currentPrice + (product.auctionInfo?.bidIncrement ?? 10.0);
+    
+    showDialog(
+      context: context,
+      builder: (BuildContext context) {
+        return AlertDialog(
+          shape: RoundedRectangleBorder(
+            borderRadius: BorderRadius.circular(16.r),
+          ),
+          title: Text(
+            '出价竞拍',
+            style: TextStyle(
+              fontSize: 18.sp,
+              fontWeight: FontWeight.w600,
+              color: const Color(0xFF333333),
+            ),
+          ),
+          content: Column(
+            mainAxisSize: MainAxisSize.min,
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Text(
+                product.title,
+                style: TextStyle(
+                  fontSize: 14.sp,
+                  color: const Color(0xFF666666),
+                ),
+                maxLines: 2,
+                overflow: TextOverflow.ellipsis,
+              ),
+              SizedBox(height: 16.h),
+              Text(
+                '当前价格: ¥${product.currentPrice.toStringAsFixed(2)}',
+                style: TextStyle(
+                  fontSize: 16.sp,
+                  fontWeight: FontWeight.w600,
+                  color: const Color(0xFFFF5722),
+                ),
+              ),
+              SizedBox(height: 8.h),
+              Text(
+                '最低出价: ¥${minBid.toStringAsFixed(2)}',
+                style: TextStyle(
+                  fontSize: 14.sp,
+                  color: const Color(0xFF666666),
+                ),
+              ),
+              SizedBox(height: 16.h),
+              TextField(
+                controller: bidController,
+                keyboardType: TextInputType.number,
+                decoration: InputDecoration(
+                  labelText: '您的出价',
+                  hintText: '请输入出价金额',
+                  prefixText: '¥',
+                  border: OutlineInputBorder(
+                    borderRadius: BorderRadius.circular(8.r),
+                  ),
+                  focusedBorder: OutlineInputBorder(
+                    borderRadius: BorderRadius.circular(8.r),
+                    borderSide: const BorderSide(
+                      color: Color(0xFF9C4DFF),
+                      width: 2,
+                    ),
+                  ),
+                ),
+              ),
+            ],
+          ),
+          actions: [
+            TextButton(
+              onPressed: () {
+                Navigator.of(context).pop();
+              },
+              child: Text(
+                '取消',
+                style: TextStyle(
+                  fontSize: 14.sp,
+                  color: const Color(0xFF999999),
+                ),
+              ),
+            ),
+            ElevatedButton(
+              onPressed: () {
+                final bidAmount = double.tryParse(bidController.text);
+                if (bidAmount == null) {
+                  ScaffoldMessenger.of(context).showSnackBar(
+                    const SnackBar(content: Text('请输入有效的出价金额')),
+                  );
+                  return;
+                }
+                
+                if (bidAmount < minBid) {
+                  ScaffoldMessenger.of(context).showSnackBar(
+                    SnackBar(
+                      content: Text('出价不能低于最低出价 ¥${minBid.toStringAsFixed(2)}'),
+                    ),
+                  );
+                  return;
+                }
+                
+                // TODO: 调用出价API
+                Navigator.of(context).pop();
+                _placeBid(product.id, bidAmount);
+              },
+              style: ElevatedButton.styleFrom(
+                backgroundColor: const Color(0xFF9C4DFF),
+                shape: RoundedRectangleBorder(
+                  borderRadius: BorderRadius.circular(8.r),
+                ),
+              ),
+              child: Text(
+                '确认出价',
+                style: TextStyle(
+                  fontSize: 14.sp,
+                  color: Colors.white,
+                ),
+              ),
+            ),
+          ],
+        );
+      },
+    );
+  }
+
+  // 提交出价
+  Future<void> _placeBid(int productId, double bidAmount) async {
+    try {
+      final result = await _auctionService.placeBid(
+        productId: productId,
+        bidAmount: bidAmount,
+      );
+      
+      if (result.success) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text('出价成功: ¥${bidAmount.toStringAsFixed(2)}'),
+            backgroundColor: Colors.green,
+          ),
+        );
+        
+        // 刷新商品数据
+        _loadEventProducts();
+      } else {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text('出价失败: ${result.message}'),
+            backgroundColor: Colors.red,
+          ),
+        );
+      }
+    } catch (e) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Text('出价失败: $e'),
+          backgroundColor: Colors.red,
+        ),
+      );
+    }
+  }
+
+  // 切换收藏状态
+  Future<void> _toggleFavorite(int productId) async {
+    try {
+      // 首先检查当前收藏状态
+      final checkResult = await _favoriteService.isFavorite(productId);
+      
+      if (checkResult.success) {
+        final bool isFavorited = checkResult.data!;
+        
+        if (isFavorited) {
+          // 取消收藏
+          final result = await _favoriteService.removeFavorite(productId);
+          if (result.success) {
+            ScaffoldMessenger.of(context).showSnackBar(
+              const SnackBar(
+                content: Text('已取消收藏'),
+                backgroundColor: Colors.orange,
+              ),
+            );
+          } else {
+            ScaffoldMessenger.of(context).showSnackBar(
+              SnackBar(
+                content: Text('取消收藏失败: ${result.message}'),
+                backgroundColor: Colors.red,
+              ),
+            );
+          }
+        } else {
+          // 添加收藏
+          final result = await _favoriteService.addFavorite(productId);
+          if (result.success) {
+            ScaffoldMessenger.of(context).showSnackBar(
+              const SnackBar(
+                content: Text('收藏成功'),
+                backgroundColor: Colors.green,
+              ),
+            );
+          } else {
+            ScaffoldMessenger.of(context).showSnackBar(
+              SnackBar(
+                content: Text('收藏失败: ${result.message}'),
+                backgroundColor: Colors.red,
+              ),
+            );
+          }
+        }
+      } else {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text('检查收藏状态失败: ${checkResult.message}'),
+            backgroundColor: Colors.red,
+          ),
+        );
+      }
+    } catch (e) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Text('收藏操作失败: $e'),
+          backgroundColor: Colors.red,
+        ),
+      );
+    }
   }
 }

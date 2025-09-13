@@ -10,7 +10,7 @@ import '../local_stores/local_pet_stores_page.dart';
 import '../aquarium_design/aquarium_design_page.dart';
 import '../door_service/door_service_page.dart';
 import '../search/search_page.dart';
-import '../special_event/special_event_page.dart';
+import '../events/special_event_page.dart';
 import '../product/product_detail_page.dart';
 import '../../services/product_service.dart' as product_service;
 import '../../services/event_service.dart';
@@ -723,14 +723,28 @@ class _HomePageState extends State<HomePage> {
           return Container(
             width: 200.w,
             margin: EdgeInsets.only(right: 12.w),
-            child: _buildSpecialCard(
-              '专场',
-              event.title,
-              _formatEventTime(event.endTime ?? DateTime.now()),
-              '进行中',
-              event.bannerImage ??
-                  'https://picsum.photos/200/150?random=event${event.id}',
-              const Color(0xFF4A90E2),
+            child: GestureDetector(
+              onTap: () {
+                // 跳转到专场详情页面，传递专场 ID
+                Navigator.push(
+                  context,
+                  MaterialPageRoute(
+                    builder: (context) => SpecialEventPage(
+                      title: event.title,
+                      eventId: event.id.toString(),
+                    ),
+                  ),
+                );
+              },
+              child: _buildSpecialCard(
+                '专场',
+                event.title,
+                _formatEventTime(event.endTime ?? DateTime.now()),
+                '进行中',
+                event.bannerImage ??
+                    'https://picsum.photos/200/150?random=event${event.id}',
+                const Color(0xFF4A90E2),
+              ),
             ),
           );
         },
@@ -793,6 +807,7 @@ class _HomePageState extends State<HomePage> {
                   MaterialPageRoute(
                     builder: (context) => const SpecialEventPage(
                       title: '限时拍卖专场',
+                      eventId: '1',
                     ),
                   ),
                 );
@@ -998,6 +1013,7 @@ class _HomePageState extends State<HomePage> {
           MaterialPageRoute(
             builder: (context) => SpecialEventPage(
               title: title,
+              eventId: '1',
             ),
           ),
         );

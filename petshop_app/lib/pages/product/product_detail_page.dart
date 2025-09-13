@@ -25,7 +25,7 @@ class _ProductDetailPageState extends State<ProductDetailPage> {
   final AuctionService _auctionService = AuctionService();
   List<Bid> _bidHistory = [];
   bool _isLoadingBids = false;
-  
+
   // 拍卖相关状态
   Map<String, dynamic>? _auctionStatus;
   bool _isLoadingAuctionStatus = false;
@@ -52,14 +52,18 @@ class _ProductDetailPageState extends State<ProductDetailPage> {
   Future<void> _loadAuctionStatus() async {
     // 这里应该从路由参数或widget.productData中获取productId
     final productIdRaw = widget.productData?['id'] ?? 1;
-    final productId = productIdRaw is String ? int.tryParse(productIdRaw) ?? 1 : productIdRaw as int;
-    
+    final productId = productIdRaw is String
+        ? int.tryParse(productIdRaw) ?? 1
+        : productIdRaw as int;
+
     setState(() => _isLoadingAuctionStatus = true);
-    
+
     try {
-      final status = await _auctionService.getAuctionStatus(productId);
+      final result = await _auctionService.getAuctionStatus(productId);
       setState(() {
-        _auctionStatus = status;
+        if (result.success && result.data != null) {
+          _auctionStatus = result.data;
+        }
         // 检查是否已结束且用户是否中标
         _checkIfWinner(productId);
       });
@@ -72,21 +76,23 @@ class _ProductDetailPageState extends State<ProductDetailPage> {
 
   Future<void> _checkIfWinner(int productId) async {
     try {
-      final winningAuctions = await _auctionService.getMyWinningAuctions();
-      final items = winningAuctions['items'] as List?;
-      
-      if (items != null) {
-        final hasWon = items.any((item) {
-          final itemProductId = item['product_id'];
-          // 确保类型匹配，支持String或int类型的product_id
-          if (itemProductId is String) {
-            return int.tryParse(itemProductId) == productId;
-          } else if (itemProductId is int) {
-            return itemProductId == productId;
-          }
-          return false;
-        });
-        setState(() => _isWinner = hasWon);
+      final result = await _auctionService.getMyWinningAuctions();
+      if (result.success && result.data != null) {
+        final items = result.data!;
+
+        if (items.isNotEmpty) {
+          final hasWon = items.any((item) {
+            final itemProductId = item['product_id'];
+            // 确保类型匹配，支持String或int类型的product_id
+            if (itemProductId is String) {
+              return int.tryParse(itemProductId) == productId;
+            } else if (itemProductId is int) {
+              return itemProductId == productId;
+            }
+            return false;
+          });
+          setState(() => _isWinner = hasWon);
+        }
       }
     } catch (e) {
       print('检查中标状态失败: $e');
@@ -95,20 +101,22 @@ class _ProductDetailPageState extends State<ProductDetailPage> {
 
   Future<void> _placeBid(double bidAmount) async {
     final productIdRaw = widget.productData?['id'] ?? 1;
-    final productId = productIdRaw is String ? int.tryParse(productIdRaw) ?? 1 : productIdRaw as int;
-    
+    final productId = productIdRaw is String
+        ? int.tryParse(productIdRaw) ?? 1
+        : productIdRaw as int;
+
     setState(() => _isLoadingBids = true);
-    
+
     try {
       final result = await _bidService.placeBid(
         productId: productId,
         bidAmount: bidAmount,
       );
-      
+
       if (result.success) {
         // 出价成功，刷新拍卖状态
         await _loadAuctionStatus();
-        
+
         if (mounted) {
           Navigator.pop(context);
         }
@@ -121,10 +129,11 @@ class _ProductDetailPageState extends State<ProductDetailPage> {
       } else {
         // 检查是否是商品不存在的错误，提供友好提示
         String errorMessage = result.message;
-        if (errorMessage.contains('商品不存在') || errorMessage.contains('Not Found')) {
+        if (errorMessage.contains('商品不存在') ||
+            errorMessage.contains('Not Found')) {
           errorMessage = '这是演示商品，请在真实环境中测试出价功能';
         }
-        
+
         Get.snackbar(
           '出价失败',
           errorMessage,
@@ -208,7 +217,8 @@ class _ProductDetailPageState extends State<ProductDetailPage> {
                               decoration: BoxDecoration(
                                 borderRadius: BorderRadius.circular(8.w),
                                 image: const DecorationImage(
-                                  image: AssetImage('assets/images/aquarium1.jpg'),
+                                  image:
+                                      AssetImage('assets/images/aquarium1.jpg'),
                                   fit: BoxFit.cover,
                                 ),
                               ),
@@ -231,11 +241,12 @@ class _ProductDetailPageState extends State<ProductDetailPage> {
                       ],
                     ),
                   ),
-                  
+
                   // Service Guarantee Banner
                   Container(
                     margin: EdgeInsets.all(16.w),
-                    padding: EdgeInsets.symmetric(horizontal: 16.w, vertical: 12.h),
+                    padding:
+                        EdgeInsets.symmetric(horizontal: 16.w, vertical: 12.h),
                     decoration: BoxDecoration(
                       color: Colors.purple.withOpacity(0.1),
                       borderRadius: BorderRadius.circular(8.w),
@@ -288,7 +299,8 @@ class _ProductDetailPageState extends State<ProductDetailPage> {
                         Row(
                           children: [
                             Container(
-                              padding: EdgeInsets.symmetric(horizontal: 6.w, vertical: 2.h),
+                              padding: EdgeInsets.symmetric(
+                                  horizontal: 6.w, vertical: 2.h),
                               decoration: BoxDecoration(
                                 color: Colors.orange,
                                 borderRadius: BorderRadius.circular(2.w),
@@ -365,49 +377,52 @@ class _ProductDetailPageState extends State<ProductDetailPage> {
                           ),
                         ),
                         SizedBox(height: 12.h),
-                        ...bidHistory.map((bid) => Container(
-                          padding: EdgeInsets.symmetric(vertical: 8.h),
-                          child: Row(
-                            children: [
-                              CircleAvatar(
-                                radius: 16.w,
-                                child: Text(
-                                  bid['user'][2],
-                                  style: TextStyle(fontSize: 12.sp),
-                                ),
-                              ),
-                              SizedBox(width: 12.w),
-                              Expanded(
-                                child: Column(
-                                  crossAxisAlignment: CrossAxisAlignment.start,
-                                  children: [
-                                    Text(
-                                      bid['user'],
-                                      style: TextStyle(
-                                        fontSize: 14.sp,
-                                        fontWeight: FontWeight.w500,
+                        ...bidHistory
+                            .map((bid) => Container(
+                                  padding: EdgeInsets.symmetric(vertical: 8.h),
+                                  child: Row(
+                                    children: [
+                                      CircleAvatar(
+                                        radius: 16.w,
+                                        child: Text(
+                                          bid['user'][2],
+                                          style: TextStyle(fontSize: 12.sp),
+                                        ),
                                       ),
-                                    ),
-                                    Text(
-                                      '出价 ¥${bid['price']}',
-                                      style: TextStyle(
-                                        fontSize: 12.sp,
-                                        color: Colors.grey[600],
+                                      SizedBox(width: 12.w),
+                                      Expanded(
+                                        child: Column(
+                                          crossAxisAlignment:
+                                              CrossAxisAlignment.start,
+                                          children: [
+                                            Text(
+                                              bid['user'],
+                                              style: TextStyle(
+                                                fontSize: 14.sp,
+                                                fontWeight: FontWeight.w500,
+                                              ),
+                                            ),
+                                            Text(
+                                              '出价 ¥${bid['price']}',
+                                              style: TextStyle(
+                                                fontSize: 12.sp,
+                                                color: Colors.grey[600],
+                                              ),
+                                            ),
+                                          ],
+                                        ),
                                       ),
-                                    ),
-                                  ],
-                                ),
-                              ),
-                              Text(
-                                bid['time'],
-                                style: TextStyle(
-                                  fontSize: 12.sp,
-                                  color: Colors.grey[500],
-                                ),
-                              ),
-                            ],
-                          ),
-                        )).toList(),
+                                      Text(
+                                        bid['time'],
+                                        style: TextStyle(
+                                          fontSize: 12.sp,
+                                          color: Colors.grey[500],
+                                        ),
+                                      ),
+                                    ],
+                                  ),
+                                ))
+                            .toList(),
                       ],
                     ),
                   ),
@@ -417,7 +432,7 @@ class _ProductDetailPageState extends State<ProductDetailPage> {
               ),
             ),
           ),
-          
+
           // Bottom Action Bar
           Container(
             padding: EdgeInsets.all(16.w),
@@ -437,7 +452,8 @@ class _ProductDetailPageState extends State<ProductDetailPage> {
                   GestureDetector(
                     onTap: () => _showChatDialog(),
                     child: Container(
-                      padding: EdgeInsets.symmetric(horizontal: 24.w, vertical: 12.h),
+                      padding: EdgeInsets.symmetric(
+                          horizontal: 24.w, vertical: 12.h),
                       decoration: BoxDecoration(
                         border: Border.all(color: Colors.purple),
                         borderRadius: BorderRadius.circular(20.w),
@@ -628,9 +644,10 @@ class _ProductDetailPageState extends State<ProductDetailPage> {
         ],
       );
     } else if (endTime != null) {
-      final timeRemaining = _auctionService.calculateTimeRemaining(endTime);
+      final timeRemaining =
+          _auctionService.calculateTimeRemaining(DateTime.parse(endTime));
       final timeText = _auctionService.formatTimeRemaining(timeRemaining);
-      
+
       return Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
@@ -696,18 +713,21 @@ class _ProductDetailPageState extends State<ProductDetailPage> {
 
   void _goToWinnerOrder() {
     final productIdRaw = widget.productData?['id'] ?? 1;
-    final productId = productIdRaw is String ? int.tryParse(productIdRaw) ?? 1 : productIdRaw as int;
+    final productId = productIdRaw is String
+        ? int.tryParse(productIdRaw) ?? 1
+        : productIdRaw as int;
     final productTitle = widget.productData?['title'] ?? '商品';
     final winningAmount = _auctionStatus?['current_price'] ?? '0';
     final productImages = widget.productData?['images'] as List?;
-    
+
     Get.toNamed(
       AppRoutes.auctionWinnerOrder,
       arguments: {
         'product_id': productId,
         'product_title': productTitle,
         'winning_amount': winningAmount,
-        'product_image': productImages?.isNotEmpty == true ? productImages![0] : null,
+        'product_image':
+            productImages?.isNotEmpty == true ? productImages![0] : null,
       },
     );
   }
@@ -771,28 +791,24 @@ class _ProductDetailPageState extends State<ProductDetailPage> {
                       ),
                     ),
                     SizedBox(height: 24.h),
-                    
                     _buildGuaranteeItem(
                       icon: Icons.assignment_return,
                       title: '无理由退货退款',
                       subtitle: '在符合无理由退货标准的情况下可申请无理由退货',
                       description: '特别注意：无实际责任的门费不支持退货退款。',
                     ),
-                    
                     _buildGuaranteeItem(
                       icon: Icons.local_shipping,
                       title: '包邮',
                       subtitle: '全平台所有商品，非偏远地区包邮发货发货家(新疆、西藏地区',
                       description: '需要补运费35-50元费用)',
                     ),
-                    
                     _buildGuaranteeItem(
                       icon: Icons.search,
                       title: '商品审核',
                       subtitle: '平台审核部审核动品，售后售后且均受到放心心保障',
                       description: '',
                     ),
-                    
                     _buildGuaranteeItem(
                       icon: Icons.verified,
                       title: '拍宠有道官方认定',
@@ -871,19 +887,24 @@ class _ProductDetailPageState extends State<ProductDetailPage> {
   }
 
   void _showBiddingDialog() {
-    final currentPrice = double.tryParse(_auctionStatus?['current_price']?.toString() ?? '0') ?? 0;
-    final minIncrement = double.tryParse(_auctionStatus?['min_increment']?.toString() ?? '10') ?? 10;
+    final currentPrice =
+        double.tryParse(_auctionStatus?['current_price']?.toString() ?? '0') ??
+            0;
+    final minIncrement =
+        double.tryParse(_auctionStatus?['min_increment']?.toString() ?? '10') ??
+            10;
     final productTitle = widget.productData?['title'] ?? '商品';
     final productImages = widget.productData?['images'] as List?;
-    final productImage = productImages?.isNotEmpty == true ? productImages!.first : null;
-    
+    final productImage =
+        productImages?.isNotEmpty == true ? productImages!.first : null;
+
     // 建议出价金额
     final suggestedBid1 = currentPrice + minIncrement;
     final suggestedBid2 = currentPrice + (minIncrement * 2);
     final suggestedBid3 = currentPrice + (minIncrement * 3);
-    
+
     String selectedBidAmount = '';
-    
+
     showModalBottomSheet(
       context: context,
       backgroundColor: Colors.transparent,
@@ -924,7 +945,7 @@ class _ProductDetailPageState extends State<ProductDetailPage> {
                               child: Image.network(
                                 productImage,
                                 fit: BoxFit.cover,
-                                errorBuilder: (context, error, stackTrace) => 
+                                errorBuilder: (context, error, stackTrace) =>
                                     Icon(Icons.pets, color: Colors.grey),
                               ),
                             )
@@ -946,7 +967,8 @@ class _ProductDetailPageState extends State<ProductDetailPage> {
                           ),
                           SizedBox(height: 4.h),
                           Container(
-                            padding: EdgeInsets.symmetric(horizontal: 6.w, vertical: 2.h),
+                            padding: EdgeInsets.symmetric(
+                                horizontal: 6.w, vertical: 2.h),
                             decoration: BoxDecoration(
                               color: Colors.orange,
                               borderRadius: BorderRadius.circular(2.w),
@@ -969,7 +991,7 @@ class _ProductDetailPageState extends State<ProductDetailPage> {
                   ],
                 ),
               ),
-              
+
               // 中间 - 出价区域
               Expanded(
                 child: Padding(
@@ -1007,7 +1029,7 @@ class _ProductDetailPageState extends State<ProductDetailPage> {
                         ),
                       ),
                       SizedBox(height: 24.h),
-                      
+
                       // 警告信息
                       Row(
                         children: [
@@ -1026,20 +1048,25 @@ class _ProductDetailPageState extends State<ProductDetailPage> {
                           ),
                         ],
                       ),
-                      
+
                       SizedBox(height: 24.h),
-                      
+
                       // 建议出价按钮
                       Row(
                         children: [
                           Expanded(
                             child: GestureDetector(
-                              onTap: () => setModalState(() => selectedBidAmount = suggestedBid1.toStringAsFixed(0)),
+                              onTap: () => setModalState(() =>
+                                  selectedBidAmount =
+                                      suggestedBid1.toStringAsFixed(0)),
                               child: Container(
                                 padding: EdgeInsets.symmetric(vertical: 12.h),
                                 decoration: BoxDecoration(
                                   border: Border.all(
-                                    color: selectedBidAmount == suggestedBid1.toStringAsFixed(0) ? Colors.red : Colors.grey.shade300,
+                                    color: selectedBidAmount ==
+                                            suggestedBid1.toStringAsFixed(0)
+                                        ? Colors.red
+                                        : Colors.grey.shade300,
                                   ),
                                   borderRadius: BorderRadius.circular(6.w),
                                 ),
@@ -1047,7 +1074,10 @@ class _ProductDetailPageState extends State<ProductDetailPage> {
                                   child: Text(
                                     '¥${suggestedBid1.toStringAsFixed(0)}',
                                     style: TextStyle(
-                                      color: selectedBidAmount == suggestedBid1.toStringAsFixed(0) ? Colors.red : Colors.black,
+                                      color: selectedBidAmount ==
+                                              suggestedBid1.toStringAsFixed(0)
+                                          ? Colors.red
+                                          : Colors.black,
                                       fontSize: 14.sp,
                                       fontWeight: FontWeight.w500,
                                     ),
@@ -1059,12 +1089,17 @@ class _ProductDetailPageState extends State<ProductDetailPage> {
                           SizedBox(width: 12.w),
                           Expanded(
                             child: GestureDetector(
-                              onTap: () => setModalState(() => selectedBidAmount = suggestedBid2.toStringAsFixed(0)),
+                              onTap: () => setModalState(() =>
+                                  selectedBidAmount =
+                                      suggestedBid2.toStringAsFixed(0)),
                               child: Container(
                                 padding: EdgeInsets.symmetric(vertical: 12.h),
                                 decoration: BoxDecoration(
                                   border: Border.all(
-                                    color: selectedBidAmount == suggestedBid2.toStringAsFixed(0) ? Colors.red : Colors.grey.shade300,
+                                    color: selectedBidAmount ==
+                                            suggestedBid2.toStringAsFixed(0)
+                                        ? Colors.red
+                                        : Colors.grey.shade300,
                                   ),
                                   borderRadius: BorderRadius.circular(6.w),
                                 ),
@@ -1072,7 +1107,10 @@ class _ProductDetailPageState extends State<ProductDetailPage> {
                                   child: Text(
                                     '¥${suggestedBid2.toStringAsFixed(0)}',
                                     style: TextStyle(
-                                      color: selectedBidAmount == suggestedBid2.toStringAsFixed(0) ? Colors.red : Colors.black,
+                                      color: selectedBidAmount ==
+                                              suggestedBid2.toStringAsFixed(0)
+                                          ? Colors.red
+                                          : Colors.black,
                                       fontSize: 14.sp,
                                       fontWeight: FontWeight.w500,
                                     ),
@@ -1084,12 +1122,17 @@ class _ProductDetailPageState extends State<ProductDetailPage> {
                           SizedBox(width: 12.w),
                           Expanded(
                             child: GestureDetector(
-                              onTap: () => setModalState(() => selectedBidAmount = suggestedBid3.toStringAsFixed(0)),
+                              onTap: () => setModalState(() =>
+                                  selectedBidAmount =
+                                      suggestedBid3.toStringAsFixed(0)),
                               child: Container(
                                 padding: EdgeInsets.symmetric(vertical: 12.h),
                                 decoration: BoxDecoration(
                                   border: Border.all(
-                                    color: selectedBidAmount == suggestedBid3.toStringAsFixed(0) ? Colors.red : Colors.grey.shade300,
+                                    color: selectedBidAmount ==
+                                            suggestedBid3.toStringAsFixed(0)
+                                        ? Colors.red
+                                        : Colors.grey.shade300,
                                   ),
                                   borderRadius: BorderRadius.circular(6.w),
                                 ),
@@ -1097,7 +1140,10 @@ class _ProductDetailPageState extends State<ProductDetailPage> {
                                   child: Text(
                                     '¥${suggestedBid3.toStringAsFixed(0)}',
                                     style: TextStyle(
-                                      color: selectedBidAmount == suggestedBid3.toStringAsFixed(0) ? Colors.red : Colors.black,
+                                      color: selectedBidAmount ==
+                                              suggestedBid3.toStringAsFixed(0)
+                                          ? Colors.red
+                                          : Colors.black,
                                       fontSize: 14.sp,
                                       fontWeight: FontWeight.w500,
                                     ),
@@ -1108,14 +1154,15 @@ class _ProductDetailPageState extends State<ProductDetailPage> {
                           ),
                         ],
                       ),
-                      
+
                       SizedBox(height: 16.h),
-                      
+
                       // 自定义出价输入框
                       TextField(
                         controller: _bidController,
                         keyboardType: TextInputType.number,
-                        onChanged: (value) => setModalState(() => selectedBidAmount = value),
+                        onChanged: (value) =>
+                            setModalState(() => selectedBidAmount = value),
                         decoration: InputDecoration(
                           labelText: '自定义出价',
                           hintText: '请输入出价金额',
@@ -1129,39 +1176,44 @@ class _ProductDetailPageState extends State<ProductDetailPage> {
                   ),
                 ),
               ),
-              
+
               // 底部 - 确认按钮
               Container(
                 padding: EdgeInsets.all(20.w),
                 child: Column(
                   children: [
                     GestureDetector(
-                      onTap: _isLoadingBids ? null : () async {
-                        final bidAmountStr = selectedBidAmount.isNotEmpty ? selectedBidAmount : _bidController.text.trim();
-                        final bidAmount = double.tryParse(bidAmountStr);
-                        
-                        if (bidAmount == null || bidAmount <= currentPrice) {
-                          Get.snackbar(
-                            '出价无效',
-                            '出价必须高于当前竞价 ¥${currentPrice.toStringAsFixed(0)}',
-                            backgroundColor: AppColors.error,
-                            colorText: Colors.white,
-                          );
-                          return;
-                        }
-                        
-                        if (bidAmount < currentPrice + minIncrement) {
-                          Get.snackbar(
-                            '出价无效',
-                            '出价必须至少高出 ¥${minIncrement.toStringAsFixed(0)}',
-                            backgroundColor: AppColors.error,
-                            colorText: Colors.white,
-                          );
-                          return;
-                        }
-                        
-                        await _placeBid(bidAmount);
-                      },
+                      onTap: _isLoadingBids
+                          ? null
+                          : () async {
+                              final bidAmountStr = selectedBidAmount.isNotEmpty
+                                  ? selectedBidAmount
+                                  : _bidController.text.trim();
+                              final bidAmount = double.tryParse(bidAmountStr);
+
+                              if (bidAmount == null ||
+                                  bidAmount <= currentPrice) {
+                                Get.snackbar(
+                                  '出价无效',
+                                  '出价必须高于当前竞价 ¥${currentPrice.toStringAsFixed(0)}',
+                                  backgroundColor: AppColors.error,
+                                  colorText: Colors.white,
+                                );
+                                return;
+                              }
+
+                              if (bidAmount < currentPrice + minIncrement) {
+                                Get.snackbar(
+                                  '出价无效',
+                                  '出价必须至少高出 ¥${minIncrement.toStringAsFixed(0)}',
+                                  backgroundColor: AppColors.error,
+                                  colorText: Colors.white,
+                                );
+                                return;
+                              }
+
+                              await _placeBid(bidAmount);
+                            },
                       child: Container(
                         width: double.infinity,
                         padding: EdgeInsets.symmetric(vertical: 16.h),
@@ -1174,7 +1226,8 @@ class _ProductDetailPageState extends State<ProductDetailPage> {
                               ? SizedBox(
                                   width: 20.w,
                                   height: 20.w,
-                                  child: CircularProgressIndicator(color: Colors.white, strokeWidth: 2),
+                                  child: CircularProgressIndicator(
+                                      color: Colors.white, strokeWidth: 2),
                                 )
                               : Text(
                                   '确定出价',
@@ -1323,7 +1376,8 @@ class _ChatPageState extends State<ChatPage> {
                       ),
                       SizedBox(height: 4.h),
                       Container(
-                        padding: EdgeInsets.symmetric(horizontal: 6.w, vertical: 2.h),
+                        padding: EdgeInsets.symmetric(
+                            horizontal: 6.w, vertical: 2.h),
                         decoration: BoxDecoration(
                           color: Colors.orange,
                           borderRadius: BorderRadius.circular(2.w),
@@ -1370,7 +1424,7 @@ class _ChatPageState extends State<ChatPage> {
               itemBuilder: (context, index) {
                 final message = messages[index];
                 final isUser = message['isUser'] as bool;
-                
+
                 return Container(
                   margin: EdgeInsets.only(bottom: 16.h),
                   child: Column(
@@ -1384,21 +1438,26 @@ class _ChatPageState extends State<ChatPage> {
                       ),
                       SizedBox(height: 8.h),
                       Row(
-                        mainAxisAlignment: isUser ? MainAxisAlignment.end : MainAxisAlignment.start,
+                        mainAxisAlignment: isUser
+                            ? MainAxisAlignment.end
+                            : MainAxisAlignment.start,
                         crossAxisAlignment: CrossAxisAlignment.start,
                         children: [
                           if (!isUser) ...[
                             CircleAvatar(
                               radius: 16.w,
-                              backgroundImage: const AssetImage('assets/images/avatar1.jpg'),
+                              backgroundImage:
+                                  const AssetImage('assets/images/avatar1.jpg'),
                             ),
                             SizedBox(width: 8.w),
                           ],
                           Flexible(
                             child: Container(
-                              padding: EdgeInsets.symmetric(horizontal: 12.w, vertical: 8.h),
+                              padding: EdgeInsets.symmetric(
+                                  horizontal: 12.w, vertical: 8.h),
                               decoration: BoxDecoration(
-                                color: isUser ? Colors.purple : Colors.grey[200],
+                                color:
+                                    isUser ? Colors.purple : Colors.grey[200],
                                 borderRadius: BorderRadius.circular(8.w),
                               ),
                               child: Text(
@@ -1414,7 +1473,8 @@ class _ChatPageState extends State<ChatPage> {
                             SizedBox(width: 8.w),
                             CircleAvatar(
                               radius: 16.w,
-                              backgroundImage: const AssetImage('assets/images/avatar2.jpg'),
+                              backgroundImage:
+                                  const AssetImage('assets/images/avatar2.jpg'),
                             ),
                           ],
                         ],
