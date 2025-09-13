@@ -44,7 +44,9 @@ class ProductCard extends StatelessWidget {
                       top: Radius.circular(12.r),
                     ),
                     child: CachedNetworkImage(
-                      imageUrl: product['image'] ?? 'https://via.placeholder.com/200x150/FF6B35/FFFFFF?text=Pet',
+                      imageUrl: (product['images'] is List && (product['images'] as List).isNotEmpty) 
+                          ? (product['images'] as List)[0] 
+                          : 'https://via.placeholder.com/200x150/FF6B35/FFFFFF?text=Pet',
                       width: double.infinity,
                       height: double.infinity,
                       fit: BoxFit.cover,
@@ -106,7 +108,7 @@ class ProductCard extends StatelessWidget {
                   children: [
                     // 商品标题
                     Text(
-                      product['name'] ?? '可爱宠物等你带回家',
+                      product['title'] ?? '可爱宠物等你带回家',
                       style: TextStyle(
                         fontSize: 14.sp,
                         fontWeight: FontWeight.w500,
@@ -120,7 +122,7 @@ class ProductCard extends StatelessWidget {
                     Row(
                       children: [
                         Text(
-                          '¥${product['price'] ?? '999'}',
+                          '¥${product['current_price'] ?? '999'}',
                           style: TextStyle(
                             fontSize: 16.sp,
                             fontWeight: FontWeight.bold,
@@ -168,7 +170,7 @@ class ProductCard extends StatelessWidget {
                               ],
                             ),
                           ),
-                        if (product['bidCount'] != null && product['bidCount'] > 0)
+                        if (product['bid_count'] != null && product['bid_count'] > 0)
                           Container(
                             padding: EdgeInsets.symmetric(
                               horizontal: 6.w,
@@ -179,7 +181,7 @@ class ProductCard extends StatelessWidget {
                               borderRadius: BorderRadius.circular(8.r),
                             ),
                             child: Text(
-                              '${product['bidCount']}人出价',
+                              '${product['bid_count']}人出价',
                               style: TextStyle(
                                 fontSize: 10.sp,
                                 color: AppColors.primary,

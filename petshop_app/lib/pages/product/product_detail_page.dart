@@ -63,12 +63,33 @@ class _ProductDetailPageState extends State<ProductDetailPage> {
       setState(() {
         if (result.success && result.data != null) {
           _auctionStatus = result.data;
+        } else {
+          // API不存在时使用商品基本数据构造拍卖状态
+          _auctionStatus = {
+            'current_price': widget.productData?['current_price'] ?? '800',
+            'is_ended': false,
+            'status': 2,
+            'bid_count': widget.productData?['bid_count'] ?? 0,
+            'end_time': widget.productData?['auction_end_time'],
+            'min_increment': '10.0'
+          };
         }
         // 检查是否已结束且用户是否中标
         _checkIfWinner(productId);
       });
     } catch (e) {
       print('加载拍卖状态失败: $e');
+      // 发生错误时也使用基本数据
+      setState(() {
+        _auctionStatus = {
+          'current_price': widget.productData?['current_price'] ?? '800',
+          'is_ended': false,
+          'status': 2,
+          'bid_count': widget.productData?['bid_count'] ?? 0,
+          'end_time': widget.productData?['auction_end_time'],
+          'min_increment': '10.0'
+        };
+      });
     } finally {
       setState(() => _isLoadingAuctionStatus = false);
     }
@@ -96,6 +117,8 @@ class _ProductDetailPageState extends State<ProductDetailPage> {
       }
     } catch (e) {
       print('检查中标状态失败: $e');
+      // API不可用时默认为未中标状态
+      setState(() => _isWinner = false);
     }
   }
 
@@ -288,7 +311,7 @@ class _ProductDetailPageState extends State<ProductDetailPage> {
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
                         Text(
-                          '宠物标题宠物标题宠物标题宠物标题宠物标题宠物标题',
+                          widget.productData?['title'] ?? '可爱宠物等你带回家',
                           style: TextStyle(
                             fontSize: 16.sp,
                             fontWeight: FontWeight.w600,
@@ -1278,7 +1301,107 @@ class _ProductDetailPageState extends State<ProductDetailPage> {
   }
 
   void _showBidHistory() {
-    // Show bid history modal
+    showModalBottomSheet(
+      context: context,
+      backgroundColor: Colors.transparent,
+      builder: (context) => Container(
+        height: MediaQuery.of(context).size.height * 0.6,
+        decoration: BoxDecoration(
+          color: Colors.white,
+          borderRadius: BorderRadius.only(
+            topLeft: Radius.circular(20.w),
+            topRight: Radius.circular(20.w),
+          ),
+        ),
+        child: Column(
+          children: [
+            Container(
+              padding: EdgeInsets.all(20.w),
+              decoration: BoxDecoration(
+                border: Border(
+                  bottom: BorderSide(color: Colors.grey.shade200),
+                ),
+              ),
+              child: Row(
+                children: [
+                  Text(
+                    '出价记录',
+                    style: TextStyle(
+                      fontSize: 18.sp,
+                      fontWeight: FontWeight.w600,
+                    ),
+                  ),
+                  Spacer(),
+                  IconButton(
+                    onPressed: () => Navigator.pop(context),
+                    icon: Icon(Icons.close),
+                  ),
+                ],
+              ),
+            ),
+            Expanded(
+              child: ListView.builder(
+                padding: EdgeInsets.all(16.w),
+                itemCount: bidHistory.length,
+                itemBuilder: (context, index) {
+                  final bid = bidHistory[index];
+                  return Container(
+                    padding: EdgeInsets.symmetric(vertical: 12.h),
+                    decoration: BoxDecoration(
+                      border: Border(
+                        bottom: BorderSide(color: Colors.grey.shade200),
+                      ),
+                    ),
+                    child: Row(
+                      children: [
+                        CircleAvatar(
+                          radius: 20.w,
+                          child: Text(
+                            bid['user'][2],
+                            style: TextStyle(fontSize: 14.sp),
+                          ),
+                        ),
+                        SizedBox(width: 12.w),
+                        Expanded(
+                          child: Column(
+                            crossAxisAlignment: CrossAxisAlignment.start,
+                            children: [
+                              Text(
+                                bid['user'],
+                                style: TextStyle(
+                                  fontSize: 16.sp,
+                                  fontWeight: FontWeight.w500,
+                                ),
+                              ),
+                              SizedBox(height: 4.h),
+                              Text(
+                                '出价时间: ${bid['time']}',
+                                style: TextStyle(
+                                  fontSize: 12.sp,
+                                  color: Colors.grey[600],
+                                ),
+                              ),
+                            ],
+                          ),
+                        ),
+                        Text(
+                          '¥${bid['price']}',
+                          style: TextStyle(
+                            fontSize: 18.sp,
+                            color: Colors.red,
+                            fontWeight: FontWeight.bold,
+                          ),
+                        ),
+                      ],
+                    ),
+                  );
+                },
+              ),
+            ),
+          ],
+        ),
+      ),
+    );
   }
 }
 

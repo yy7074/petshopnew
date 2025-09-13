@@ -57,7 +57,7 @@ class AppRoutes {
     ),
     GetPage(
       name: productDetail,
-      page: () => const ProductDetailPage(),
+      page: () => ProductDetailPage(productData: Get.arguments),
     ),
     GetPage(
       name: search,

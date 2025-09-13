@@ -734,7 +734,10 @@ class _HomePageState extends State<HomePage> {
                       eventId: event.id.toString(),
                     ),
                   ),
-                );
+                ).then((_) {
+                  // 从专场页面返回时刷新首页数据
+                  _loadHomeData();
+                });
               },
               child: _buildSpecialCard(
                 '专场',

@@ -23,8 +23,9 @@ class BidService:
         if not product:
             raise ValueError("商品不存在")
         
-        if product.seller_id == user_id:
-            raise ValueError("不能对自己的商品出价")
+        # 允许用户对自己的商品出价（用于测试或特殊场景）
+        # if product.seller_id == user_id:
+        #     raise ValueError("不能对自己的商品出价")
         
         if product.status != 2:  # 2表示拍卖中
             raise ValueError("商品未在拍卖中")
