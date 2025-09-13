@@ -1,10 +1,12 @@
 from fastapi import APIRouter, Depends, HTTPException, Query, BackgroundTasks
 from sqlalchemy.orm import Session
 from typing import List, Optional
+from decimal import Decimal
 
 from ..core.database import get_db
 from ..core.security import get_current_user
 from ..models.user import User
+from ..models.order import Payment
 from ..schemas.order import (
     OrderCreate, OrderResponse, OrderListResponse, OrderUpdate,
     PaymentCreate, PaymentResponse, LogisticsResponse
@@ -12,11 +14,13 @@ from ..schemas.order import (
 from ..services.order_service import OrderService
 from ..services.payment_service import PaymentService
 from ..services.logistics_service import LogisticsService
+from ..services.alipay_service import AlipayService
 
 router = APIRouter()
 order_service = OrderService()
 payment_service = PaymentService()
 logistics_service = LogisticsService()
+alipay_service = AlipayService()
 
 @router.post("/", response_model=OrderResponse)
 async def create_order(
@@ -261,3 +265,125 @@ async def get_order_statistics(
 ):
     """获取订单统计信息"""
     return await order_service.get_user_order_statistics(db, current_user.id, period)
+
+# 支付宝支付接口
+@router.post("/{order_id}/alipay/app")
+async def create_alipay_app_payment(
+    order_id: int,
+    notify_url: Optional[str] = None,
+    db: Session = Depends(get_db),
+    current_user: User = Depends(get_current_user)
+):
+    """创建支付宝App支付"""
+    try:
+        payment_data = await alipay_service.create_payment(
+            db, order_id, current_user.id, notify_url=notify_url
+        )
+        return {
+            "success": True,
+            "data": payment_data
+        }
+    except ValueError as e:
+        raise HTTPException(status_code=400, detail=str(e))
+    except Exception as e:
+        raise HTTPException(status_code=500, detail="创建支付失败")
+
+@router.post("/{order_id}/alipay/web")
+async def create_alipay_web_payment(
+    order_id: int,
+    return_url: Optional[str] = None,
+    notify_url: Optional[str] = None,
+    db: Session = Depends(get_db),
+    current_user: User = Depends(get_current_user)
+):
+    """创建支付宝网页支付"""
+    try:
+        payment_url = await alipay_service.create_web_payment(
+            db, order_id, current_user.id, return_url, notify_url
+        )
+        return {
+            "success": True,
+            "payment_url": payment_url
+        }
+    except ValueError as e:
+        raise HTTPException(status_code=400, detail=str(e))
+    except Exception as e:
+        raise HTTPException(status_code=500, detail="创建支付失败")
+
+@router.post("/payments/{payment_id}/alipay/notify")
+async def alipay_notify(
+    payment_id: int,
+    notify_data: dict,
+    background_tasks: BackgroundTasks,
+    db: Session = Depends(get_db)
+):
+    """支付宝支付回调通知"""
+    try:
+        success = await alipay_service.handle_notify(db, payment_id, notify_data)
+        if success:
+            return "success"
+        else:
+            return "fail"
+    except Exception as e:
+        print(f"处理支付宝通知失败: {e}")
+        return "fail"
+
+@router.get("/payments/{payment_id}/alipay/query")
+async def query_alipay_payment(
+    payment_id: int,
+    db: Session = Depends(get_db),
+    current_user: User = Depends(get_current_user)
+):
+    """查询支付宝支付状态"""
+    try:
+        # 获取支付记录
+        payment = db.query(Payment).filter(
+            Payment.id == payment_id,
+            Payment.user_id == current_user.id
+        ).first()
+        
+        if not payment:
+            raise HTTPException(status_code=404, detail="支付记录不存在")
+            
+        # 查询支付状态
+        result = await alipay_service.query_payment(payment.transaction_id)
+        return {
+            "success": True,
+            "data": result
+        }
+    except HTTPException:
+        raise
+    except Exception as e:
+        raise HTTPException(status_code=500, detail="查询支付状态失败")
+
+@router.post("/payments/{payment_id}/alipay/refund")
+async def create_alipay_refund(
+    payment_id: int,
+    refund_amount: Optional[float] = None,
+    refund_reason: str = "用户申请退款",
+    db: Session = Depends(get_db),
+    current_user: User = Depends(get_current_user)
+):
+    """申请支付宝退款"""
+    try:
+        # 验证权限
+        payment = db.query(Payment).filter(
+            Payment.id == payment_id,
+            Payment.user_id == current_user.id
+        ).first()
+        
+        if not payment:
+            raise HTTPException(status_code=404, detail="支付记录不存在")
+            
+        result = await alipay_service.refund(
+            db, payment_id, 
+            Decimal(str(refund_amount)) if refund_amount else None, 
+            refund_reason
+        )
+        return result
+    except HTTPException:
+        raise
+    except ValueError as e:
+        raise HTTPException(status_code=400, detail=str(e))
+    except Exception as e:
+        raise HTTPException(status_code=500, detail="申请退款失败")

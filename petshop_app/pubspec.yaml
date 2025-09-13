@@ -42,8 +42,7 @@ dependencies:
   device_info_plus: ^9.1.0
   
   # 支付
-  # alipay_kit: ^3.0.0
-  # wechat_kit: ^2.0.0
+  tobias: ^2.4.2  # 支付宝SDK
   
   # 推送
   # jpush_flutter: ^2.6.0

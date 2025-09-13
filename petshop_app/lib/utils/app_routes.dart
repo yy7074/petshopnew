@@ -8,6 +8,7 @@ import '../pages/message/message_page.dart';
 import '../pages/profile/profile_page.dart';
 import '../pages/product/product_detail_page.dart';
 import '../pages/search/search_page.dart';
+import '../pages/test_payment_page.dart';
 
 class AppRoutes {
   static const String splash = '/splash';
@@ -19,6 +20,7 @@ class AppRoutes {
   static const String profile = '/profile';
   static const String productDetail = '/product-detail';
   static const String search = '/search';
+  static const String testPayment = '/test-payment';
 
   static List<GetPage> routes = [
     GetPage(
@@ -56,6 +58,10 @@ class AppRoutes {
     GetPage(
       name: search,
       page: () => const SearchPage(),
+    ),
+    GetPage(
+      name: testPayment,
+      page: () => const TestPaymentPage(),
     ),
   ];
 }

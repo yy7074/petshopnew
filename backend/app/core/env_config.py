@@ -51,12 +51,12 @@ class EnvConfig:
     VERSION: str = os.getenv("VERSION", "1.0.0")
     
     # CORS配置
-    ALLOWED_HOSTS: List[str] = os.getenv("ALLOWED_HOSTS", "*").split(",")
+    ALLOWED_HOSTS: List[str] = ["*"]
     
     # 文件上传配置
     UPLOAD_DIR: str = os.getenv("UPLOAD_DIR", "static/uploads")
     MAX_FILE_SIZE: int = int(os.getenv("MAX_FILE_SIZE", "10485760"))
-    ALLOWED_EXTENSIONS: List[str] = os.getenv("ALLOWED_EXTENSIONS", ".jpg,.jpeg,.png,.gif,.webp").split(",")
+    ALLOWED_EXTENSIONS: List[str] = os.getenv("ALLOWED_EXTENSIONS", ".jpg,.jpeg,.png,.gif,.webp").split(",") if os.getenv("ALLOWED_EXTENSIONS") else [".jpg", ".jpeg", ".png", ".gif", ".webp"]
     
     # 分页配置
     DEFAULT_PAGE_SIZE: int = int(os.getenv("DEFAULT_PAGE_SIZE", "20"))
