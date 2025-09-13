@@ -153,7 +153,7 @@ class WalletService:
         user.balance += transaction.amount
         transaction.balance_after = user.balance
         transaction.status = "completed"
-        transaction.completed_at = datetime.utcnow()
+        transaction.completed_at = datetime.now()
         
         db.commit()
         return True

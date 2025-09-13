@@ -1,7 +1,7 @@
-from fastapi import APIRouter, Depends, HTTPException
+from fastapi import APIRouter, Depends, HTTPException, Request
 from sqlalchemy.orm import Session
 from decimal import Decimal
-from typing import List
+from typing import List, Dict, Any
 
 from ..core.database import get_db
 from ..core.security import get_current_user
@@ -62,3 +62,38 @@ async def get_transactions(
         return transactions
     except Exception as e:
         raise HTTPException(status_code=500, detail=f"获取交易记录失败: {str(e)}")
+
+@router.post("/recharge/notify")
+async def handle_recharge_notify(
+    request: Request,
+    db: Session = Depends(get_db)
+):
+    """处理钱包充值支付宝回调通知"""
+    try:
+        # 获取支付宝回调数据
+        form_data = await request.form()
+        notify_data = dict(form_data)
+        
+        # 从商户订单号中提取充值订单ID
+        out_trade_no = notify_data.get("out_trade_no", "")
+        trade_status = notify_data.get("trade_status", "")
+        
+        print(f"收到钱包充值回调: out_trade_no={out_trade_no}, trade_status={trade_status}")
+        
+        # 处理充值成功的情况
+        if trade_status in ["TRADE_SUCCESS", "TRADE_FINISHED"]:
+            wallet_service = WalletService()
+            success = await wallet_service.complete_recharge(out_trade_no, db)
+            
+            if success:
+                print(f"钱包充值完成: {out_trade_no}")
+                return "success"
+            else:
+                print(f"钱包充值处理失败: {out_trade_no}")
+                return "fail"
+        
+        return "success"  # 其他状态也返回success避免重复回调
+        
+    except Exception as e:
+        print(f"处理钱包充值回调失败: {e}")
+        return "fail"
