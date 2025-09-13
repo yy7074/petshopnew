@@ -330,3 +330,36 @@ class AlipayService:
                 "success": False,
                 "error": str(e)
             }
+
+    async def create_wallet_recharge_payment(
+        self,
+        out_trade_no: str,
+        total_amount: float,
+        subject: str,
+        body: str = None,
+        notify_url: str = None
+    ) -> Dict[str, Any]:
+        """创建钱包充值支付宝支付订单"""
+        
+        # 构建App支付请求
+        request = AlipayTradeAppPayRequest()
+        biz_content = {
+            "out_trade_no": out_trade_no,
+            "total_amount": str(total_amount),
+            "subject": subject,
+            "body": body or subject,
+            "timeout_express": "30m"
+        }
+        request.biz_content = biz_content  # 直接传递字典，不需要json.dumps
+        request.notify_url = notify_url or f"https://catdog.dachaonet.com/api/v1/wallet/recharge/notify"
+        
+        # 执行请求
+        response = self.alipay_client.sdk_execute(request)
+        order_string = response
+        
+        return {
+            "order_string": order_string,
+            "out_trade_no": out_trade_no,
+            "total_amount": str(total_amount),
+            "subject": subject
+        }

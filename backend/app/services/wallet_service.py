@@ -77,7 +77,7 @@ class WalletService:
         if payment_method == "alipay":
             try:
                 # 创建支付宝支付订单
-                payment_result = await self.alipay_service.create_payment(
+                payment_result = await self.alipay_service.create_wallet_recharge_payment(
                     out_trade_no=order_id,
                     total_amount=float(amount),
                     subject=f"钱包充值 {amount}元",
