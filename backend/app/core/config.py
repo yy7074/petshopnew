@@ -1,57 +1,56 @@
 from pydantic_settings import BaseSettings
 from typing import List
 import os
+from .env_config import env_config
 
 class Settings(BaseSettings):
     # 应用配置
-    APP_NAME: str = "宠物拍卖API"
-    DEBUG: bool = True
-    VERSION: str = "1.0.0"
+    APP_NAME: str = env_config.APP_NAME
+    DEBUG: bool = env_config.DEBUG
+    VERSION: str = env_config.VERSION
     
     # 数据库配置
-    # 使用本地MySQL数据库
-    DATABASE_URL: str = "mysql+pymysql://root:123456@localhost:3306/petshop_auction"
-    # DATABASE_URL: str = "sqlite:///./petshop_auction.db"
+    DATABASE_URL: str = env_config.DATABASE_URL
     
     # Redis配置
-    REDIS_URL: str = "redis://localhost:6379/0"
+    REDIS_URL: str = env_config.REDIS_URL
     
     # JWT配置
-    SECRET_KEY: str = "your-secret-key-here-change-in-production"
-    ALGORITHM: str = "HS256"
-    ACCESS_TOKEN_EXPIRE_MINUTES: int = 30 * 24 * 60  # 30天
+    SECRET_KEY: str = env_config.SECRET_KEY
+    ALGORITHM: str = env_config.ALGORITHM
+    ACCESS_TOKEN_EXPIRE_MINUTES: int = env_config.ACCESS_TOKEN_EXPIRE_MINUTES
     
     # CORS配置
-    ALLOWED_HOSTS: List[str] = ["*"]
+    ALLOWED_HOSTS: List[str] = env_config.ALLOWED_HOSTS
     
     # 文件上传配置
-    UPLOAD_DIR: str = "static/uploads"
-    MAX_FILE_SIZE: int = 10 * 1024 * 1024  # 10MB
-    ALLOWED_EXTENSIONS: List[str] = [".jpg", ".jpeg", ".png", ".gif", ".webp"]
+    UPLOAD_DIR: str = env_config.UPLOAD_DIR
+    MAX_FILE_SIZE: int = env_config.MAX_FILE_SIZE
+    ALLOWED_EXTENSIONS: List[str] = env_config.ALLOWED_EXTENSIONS
     
     # 分页配置
-    DEFAULT_PAGE_SIZE: int = 20
-    MAX_PAGE_SIZE: int = 100
+    DEFAULT_PAGE_SIZE: int = env_config.DEFAULT_PAGE_SIZE
+    MAX_PAGE_SIZE: int = env_config.MAX_PAGE_SIZE
     
     # 支付配置
-    ALIPAY_APP_ID: str = ""
-    ALIPAY_PRIVATE_KEY: str = ""
-    ALIPAY_PUBLIC_KEY: str = ""
+    ALIPAY_APP_ID: str = env_config.ALIPAY_APP_ID
+    ALIPAY_PRIVATE_KEY: str = env_config.ALIPAY_PRIVATE_KEY
+    ALIPAY_PUBLIC_KEY: str = env_config.ALIPAY_PUBLIC_KEY
     
-    WECHAT_APP_ID: str = ""
-    WECHAT_MCH_ID: str = ""
-    WECHAT_API_KEY: str = ""
+    WECHAT_APP_ID: str = env_config.WECHAT_APP_ID
+    WECHAT_MCH_ID: str = env_config.WECHAT_MCH_ID
+    WECHAT_API_KEY: str = env_config.WECHAT_API_KEY
     
     # 短信配置 - 阿里云
-    SMS_ACCESS_KEY: str = "your_aliyun_access_key"
-    SMS_SECRET_KEY: str = "your_aliyun_secret_key"
-    SMS_SIGN_NAME: str = "大潮网络"
-    SMS_TEMPLATE_ID: str = "SMS_474780238"
-    SMS_REGION: str = "cn-hangzhou"
+    SMS_ACCESS_KEY: str = env_config.SMS_ACCESS_KEY
+    SMS_SECRET_KEY: str = env_config.SMS_SECRET_KEY
+    SMS_SIGN_NAME: str = env_config.SMS_SIGN_NAME
+    SMS_TEMPLATE_ID: str = env_config.SMS_TEMPLATE_ID
+    SMS_REGION: str = env_config.SMS_REGION
     
     # 推送配置
-    JPUSH_APP_KEY: str = ""
-    JPUSH_MASTER_SECRET: str = ""
+    JPUSH_APP_KEY: str = env_config.JPUSH_APP_KEY
+    JPUSH_MASTER_SECRET: str = env_config.JPUSH_MASTER_SECRET
     
     class Config:
         env_file = ".env"
