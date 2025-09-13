@@ -5,10 +5,10 @@ import 'storage_service.dart';
 
 class ApiService extends ChangeNotifier {
   late Dio _dio;
-  // 修改为本地开发服务器地址
-  static const String baseUrl = 'http://localhost:8000/api/v1';
-  // 如果使用真机调试，请使用你的电脑IP地址，例如：
-  // static const String baseUrl = 'http://192.168.1.100:8000/api/v1';
+  // 使用内网穿透域名访问后台API
+  static const String baseUrl = 'https://catdog.dachaonet.com/api/v1';
+  // 备用本地开发地址
+  // static const String baseUrl = 'http://localhost:8000/api/v1';
 
   ApiService() {
     _dio = Dio(BaseOptions(

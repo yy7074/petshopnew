@@ -24,11 +24,12 @@ class User {
       id: json['id'] ?? 0,
       phone: json['phone'] ?? '',
       nickname: json['nickname'] ?? '',
-      avatar: json['avatar'],
+      avatar: json['avatar_url'], // 后台返回的是avatar_url
       realName: json['real_name'],
       idCard: json['id_card'],
-      status: json['status'] ?? 'active',
-      createdAt: DateTime.parse(json['created_at'] ?? DateTime.now().toIso8601String()),
+      status: (json['status'] ?? 1).toString(), // 后台返回的是数字，需要转换为字符串
+      createdAt: DateTime.parse(
+          json['created_at'] ?? DateTime.now().toIso8601String()),
     );
   }
 
@@ -82,7 +83,7 @@ class LoginResponse {
   factory LoginResponse.fromJson(Map<String, dynamic> json) {
     return LoginResponse(
       accessToken: json['access_token'] ?? '',
-      refreshToken: json['refresh_token'] ?? '',
+      refreshToken: json['refresh_token'] ?? '', // 短信登录可能没有refresh_token
       user: User.fromJson(json['user'] ?? {}),
     );
   }

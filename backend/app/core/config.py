@@ -9,9 +9,9 @@ class Settings(BaseSettings):
     VERSION: str = "1.0.0"
     
     # 数据库配置
-    # 使用SQLite数据库（便于测试）
-    # DATABASE_URL: str = "mysql+pymysql://root:123456@localhost:3306/petshop_auction"
-    DATABASE_URL: str = "sqlite:///./petshop_auction.db"
+    # 使用本地MySQL数据库
+    DATABASE_URL: str = "mysql+pymysql://root:123456@localhost:3306/petshop_auction"
+    # DATABASE_URL: str = "sqlite:///./petshop_auction.db"
     
     # Redis配置
     REDIS_URL: str = "redis://localhost:6379/0"
@@ -42,10 +42,12 @@ class Settings(BaseSettings):
     WECHAT_MCH_ID: str = ""
     WECHAT_API_KEY: str = ""
     
-    # 短信配置
-    SMS_ACCESS_KEY: str = ""
-    SMS_SECRET_KEY: str = ""
-    SMS_SIGN_NAME: str = "宠物拍卖"
+    # 短信配置 - 阿里云
+    SMS_ACCESS_KEY: str = "your_aliyun_access_key"
+    SMS_SECRET_KEY: str = "your_aliyun_secret_key"
+    SMS_SIGN_NAME: str = "大潮网络"
+    SMS_TEMPLATE_ID: str = "SMS_474780238"
+    SMS_REGION: str = "cn-hangzhou"
     
     # 推送配置
     JPUSH_APP_KEY: str = ""

@@ -5,6 +5,10 @@ import '../settings/settings_page.dart';
 import '../orders/order_list_page.dart';
 import '../seller/seller_center_page.dart';
 import '../shop/shop_entry_page.dart';
+import '../test_api_page.dart';
+import '../../services/storage_service.dart';
+import '../../models/user.dart';
+import '../auth/login_page.dart';
 
 class ProfilePage extends StatefulWidget {
   const ProfilePage({super.key});
@@ -17,6 +21,60 @@ class _ProfilePageState extends State<ProfilePage>
     with AutomaticKeepAliveClientMixin {
   @override
   bool get wantKeepAlive => true;
+
+  User? _currentUser;
+  bool _isLoggedIn = false;
+
+  @override
+  void initState() {
+    super.initState();
+    _loadUserInfo();
+  }
+
+  void _loadUserInfo() {
+    final user = StorageService.getUser();
+    final token = StorageService.getUserToken();
+
+    setState(() {
+      _currentUser = user;
+      _isLoggedIn = token != null && token.isNotEmpty;
+    });
+  }
+
+  void _logout() async {
+    showDialog(
+      context: context,
+      builder: (BuildContext context) {
+        return AlertDialog(
+          title: const Text('确认退出'),
+          content: const Text('确定要退出登录吗？'),
+          actions: [
+            TextButton(
+              onPressed: () => Navigator.of(context).pop(),
+              child: const Text('取消'),
+            ),
+            TextButton(
+              onPressed: () async {
+                Navigator.of(context).pop();
+                await StorageService.clearUserData();
+                setState(() {
+                  _currentUser = null;
+                  _isLoggedIn = false;
+                });
+                // 跳转到登录页面
+                Navigator.pushAndRemoveUntil(
+                  context,
+                  MaterialPageRoute(builder: (context) => const LoginPage()),
+                  (route) => false,
+                );
+              },
+              child: const Text('确定'),
+            ),
+          ],
+        );
+      },
+    );
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -178,6 +236,79 @@ class _ProfilePageState extends State<ProfilePage>
                 child: Row(
                   mainAxisAlignment: MainAxisAlignment.end,
                   children: [
+                    // API测试按钮
+                    GestureDetector(
+                      onTap: () {
+                        Navigator.push(
+                          context,
+                          MaterialPageRoute(
+                            builder: (context) => const TestApiPage(),
+                          ),
+                        );
+                      },
+                      child: Container(
+                        padding: EdgeInsets.symmetric(
+                            horizontal: 8.w, vertical: 4.h),
+                        margin: EdgeInsets.only(right: 12.w),
+                        decoration: BoxDecoration(
+                          color: Colors.white.withOpacity(0.2),
+                          borderRadius: BorderRadius.circular(12.r),
+                        ),
+                        child: Row(
+                          mainAxisSize: MainAxisSize.min,
+                          children: [
+                            Icon(
+                              Icons.api,
+                              size: 16.w,
+                              color: Colors.white,
+                            ),
+                            SizedBox(width: 4.w),
+                            Text(
+                              'API测试',
+                              style: TextStyle(
+                                fontSize: 12.sp,
+                                color: Colors.white,
+                                fontWeight: FontWeight.w500,
+                              ),
+                            ),
+                          ],
+                        ),
+                      ),
+                    ),
+                    // 退出登录按钮（如果已登录）
+                    if (_isLoggedIn)
+                      GestureDetector(
+                        onTap: _logout,
+                        child: Container(
+                          padding: EdgeInsets.symmetric(
+                              horizontal: 8.w, vertical: 4.h),
+                          margin: EdgeInsets.only(right: 12.w),
+                          decoration: BoxDecoration(
+                            color: Colors.white.withOpacity(0.2),
+                            borderRadius: BorderRadius.circular(12.r),
+                          ),
+                          child: Row(
+                            mainAxisSize: MainAxisSize.min,
+                            children: [
+                              Icon(
+                                Icons.logout,
+                                size: 16.w,
+                                color: Colors.white,
+                              ),
+                              SizedBox(width: 4.w),
+                              Text(
+                                '退出',
+                                style: TextStyle(
+                                  fontSize: 12.sp,
+                                  color: Colors.white,
+                                  fontWeight: FontWeight.w500,
+                                ),
+                              ),
+                            ],
+                          ),
+                        ),
+                      ),
+                    // 设置按钮
                     GestureDetector(
                       onTap: () {
                         Navigator.push(
@@ -211,66 +342,114 @@ class _ProfilePageState extends State<ProfilePage>
                       decoration: BoxDecoration(
                         shape: BoxShape.circle,
                         border: Border.all(color: Colors.white, width: 2),
-                        image: const DecorationImage(
-                          image: NetworkImage(
-                              'https://picsum.photos/60/60?random=1'),
-                          fit: BoxFit.cover,
-                        ),
+                        image: _currentUser?.avatar != null &&
+                                _currentUser!.avatar!.isNotEmpty
+                            ? DecorationImage(
+                                image: NetworkImage(_currentUser!.avatar!),
+                                fit: BoxFit.cover,
+                              )
+                            : const DecorationImage(
+                                image: NetworkImage(
+                                    'https://picsum.photos/60/60?random=1'),
+                                fit: BoxFit.cover,
+                              ),
                       ),
                     ),
                     SizedBox(width: 16.w),
-                    // 用户名
+                    // 用户名和手机号
                     Expanded(
-                      child: Text(
-                        'Li',
-                        style: TextStyle(
-                          fontSize: 24.sp,
-                          color: Colors.white,
-                          fontWeight: FontWeight.w600,
-                        ),
-                      ),
-                    ),
-                    // 签到按钮
-                    GestureDetector(
-                      onTap: () {
-                        Navigator.push(
-                          context,
-                          MaterialPageRoute(
-                            builder: (context) => const CheckinPage(),
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          Text(
+                            _currentUser?.nickname ?? '未登录',
+                            style: TextStyle(
+                              fontSize: 24.sp,
+                              color: Colors.white,
+                              fontWeight: FontWeight.w600,
+                            ),
                           ),
-                        );
-                      },
-                      child: Container(
-                        padding: EdgeInsets.symmetric(
-                            horizontal: 20.w, vertical: 8.h),
-                        decoration: BoxDecoration(
-                          color: Colors.white.withOpacity(0.9),
-                          borderRadius: BorderRadius.circular(20.r),
-                        ),
-                        child: Row(
-                          mainAxisSize: MainAxisSize.min,
-                          children: [
+                          if (_currentUser?.phone != null)
                             Text(
-                              '签到',
+                              _currentUser!.phone,
                               style: TextStyle(
-                                fontSize: 13.sp,
-                                color: const Color(0xFF9C4DFF),
-                                fontWeight: FontWeight.w600,
+                                fontSize: 14.sp,
+                                color: Colors.white.withOpacity(0.8),
+                                fontWeight: FontWeight.w400,
                               ),
                             ),
-                            SizedBox(width: 4.w),
-                            Container(
-                              width: 6.w,
-                              height: 6.w,
-                              decoration: const BoxDecoration(
-                                color: Colors.red,
-                                shape: BoxShape.circle,
-                              ),
-                            ),
-                          ],
-                        ),
+                        ],
                       ),
                     ),
+                    // 登录/签到按钮
+                    if (_isLoggedIn)
+                      GestureDetector(
+                        onTap: () {
+                          Navigator.push(
+                            context,
+                            MaterialPageRoute(
+                              builder: (context) => const CheckinPage(),
+                            ),
+                          );
+                        },
+                        child: Container(
+                          padding: EdgeInsets.symmetric(
+                              horizontal: 20.w, vertical: 8.h),
+                          decoration: BoxDecoration(
+                            color: Colors.white.withOpacity(0.9),
+                            borderRadius: BorderRadius.circular(20.r),
+                          ),
+                          child: Row(
+                            mainAxisSize: MainAxisSize.min,
+                            children: [
+                              Text(
+                                '签到',
+                                style: TextStyle(
+                                  fontSize: 13.sp,
+                                  color: const Color(0xFF9C4DFF),
+                                  fontWeight: FontWeight.w600,
+                                ),
+                              ),
+                              SizedBox(width: 4.w),
+                              Container(
+                                width: 6.w,
+                                height: 6.w,
+                                decoration: const BoxDecoration(
+                                  color: Colors.red,
+                                  shape: BoxShape.circle,
+                                ),
+                              ),
+                            ],
+                          ),
+                        ),
+                      )
+                    else
+                      GestureDetector(
+                        onTap: () {
+                          Navigator.push(
+                            context,
+                            MaterialPageRoute(
+                              builder: (context) => const LoginPage(),
+                            ),
+                          );
+                        },
+                        child: Container(
+                          padding: EdgeInsets.symmetric(
+                              horizontal: 20.w, vertical: 8.h),
+                          decoration: BoxDecoration(
+                            color: Colors.white.withOpacity(0.9),
+                            borderRadius: BorderRadius.circular(20.r),
+                          ),
+                          child: Text(
+                            '登录',
+                            style: TextStyle(
+                              fontSize: 13.sp,
+                              color: const Color(0xFF9C4DFF),
+                              fontWeight: FontWeight.w600,
+                            ),
+                          ),
+                        ),
+                      ),
                   ],
                 ),
               ),

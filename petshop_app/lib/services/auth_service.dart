@@ -71,7 +71,71 @@ class AuthService {
     }
   }
 
-  // 发送验证码
+  // 发送短信验证码
+  Future<ApiResult<Map<String, dynamic>>> sendSMS(String phone) async {
+    try {
+      final response = await _apiService.post('/auth/send-sms', data: {
+        'phone': phone,
+      });
+
+      if (response.statusCode == 200) {
+        return ApiResult.success(response.data);
+      } else {
+        return ApiResult.error(response.data['message'] ?? '发送验证码失败');
+      }
+    } on DioException catch (e) {
+      return ApiResult.error(_handleError(e));
+    }
+  }
+
+  // 验证短信验证码
+  Future<ApiResult<Map<String, dynamic>>> verifySMS(String phone, String code) async {
+    try {
+      final response = await _apiService.post('/auth/verify-sms', data: {
+        'phone': phone,
+        'code': code,
+      });
+
+      if (response.statusCode == 200) {
+        return ApiResult.success(response.data);
+      } else {
+        return ApiResult.error(response.data['message'] ?? '验证码验证失败');
+      }
+    } on DioException catch (e) {
+      return ApiResult.error(_handleError(e));
+    }
+  }
+
+  // 短信验证码登录
+  Future<ApiResult<LoginResponse>> smsLogin({
+    required String phone,
+    required String code,
+  }) async {
+    try {
+      final response = await _apiService.post('/auth/sms-login', data: {
+        'phone': phone,
+        'code': code,
+      });
+
+      if (response.statusCode == 200) {
+        final loginResponse = LoginResponse.fromJson(response.data);
+
+        // 保存用户信息和token
+        await StorageService.saveUser(loginResponse.user);
+        await StorageService.saveUserToken(loginResponse.accessToken);
+        await StorageService.setString(
+            'refresh_token', loginResponse.refreshToken ?? '');
+
+        return ApiResult.success(loginResponse);
+      } else {
+        return ApiResult.error(response.data['detail'] ?? '登录失败');
+      }
+    } on DioException catch (e) {
+      return ApiResult.error(_handleError(e));
+    }
+  }
+
+  // 发送验证码（兼容旧接口）
   Future<ApiResult<void>> sendVerificationCode(String phone) async {
     try {
       final response = await _apiService.post('/auth/send-code', data: {

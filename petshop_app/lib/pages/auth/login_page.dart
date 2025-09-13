@@ -4,6 +4,7 @@ import 'package:get/get.dart';
 import '../../constants/app_colors.dart';
 import '../../utils/app_routes.dart';
 import '../../services/auth_service.dart';
+import 'sms_login_page.dart';
 
 class LoginPage extends StatefulWidget {
   const LoginPage({super.key});
@@ -185,20 +186,40 @@ class _LoginPageState extends State<LoginPage> {
                   ),
                 ),
                 SizedBox(height: 16.h),
-                // 忘记密码
-                Center(
-                  child: TextButton(
-                    onPressed: () {
-                      // TODO: 实现忘记密码功能
-                    },
-                    child: Text(
-                      '忘记密码？',
-                      style: TextStyle(
-                        fontSize: 14.sp,
-                        color: AppColors.primary,
+                // 忘记密码和短信登录
+                Row(
+                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                  children: [
+                    TextButton(
+                      onPressed: () {
+                        // TODO: 实现忘记密码功能
+                      },
+                      child: Text(
+                        '忘记密码？',
+                        style: TextStyle(
+                          fontSize: 14.sp,
+                          color: AppColors.primary,
+                        ),
                       ),
                     ),
-                  ),
+                    TextButton(
+                      onPressed: () {
+                        Navigator.push(
+                          context,
+                          MaterialPageRoute(
+                            builder: (context) => const SMSLoginPage(),
+                          ),
+                        );
+                      },
+                      child: Text(
+                        '短信登录',
+                        style: TextStyle(
+                          fontSize: 14.sp,
+                          color: AppColors.primary,
+                        ),
+                      ),
+                    ),
+                  ],
                 ),
                 SizedBox(height: 32.h),
                 // 分割线
