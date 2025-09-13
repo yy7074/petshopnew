@@ -5,7 +5,10 @@ import 'storage_service.dart';
 
 class ApiService extends ChangeNotifier {
   late Dio _dio;
-  static const String baseUrl = 'https://api.petauction.com/api/v1';
+  // 修改为本地开发服务器地址
+  static const String baseUrl = 'http://localhost:8000/api/v1';
+  // 如果使用真机调试，请使用你的电脑IP地址，例如：
+  // static const String baseUrl = 'http://192.168.1.100:8000/api/v1';
 
   ApiService() {
     _dio = Dio(BaseOptions(
@@ -184,6 +187,3 @@ class ApiService extends ChangeNotifier {
     );
   }
 }
-
-
-

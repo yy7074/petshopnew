@@ -9,7 +9,9 @@ class Settings(BaseSettings):
     VERSION: str = "1.0.0"
     
     # 数据库配置
-    DATABASE_URL: str = "mysql+pymysql://root:password@localhost:3306/petshop_auction"
+    # 使用本地MySQL数据库
+    DATABASE_URL: str = "mysql+pymysql://root:123456@localhost:3306/petshop_auction"
+    # DATABASE_URL: str = "sqlite:///./petshop_auction.db"
     
     # Redis配置
     REDIS_URL: str = "redis://localhost:6379/0"

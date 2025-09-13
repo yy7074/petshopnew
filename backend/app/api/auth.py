@@ -3,26 +3,12 @@ from fastapi import APIRouter, Depends, HTTPException, status
 from fastapi.security import OAuth2PasswordBearer, OAuth2PasswordRequestForm
 from sqlalchemy.orm import Session
 from app.core.database import get_db
-from app.core.security import verify_password, get_password_hash, create_access_token, verify_token
+from app.core.security import verify_password, get_password_hash, create_access_token, verify_token, get_current_user
 from app.models.user import User
 from app.schemas.auth import Token, UserLogin, UserRegister
 from app.schemas.user import UserResponse
 
 router = APIRouter()
-oauth2_scheme = OAuth2PasswordBearer(tokenUrl="api/auth/login")
-
-def get_current_user(token: str = Depends(oauth2_scheme), db: Session = Depends(get_db)):
-    """获取当前用户"""
-    payload = verify_token(token)
-    user_id = payload.get("sub")
-    user = db.query(User).filter(User.id == user_id).first()
-    if user is None:
-        raise HTTPException(
-            status_code=status.HTTP_401_UNAUTHORIZED,
-            detail="用户不存在",
-            headers={"WWW-Authenticate": "Bearer"},
-        )
-    return user
 
 @router.post("/register", response_model=UserResponse)
 async def register(user_data: UserRegister, db: Session = Depends(get_db)):

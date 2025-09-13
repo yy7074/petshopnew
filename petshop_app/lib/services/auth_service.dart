@@ -12,22 +12,26 @@ class AuthService {
     required String password,
   }) async {
     try {
-      final response = await _apiService.post('/auth/login', data: {
-        'phone': phone,
+      // 使用FormData发送表单数据，匹配后端OAuth2PasswordRequestForm的期望
+      final formData = FormData.fromMap({
+        'username': phone, // 后端使用username字段，但可以接受手机号
         'password': password,
       });
 
+      final response = await _apiService.post('/auth/login', data: formData);
+
       if (response.statusCode == 200) {
-        final loginResponse = LoginResponse.fromJson(response.data['data']);
-        
+        final loginResponse = LoginResponse.fromJson(response.data);
+
         // 保存用户信息和token
         await StorageService.saveUser(loginResponse.user);
         await StorageService.saveUserToken(loginResponse.accessToken);
-        await StorageService.setString('refresh_token', loginResponse.refreshToken);
-        
+        await StorageService.setString(
+            'refresh_token', loginResponse.refreshToken ?? '');
+
         return ApiResult.success(loginResponse);
       } else {
-        return ApiResult.error(response.data['message'] ?? '登录失败');
+        return ApiResult.error(response.data['detail'] ?? '登录失败');
       }
     } on DioException catch (e) {
       return ApiResult.error(_handleError(e));
@@ -51,12 +55,13 @@ class AuthService {
 
       if (response.statusCode == 200) {
         final loginResponse = LoginResponse.fromJson(response.data['data']);
-        
+
         // 保存用户信息和token
         await StorageService.saveUser(loginResponse.user);
         await StorageService.saveUserToken(loginResponse.accessToken);
-        await StorageService.setString('refresh_token', loginResponse.refreshToken);
-        
+        await StorageService.setString(
+            'refresh_token', loginResponse.refreshToken);
+
         return ApiResult.success(loginResponse);
       } else {
         return ApiResult.error(response.data['message'] ?? '注册失败');
@@ -87,10 +92,10 @@ class AuthService {
   Future<ApiResult<void>> logout() async {
     try {
       await _apiService.post('/auth/logout');
-      
+
       // 清除本地存储
       await StorageService.clearUserData();
-      
+
       return ApiResult.success(null);
     } on DioException {
       // 即使接口调用失败，也要清除本地数据
@@ -186,7 +191,7 @@ class AuthService {
     } else if (error.response?.statusCode == 429) {
       return '请求过于频繁，请稍后再试';
     } else if (error.type == DioExceptionType.connectionTimeout ||
-               error.type == DioExceptionType.receiveTimeout) {
+        error.type == DioExceptionType.receiveTimeout) {
       return '网络连接超时，请检查网络';
     } else if (error.type == DioExceptionType.unknown) {
       return '网络连接失败，请检查网络';
