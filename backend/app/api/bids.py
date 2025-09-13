@@ -25,17 +25,19 @@ async def place_bid(
     try:
         bid = await bid_service.place_bid(db, bid_data, current_user.id)
         
-        # 后台任务：发送通知
-        background_tasks.add_task(
-            notification_service.send_bid_notification,
-            db, bid.product_id, bid.amount, current_user.username
-        )
+        # 暂时注释掉通知服务，避免错误
+        # background_tasks.add_task(
+        #     notification_service.send_bid_notification,
+        #     db, bid.product_id, bid.amount, current_user.username
+        # )
         
         return bid
     except ValueError as e:
         raise HTTPException(status_code=400, detail=str(e))
     except Exception as e:
-        raise HTTPException(status_code=500, detail="出价失败")
+        import traceback
+        error_detail = f"出价失败: {str(e)}\n{traceback.format_exc()}"
+        raise HTTPException(status_code=500, detail=error_detail)
 
 @router.get("/product/{product_id}", response_model=BidListResponse)
 async def get_product_bids(

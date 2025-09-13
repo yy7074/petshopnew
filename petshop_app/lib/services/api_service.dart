@@ -7,8 +7,10 @@ class ApiService extends ChangeNotifier {
   late Dio _dio;
   // 使用内网穿透域名访问后台API
   static const String baseUrl = 'https://catdog.dachaonet.com/api/v1';
-  // 备用本地开发地址
-  // static const String baseUrl = 'http://localhost:8000/api/v1';
+  // 本地开发地址选择（根据设备类型选择合适的配置）
+  // static const String baseUrl = 'http://10.0.2.2:3000/api/v1'; // Android模拟器
+  // static const String baseUrl = 'http://127.0.0.1:3000/api/v1'; // iOS模拟器
+  // static const String baseUrl = 'http://localhost:3000/api/v1'; // Web端测试
 
   ApiService() {
     _dio = Dio(BaseOptions(

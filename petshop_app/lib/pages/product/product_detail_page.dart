@@ -51,7 +51,8 @@ class _ProductDetailPageState extends State<ProductDetailPage> {
 
   Future<void> _loadAuctionStatus() async {
     // 这里应该从路由参数或widget.productData中获取productId
-    final productId = widget.productData?['id'] ?? 1; // 示例ID
+    final productIdRaw = widget.productData?['id'] ?? 1;
+    final productId = productIdRaw is String ? int.tryParse(productIdRaw) ?? 1 : productIdRaw as int;
     
     setState(() => _isLoadingAuctionStatus = true);
     
@@ -75,11 +76,71 @@ class _ProductDetailPageState extends State<ProductDetailPage> {
       final items = winningAuctions['items'] as List?;
       
       if (items != null) {
-        final hasWon = items.any((item) => item['product_id'] == productId);
+        final hasWon = items.any((item) {
+          final itemProductId = item['product_id'];
+          // 确保类型匹配，支持String或int类型的product_id
+          if (itemProductId is String) {
+            return int.tryParse(itemProductId) == productId;
+          } else if (itemProductId is int) {
+            return itemProductId == productId;
+          }
+          return false;
+        });
         setState(() => _isWinner = hasWon);
       }
     } catch (e) {
       print('检查中标状态失败: $e');
+    }
+  }
+
+  Future<void> _placeBid(double bidAmount) async {
+    final productIdRaw = widget.productData?['id'] ?? 1;
+    final productId = productIdRaw is String ? int.tryParse(productIdRaw) ?? 1 : productIdRaw as int;
+    
+    setState(() => _isLoadingBids = true);
+    
+    try {
+      final result = await _bidService.placeBid(
+        productId: productId,
+        bidAmount: bidAmount,
+      );
+      
+      if (result.success) {
+        // 出价成功，刷新拍卖状态
+        await _loadAuctionStatus();
+        
+        if (mounted) {
+          Navigator.pop(context);
+        }
+        Get.snackbar(
+          '出价成功',
+          '您的出价已提交，当前出价 ¥${bidAmount.toStringAsFixed(0)}',
+          backgroundColor: AppColors.success,
+          colorText: Colors.white,
+        );
+      } else {
+        // 检查是否是商品不存在的错误，提供友好提示
+        String errorMessage = result.message;
+        if (errorMessage.contains('商品不存在') || errorMessage.contains('Not Found')) {
+          errorMessage = '这是演示商品，请在真实环境中测试出价功能';
+        }
+        
+        Get.snackbar(
+          '出价失败',
+          errorMessage,
+          backgroundColor: AppColors.error,
+          colorText: Colors.white,
+        );
+      }
+    } catch (e) {
+      Get.snackbar(
+        '出价失败',
+        '网络错误，请稍后重试',
+        backgroundColor: AppColors.error,
+        colorText: Colors.white,
+      );
+    } finally {
+      setState(() => _isLoadingBids = false);
     }
   }
 
@@ -634,7 +695,8 @@ class _ProductDetailPageState extends State<ProductDetailPage> {
   }
 
   void _goToWinnerOrder() {
-    final productId = widget.productData?['id'] ?? 1;
+    final productIdRaw = widget.productData?['id'] ?? 1;
+    final productId = productIdRaw is String ? int.tryParse(productIdRaw) ?? 1 : productIdRaw as int;
     final productTitle = widget.productData?['title'] ?? '商品';
     final winningAmount = _auctionStatus?['current_price'] ?? '0';
     final productImages = widget.productData?['images'] as List?;
@@ -809,219 +871,336 @@ class _ProductDetailPageState extends State<ProductDetailPage> {
   }
 
   void _showBiddingDialog() {
+    final currentPrice = double.tryParse(_auctionStatus?['current_price']?.toString() ?? '0') ?? 0;
+    final minIncrement = double.tryParse(_auctionStatus?['min_increment']?.toString() ?? '10') ?? 10;
+    final productTitle = widget.productData?['title'] ?? '商品';
+    final productImages = widget.productData?['images'] as List?;
+    final productImage = productImages?.isNotEmpty == true ? productImages!.first : null;
+    
+    // 建议出价金额
+    final suggestedBid1 = currentPrice + minIncrement;
+    final suggestedBid2 = currentPrice + (minIncrement * 2);
+    final suggestedBid3 = currentPrice + (minIncrement * 3);
+    
+    String selectedBidAmount = '';
+    
     showModalBottomSheet(
       context: context,
       backgroundColor: Colors.transparent,
       isScrollControlled: true,
-      builder: (context) => Container(
-        height: MediaQuery.of(context).size.height * 0.7,
-        decoration: BoxDecoration(
-          color: Colors.white,
-          borderRadius: BorderRadius.only(
-            topLeft: Radius.circular(20.w),
-            topRight: Radius.circular(20.w),
+      builder: (context) => StatefulBuilder(
+        builder: (context, setModalState) => Container(
+          height: MediaQuery.of(context).size.height * 0.7,
+          decoration: BoxDecoration(
+            color: Colors.white,
+            borderRadius: BorderRadius.only(
+              topLeft: Radius.circular(20.w),
+              topRight: Radius.circular(20.w),
+            ),
           ),
-        ),
-        child: Column(
-          children: [
-            Container(
-              padding: EdgeInsets.all(20.w),
-              decoration: BoxDecoration(
-                border: Border(
-                  bottom: BorderSide(color: Colors.grey.shade200),
-                ),
-              ),
-              child: Row(
-                children: [
-                  Container(
-                    width: 60.w,
-                    height: 60.w,
-                    decoration: BoxDecoration(
-                      borderRadius: BorderRadius.circular(8.w),
-                      image: const DecorationImage(
-                        image: AssetImage('assets/images/aquarium1.jpg'),
-                        fit: BoxFit.cover,
-                      ),
-                    ),
+          child: Column(
+            children: [
+              // 头部 - 商品信息
+              Container(
+                padding: EdgeInsets.all(20.w),
+                decoration: BoxDecoration(
+                  border: Border(
+                    bottom: BorderSide(color: Colors.grey.shade200),
                   ),
-                  SizedBox(width: 12.w),
-                  Expanded(
-                    child: Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                        Text(
-                          '宠物标题宠物标题宠物标题宠物标...',
-                          style: TextStyle(
-                            fontSize: 14.sp,
-                            fontWeight: FontWeight.w500,
-                          ),
-                          maxLines: 2,
-                          overflow: TextOverflow.ellipsis,
-                        ),
-                        SizedBox(height: 4.h),
-                        Container(
-                          padding: EdgeInsets.symmetric(horizontal: 6.w, vertical: 2.h),
-                          decoration: BoxDecoration(
-                            color: Colors.orange,
-                            borderRadius: BorderRadius.circular(2.w),
-                          ),
-                          child: Text(
-                            '包邮',
+                ),
+                child: Row(
+                  children: [
+                    // 商品图片
+                    Container(
+                      width: 60.w,
+                      height: 60.w,
+                      decoration: BoxDecoration(
+                        borderRadius: BorderRadius.circular(8.w),
+                        color: Colors.grey[200],
+                      ),
+                      child: productImage != null
+                          ? ClipRRect(
+                              borderRadius: BorderRadius.circular(8.w),
+                              child: Image.network(
+                                productImage,
+                                fit: BoxFit.cover,
+                                errorBuilder: (context, error, stackTrace) => 
+                                    Icon(Icons.pets, color: Colors.grey),
+                              ),
+                            )
+                          : Icon(Icons.pets, color: Colors.grey),
+                    ),
+                    SizedBox(width: 12.w),
+                    Expanded(
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          Text(
+                            productTitle,
                             style: TextStyle(
-                              color: Colors.white,
-                              fontSize: 10.sp,
+                              fontSize: 14.sp,
+                              fontWeight: FontWeight.w500,
+                            ),
+                            maxLines: 2,
+                            overflow: TextOverflow.ellipsis,
+                          ),
+                          SizedBox(height: 4.h),
+                          Container(
+                            padding: EdgeInsets.symmetric(horizontal: 6.w, vertical: 2.h),
+                            decoration: BoxDecoration(
+                              color: Colors.orange,
+                              borderRadius: BorderRadius.circular(2.w),
+                            ),
+                            child: Text(
+                              '包邮',
+                              style: TextStyle(
+                                color: Colors.white,
+                                fontSize: 10.sp,
+                              ),
                             ),
                           ),
-                        ),
-                      ],
-                    ),
-                  ),
-                  IconButton(
-                    onPressed: () => Navigator.pop(context),
-                    icon: Icon(Icons.close),
-                  ),
-                ],
-              ),
-            ),
-            
-            Expanded(
-              child: Padding(
-                padding: EdgeInsets.all(20.w),
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    Row(
-                      children: [
-                        Text(
-                          '当前竞价:',
-                          style: TextStyle(
-                            fontSize: 16.sp,
-                            color: Colors.grey[600],
-                          ),
-                        ),
-                        SizedBox(width: 8.w),
-                        Text(
-                          '¥432',
-                          style: TextStyle(
-                            fontSize: 24.sp,
-                            color: Colors.red,
-                            fontWeight: FontWeight.bold,
-                          ),
-                        ),
-                        Spacer(),
-                        IconButton(
-                          onPressed: () => Navigator.pop(context),
-                          icon: Icon(Icons.close),
-                        ),
-                      ],
-                    ),
-                    SizedBox(height: 8.h),
-                    Text(
-                      '加价幅度不低于50%',
-                      style: TextStyle(
-                        fontSize: 12.sp,
-                        color: Colors.grey[600],
+                        ],
                       ),
                     ),
-                    SizedBox(height: 24.h),
-                    
+                    IconButton(
+                      onPressed: () => Navigator.pop(context),
+                      icon: Icon(Icons.close),
+                    ),
+                  ],
+                ),
+              ),
+              
+              // 中间 - 出价区域
+              Expanded(
+                child: Padding(
+                  padding: EdgeInsets.all(20.w),
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      // 当前竞价
+                      Row(
+                        children: [
+                          Text(
+                            '当前竞价:',
+                            style: TextStyle(
+                              fontSize: 16.sp,
+                              color: Colors.grey[600],
+                            ),
+                          ),
+                          SizedBox(width: 8.w),
+                          Text(
+                            '¥${currentPrice.toStringAsFixed(0)}',
+                            style: TextStyle(
+                              fontSize: 24.sp,
+                              color: Colors.red,
+                              fontWeight: FontWeight.bold,
+                            ),
+                          ),
+                        ],
+                      ),
+                      SizedBox(height: 8.h),
+                      Text(
+                        '最低加价幅度 ¥${minIncrement.toStringAsFixed(0)}',
+                        style: TextStyle(
+                          fontSize: 12.sp,
+                          color: Colors.grey[600],
+                        ),
+                      ),
+                      SizedBox(height: 24.h),
+                      
+                      // 警告信息
+                      Row(
+                        children: [
+                          Icon(
+                            Icons.warning,
+                            color: Colors.orange,
+                            size: 16.w,
+                          ),
+                          SizedBox(width: 8.w),
+                          Text(
+                            '竞拍火热，请谨慎出价',
+                            style: TextStyle(
+                              fontSize: 12.sp,
+                              color: Colors.grey[600],
+                            ),
+                          ),
+                        ],
+                      ),
+                      
+                      SizedBox(height: 24.h),
+                      
+                      // 建议出价按钮
+                      Row(
+                        children: [
+                          Expanded(
+                            child: GestureDetector(
+                              onTap: () => setModalState(() => selectedBidAmount = suggestedBid1.toStringAsFixed(0)),
+                              child: Container(
+                                padding: EdgeInsets.symmetric(vertical: 12.h),
+                                decoration: BoxDecoration(
+                                  border: Border.all(
+                                    color: selectedBidAmount == suggestedBid1.toStringAsFixed(0) ? Colors.red : Colors.grey.shade300,
+                                  ),
+                                  borderRadius: BorderRadius.circular(6.w),
+                                ),
+                                child: Center(
+                                  child: Text(
+                                    '¥${suggestedBid1.toStringAsFixed(0)}',
+                                    style: TextStyle(
+                                      color: selectedBidAmount == suggestedBid1.toStringAsFixed(0) ? Colors.red : Colors.black,
+                                      fontSize: 14.sp,
+                                      fontWeight: FontWeight.w500,
+                                    ),
+                                  ),
+                                ),
+                              ),
+                            ),
+                          ),
+                          SizedBox(width: 12.w),
+                          Expanded(
+                            child: GestureDetector(
+                              onTap: () => setModalState(() => selectedBidAmount = suggestedBid2.toStringAsFixed(0)),
+                              child: Container(
+                                padding: EdgeInsets.symmetric(vertical: 12.h),
+                                decoration: BoxDecoration(
+                                  border: Border.all(
+                                    color: selectedBidAmount == suggestedBid2.toStringAsFixed(0) ? Colors.red : Colors.grey.shade300,
+                                  ),
+                                  borderRadius: BorderRadius.circular(6.w),
+                                ),
+                                child: Center(
+                                  child: Text(
+                                    '¥${suggestedBid2.toStringAsFixed(0)}',
+                                    style: TextStyle(
+                                      color: selectedBidAmount == suggestedBid2.toStringAsFixed(0) ? Colors.red : Colors.black,
+                                      fontSize: 14.sp,
+                                      fontWeight: FontWeight.w500,
+                                    ),
+                                  ),
+                                ),
+                              ),
+                            ),
+                          ),
+                          SizedBox(width: 12.w),
+                          Expanded(
+                            child: GestureDetector(
+                              onTap: () => setModalState(() => selectedBidAmount = suggestedBid3.toStringAsFixed(0)),
+                              child: Container(
+                                padding: EdgeInsets.symmetric(vertical: 12.h),
+                                decoration: BoxDecoration(
+                                  border: Border.all(
+                                    color: selectedBidAmount == suggestedBid3.toStringAsFixed(0) ? Colors.red : Colors.grey.shade300,
+                                  ),
+                                  borderRadius: BorderRadius.circular(6.w),
+                                ),
+                                child: Center(
+                                  child: Text(
+                                    '¥${suggestedBid3.toStringAsFixed(0)}',
+                                    style: TextStyle(
+                                      color: selectedBidAmount == suggestedBid3.toStringAsFixed(0) ? Colors.red : Colors.black,
+                                      fontSize: 14.sp,
+                                      fontWeight: FontWeight.w500,
+                                    ),
+                                  ),
+                                ),
+                              ),
+                            ),
+                          ),
+                        ],
+                      ),
+                      
+                      SizedBox(height: 16.h),
+                      
+                      // 自定义出价输入框
+                      TextField(
+                        controller: _bidController,
+                        keyboardType: TextInputType.number,
+                        onChanged: (value) => setModalState(() => selectedBidAmount = value),
+                        decoration: InputDecoration(
+                          labelText: '自定义出价',
+                          hintText: '请输入出价金额',
+                          prefixText: '¥',
+                          border: OutlineInputBorder(
+                            borderRadius: BorderRadius.circular(6.w),
+                          ),
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+              ),
+              
+              // 底部 - 确认按钮
+              Container(
+                padding: EdgeInsets.all(20.w),
+                child: Column(
+                  children: [
+                    GestureDetector(
+                      onTap: _isLoadingBids ? null : () async {
+                        final bidAmountStr = selectedBidAmount.isNotEmpty ? selectedBidAmount : _bidController.text.trim();
+                        final bidAmount = double.tryParse(bidAmountStr);
+                        
+                        if (bidAmount == null || bidAmount <= currentPrice) {
+                          Get.snackbar(
+                            '出价无效',
+                            '出价必须高于当前竞价 ¥${currentPrice.toStringAsFixed(0)}',
+                            backgroundColor: AppColors.error,
+                            colorText: Colors.white,
+                          );
+                          return;
+                        }
+                        
+                        if (bidAmount < currentPrice + minIncrement) {
+                          Get.snackbar(
+                            '出价无效',
+                            '出价必须至少高出 ¥${minIncrement.toStringAsFixed(0)}',
+                            backgroundColor: AppColors.error,
+                            colorText: Colors.white,
+                          );
+                          return;
+                        }
+                        
+                        await _placeBid(bidAmount);
+                      },
+                      child: Container(
+                        width: double.infinity,
+                        padding: EdgeInsets.symmetric(vertical: 16.h),
+                        decoration: BoxDecoration(
+                          color: _isLoadingBids ? Colors.grey : Colors.purple,
+                          borderRadius: BorderRadius.circular(25.w),
+                        ),
+                        child: Center(
+                          child: _isLoadingBids
+                              ? SizedBox(
+                                  width: 20.w,
+                                  height: 20.w,
+                                  child: CircularProgressIndicator(color: Colors.white, strokeWidth: 2),
+                                )
+                              : Text(
+                                  '确定出价',
+                                  style: TextStyle(
+                                    color: Colors.white,
+                                    fontSize: 16.sp,
+                                    fontWeight: FontWeight.w600,
+                                  ),
+                                ),
+                        ),
+                      ),
+                    ),
+                    SizedBox(height: 12.h),
                     Row(
                       children: [
                         Icon(
-                          Icons.warning,
-                          color: Colors.orange,
+                          Icons.check_circle,
+                          color: Colors.purple,
                           size: 16.w,
                         ),
                         SizedBox(width: 8.w),
                         Text(
-                          '竞拍火热，加价确底不慎:',
+                          '出价后不可撤销，请谨慎操作',
                           style: TextStyle(
                             fontSize: 12.sp,
                             color: Colors.grey[600],
-                          ),
-                        ),
-                        SizedBox(width: 4.w),
-                        Text(
-                          '¥8',
-                          style: TextStyle(
-                            fontSize: 12.sp,
-                            color: Colors.red,
-                            fontWeight: FontWeight.w500,
-                          ),
-                        ),
-                      ],
-                    ),
-                    
-                    SizedBox(height: 24.h),
-                    
-                    Row(
-                      children: [
-                        Expanded(
-                          child: GestureDetector(
-                            onTap: () => setState(() => _bidController.text = '440'),
-                            child: Container(
-                              padding: EdgeInsets.symmetric(vertical: 12.h),
-                              decoration: BoxDecoration(
-                                border: Border.all(
-                                  color: _bidController.text == '440' ? Colors.red : Colors.grey.shade300,
-                                ),
-                                borderRadius: BorderRadius.circular(6.w),
-                              ),
-                              child: Center(
-                                child: Text(
-                                  '¥440',
-                                  style: TextStyle(
-                                    color: _bidController.text == '440' ? Colors.red : Colors.black,
-                                    fontSize: 14.sp,
-                                    fontWeight: FontWeight.w500,
-                                  ),
-                                ),
-                              ),
-                            ),
-                          ),
-                        ),
-                        SizedBox(width: 12.w),
-                        Expanded(
-                          child: GestureDetector(
-                            onTap: () => setState(() => _bidController.text = '448'),
-                            child: Container(
-                              padding: EdgeInsets.symmetric(vertical: 12.h),
-                              decoration: BoxDecoration(
-                                border: Border.all(
-                                  color: _bidController.text == '448' ? Colors.red : Colors.grey.shade300,
-                                ),
-                                borderRadius: BorderRadius.circular(6.w),
-                              ),
-                              child: Center(
-                                child: Text(
-                                  '¥448',
-                                  style: TextStyle(
-                                    color: _bidController.text == '448' ? Colors.red : Colors.black,
-                                    fontSize: 14.sp,
-                                    fontWeight: FontWeight.w500,
-                                  ),
-                                ),
-                              ),
-                            ),
-                          ),
-                        ),
-                        SizedBox(width: 12.w),
-                        Expanded(
-                          child: Container(
-                            padding: EdgeInsets.symmetric(vertical: 12.h),
-                            decoration: BoxDecoration(
-                              border: Border.all(color: Colors.grey.shade300),
-                              borderRadius: BorderRadius.circular(6.w),
-                            ),
-                            child: Center(
-                              child: Text(
-                                '其他价格 >',
-                                style: TextStyle(
-                                  fontSize: 12.sp,
-                                  color: Colors.grey[600],
-                                ),
-                              ),
-                            ),
                           ),
                         ),
                       ],
@@ -1029,60 +1208,8 @@ class _ProductDetailPageState extends State<ProductDetailPage> {
                   ],
                 ),
               ),
-            ),
-            
-            Container(
-              padding: EdgeInsets.all(20.w),
-              child: Column(
-                children: [
-                  GestureDetector(
-                    onTap: () {
-                      Navigator.pop(context);
-                      ScaffoldMessenger.of(context).showSnackBar(
-                        const SnackBar(content: Text('出价成功！')),
-                      );
-                    },
-                    child: Container(
-                      width: double.infinity,
-                      padding: EdgeInsets.symmetric(vertical: 16.h),
-                      decoration: BoxDecoration(
-                        color: Colors.purple,
-                        borderRadius: BorderRadius.circular(25.w),
-                      ),
-                      child: Center(
-                        child: Text(
-                          '确定出价',
-                          style: TextStyle(
-                            color: Colors.white,
-                            fontSize: 16.sp,
-                            fontWeight: FontWeight.w600,
-                          ),
-                        ),
-                      ),
-                    ),
-                  ),
-                  SizedBox(height: 12.h),
-                  Row(
-                    children: [
-                      Icon(
-                        Icons.check_circle,
-                        color: Colors.purple,
-                        size: 16.w,
-                      ),
-                      SizedBox(width: 8.w),
-                      Text(
-                        '本次选择确定出价',
-                        style: TextStyle(
-                          fontSize: 12.sp,
-                          color: Colors.grey[600],
-                        ),
-                      ),
-                    ],
-                  ),
-                ],
-              ),
-            ),
-          ],
+            ],
+          ),
         ),
       ),
     );

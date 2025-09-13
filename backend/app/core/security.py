@@ -3,13 +3,14 @@ from typing import Optional
 from jose import JWTError, jwt
 from passlib.context import CryptContext
 from fastapi import HTTPException, status, Depends
-from fastapi.security import OAuth2PasswordBearer
+from fastapi.security import OAuth2PasswordBearer, HTTPBearer
 from sqlalchemy.orm import Session
 from app.core.config import settings
 
 # Password encryption context
 pwd_context = CryptContext(schemes=["bcrypt"], deprecated="auto")
 oauth2_scheme = OAuth2PasswordBearer(tokenUrl="api/v1/auth/login")
+optional_auth = HTTPBearer(auto_error=False)
 
 def verify_password(plain_password: str, hashed_password: str) -> bool:
     """验证密码"""
@@ -71,10 +72,12 @@ def get_current_user(token: str = Depends(oauth2_scheme)):
     finally:
         db.close()
 
-def get_current_user_optional(token: str = Depends(oauth2_scheme)):
+def get_current_user_optional(token: Optional[str] = Depends(optional_auth)):
     """获取当前用户（可选）"""
+    if not token:
+        return None
     try:
-        return get_current_user(token)
+        return get_current_user(token.credentials)
     except HTTPException:
         return None
 

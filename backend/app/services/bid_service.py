@@ -26,7 +26,7 @@ class BidService:
         if product.seller_id == user_id:
             raise ValueError("不能对自己的商品出价")
         
-        if product.status != "active":
+        if product.status != 2:  # 2表示拍卖中
             raise ValueError("商品未在拍卖中")
         
         if product.auction_type == "fixed_price":
@@ -52,33 +52,33 @@ class BidService:
         # 创建出价记录
         bid = Bid(
             product_id=bid_data.product_id,
-            user_id=user_id,
-            amount=bid_data.amount,
+            bidder_id=user_id,
+            bid_amount=bid_data.amount,
             is_auto_bid=False,
-            status="active"
+            status=1  # 1表示有效
         )
         db.add(bid)
         
         # 更新商品当前价格
         product.current_price = bid_data.amount
         
-        # 将之前的出价状态改为outbid
+        # 将之前的出价状态改为outbid (2表示被超越)
         db.query(Bid).filter(
             and_(
                 Bid.product_id == bid_data.product_id,
                 Bid.id != bid.id,
-                Bid.status == "winning"
+                Bid.status == 1  # 1表示有效/领先
             )
-        ).update({"status": "outbid"})
+        ).update({"status": 2})  # 2表示被超越
         
         # 设置当前出价为领先状态
-        bid.status = "winning"
+        bid.status = 1  # 1表示有效/领先
         
         db.commit()
         db.refresh(bid)
         
-        # 处理自动出价
-        await self._handle_auto_bids(db, bid_data.product_id, bid_data.amount, user_id)
+        # 暂时注释掉自动出价处理
+        # await self._handle_auto_bids(db, bid_data.product_id, bid_data.amount, user_id)
         
         return self._to_bid_response(bid, db)
     
@@ -437,7 +437,7 @@ class BidService:
     def _to_bid_response(self, bid: Bid, db: Session) -> BidResponse:
         """转换为响应格式"""
         # 获取用户信息
-        user = db.query(User).filter(User.id == bid.user_id).first()
+        user = db.query(User).filter(User.id == bid.bidder_id).first()
         
         # 获取商品信息
         product = db.query(Product).filter(Product.id == bid.product_id).first()
@@ -445,14 +445,14 @@ class BidService:
         return BidResponse(
             id=bid.id,
             product_id=bid.product_id,
-            user_id=bid.user_id,
-            amount=bid.amount,
+            user_id=bid.bidder_id,
+            amount=bid.bid_amount,
             is_auto_bid=bid.is_auto_bid,
             status=bid.status,
             created_at=bid.created_at,
             user_info={
                 "username": user.username,
-                "avatar": user.avatar
+                "avatar": user.avatar_url
             } if user else None,
             product_info={
                 "title": product.title,

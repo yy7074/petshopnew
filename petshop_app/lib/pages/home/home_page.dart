@@ -12,8 +12,11 @@ import '../door_service/door_service_page.dart';
 import '../search/search_page.dart';
 import '../special_event/special_event_page.dart';
 import '../product/product_detail_page.dart';
-import '../../services/product_service.dart';
-import '../../models/product.dart';
+import '../../services/product_service.dart' as product_service;
+import '../../services/event_service.dart';
+import '../../services/home_service.dart' as home_service;
+import '../../models/product.dart' as product_models;
+import '../../models/category.dart';
 
 class HomePage extends StatefulWidget {
   const HomePage({super.key});
@@ -25,10 +28,21 @@ class HomePage extends StatefulWidget {
 class _HomePageState extends State<HomePage> {
   late PageController _pageController;
   int _currentTabIndex = 0;
-  final ProductService _productService = ProductService();
-  List<Product> _products = [];
-  List<Product> _hotProducts = [];
+  final product_service.ProductService _productService = product_service.ProductService();
+  final EventService _eventService = EventService();
+  final home_service.HomeService _homeService = home_service.HomeService();
+
+  // 数据状态
+  List<product_models.Product> _products = [];
+  List<product_models.Product> _hotProducts = [];
+  List<product_models.Product> _recentProducts = [];
+  List<product_models.Product> _recommendedProducts = [];
+  List<home_service.SpecialEvent> _specialEvents = [];
+  List<Category> _categories = [];
+  List<home_service.Banner> _banners = [];
+  home_service.HomeStats? _homeStats;
   bool _isLoading = false;
+  String? _errorMessage;
 
   final List<String> tabs = [
     '首页·AI',
@@ -133,6 +147,195 @@ class _HomePageState extends State<HomePage> {
   void initState() {
     super.initState();
     _pageController = PageController(initialPage: 0);
+    _loadHomeData();
+  }
+
+  /// 加载首页数据
+  Future<void> _loadHomeData() async {
+    setState(() {
+      _isLoading = true;
+      _errorMessage = null;
+    });
+
+    try {
+      // 并行加载多个数据
+      final results = await Future.wait([
+        _homeService.getHomeData(),
+        _homeService.getHomeBanners(),
+        _homeService.getHomeStats(),
+      ]);
+
+      if (mounted) {
+        setState(() {
+          _isLoading = false;
+
+          // 处理首页数据
+          if (results[0].success) {
+            final homeData = results[0].data! as home_service.HomeData;
+            _hotProducts = (homeData.hotProducts as List<dynamic>).map((item) => product_models.Product.fromJson(item as Map<String, dynamic>)).toList();
+            _recentProducts = (homeData.recentProducts as List<dynamic>).map((item) => product_models.Product.fromJson(item as Map<String, dynamic>)).toList();
+            _recommendedProducts = (homeData.recommendedProducts as List<dynamic>).map((item) => product_models.Product.fromJson(item as Map<String, dynamic>)).toList();
+            _specialEvents = homeData.specialEvents;
+            _categories = (homeData.categories as List<dynamic>).map((item) => Category.fromJson(item as Map<String, dynamic>)).toList();
+          } else {
+            _errorMessage = results[0].message;
+          }
+
+          // 处理轮播图数据
+          if (results[1].success) {
+            _banners = results[1].data! as List<home_service.Banner>;
+          }
+
+          // 处理统计数据
+          if (results[2].success) {
+            _homeStats = results[2].data! as home_service.HomeStats;
+          }
+        });
+      }
+    } catch (e) {
+      if (mounted) {
+        setState(() {
+          _isLoading = false;
+          _errorMessage = '加载数据失败: $e';
+        });
+      }
+    }
+  }
+
+  /// 刷新数据
+  Future<void> _refreshData() async {
+    await _loadHomeData();
+  }
+
+  /// 处理轮播图点击
+  void _handleBannerTap(home_service.Banner banner) {
+    debugPrint('Banner clicked: ${banner.title}');
+    // 根据链接类型进行导航
+    if (banner.link.startsWith('/events/')) {
+      // 跳转到专场页面
+      Get.toNamed('/special-event',
+          arguments: {'eventId': banner.link.split('/').last});
+    } else if (banner.link.startsWith('/products')) {
+      // 跳转到商品列表页面
+      Get.toNamed('/products', arguments: {'query': banner.link});
+    } else {
+      // 其他链接处理
+      debugPrint('Banner link: ${banner.link}');
+    }
+  }
+
+  /// 转换Product对象为Map格式（兼容AuctionCard）
+  Map<String, dynamic> _convertProductToMap(product_models.Product product) {
+    return {
+      'id': product.id,
+      'name': product.title,
+      'currentPrice': product.auctionInfo?.currentPrice ?? 0.0,
+      'startPrice': product.auctionInfo?.startPrice ?? 0.0,
+      'image': product.images.isNotEmpty
+          ? product.images.first
+          : 'https://picsum.photos/200/200?random=${product.id}',
+      'category': '宠物', // TODO: 从categoryId获取分类名称
+      'timeLeft': _formatTimeLeft(product.auctionInfo?.endTime),
+      'bidCount': product.auctionInfo?.bidCount ?? 0,
+      'description': product.description,
+      'location': product.location ?? '未知',
+      'seller': {
+        'name': '卖家${product.sellerId}',
+        'avatar': 'https://picsum.photos/50/50?random=${product.sellerId}',
+        'rating': 4.8,
+      }
+    };
+  }
+
+  /// 格式化剩余时间
+  String _formatTimeLeft(DateTime? endTime) {
+    if (endTime == null) return '未知';
+
+    final now = DateTime.now();
+    final difference = endTime.difference(now);
+
+    if (difference.isNegative) {
+      return '已结束';
+    }
+
+    final days = difference.inDays;
+    final hours = difference.inHours % 24;
+    final minutes = difference.inMinutes % 60;
+
+    if (days > 0) {
+      return '${days}天${hours}小时';
+    } else if (hours > 0) {
+      return '${hours}小时${minutes}分钟';
+    } else {
+      return '${minutes}分钟';
+    }
+  }
+
+  /// 切换收藏状态
+  void _toggleFavorite(product_models.Product product) {
+    // TODO: 实现收藏功能
+    debugPrint('Toggle favorite for product: ${product.id}');
+  }
+
+  /// 构建商品卡片骨架屏
+  Widget _buildProductCardSkeleton() {
+    return Container(
+      height: 200.h,
+      decoration: BoxDecoration(
+        color: Colors.white,
+        borderRadius: BorderRadius.circular(12.r),
+        boxShadow: [
+          BoxShadow(
+            color: Colors.black.withOpacity(0.1),
+            blurRadius: 8,
+            offset: const Offset(0, 2),
+          ),
+        ],
+      ),
+      child: Column(
+        children: [
+          // 图片骨架
+          Container(
+            height: 120.h,
+            decoration: BoxDecoration(
+              color: Colors.grey[300],
+              borderRadius: BorderRadius.only(
+                topLeft: Radius.circular(12.r),
+                topRight: Radius.circular(12.r),
+              ),
+            ),
+          ),
+          // 内容骨架
+          Expanded(
+            child: Padding(
+              padding: EdgeInsets.all(12.w),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Container(
+                    height: 16.h,
+                    width: double.infinity,
+                    decoration: BoxDecoration(
+                      color: Colors.grey[300],
+                      borderRadius: BorderRadius.circular(4.r),
+                    ),
+                  ),
+                  SizedBox(height: 8.h),
+                  Container(
+                    height: 14.h,
+                    width: 100.w,
+                    decoration: BoxDecoration(
+                      color: Colors.grey[300],
+                      borderRadius: BorderRadius.circular(4.r),
+                    ),
+                  ),
+                ],
+              ),
+            ),
+          ),
+        ],
+      ),
+    );
   }
 
   @override
@@ -385,18 +588,24 @@ class _HomePageState extends State<HomePage> {
       ),
       child: ClipRRect(
         borderRadius: BorderRadius.circular(16.r),
-        child: BannerSwiper(
-          images: [
-            'https://picsum.photos/400/200?random=1&sig=banner1',
-            'https://picsum.photos/400/200?random=2&sig=banner2',
-            'https://picsum.photos/400/200?random=3&sig=banner3',
-            'https://picsum.photos/400/200?random=4&sig=banner4',
-          ],
-          onTap: (index) {
-            // 轮播图点击事件
-            debugPrint('Banner clicked: $index');
-          },
-        ),
+        child: _banners.isEmpty
+            ? Container(
+                height: 200.h,
+                color: Colors.grey[200],
+                child: const Center(
+                  child: CircularProgressIndicator(),
+                ),
+              )
+            : BannerSwiper(
+                images: _banners.map((banner) => banner.image).toList(),
+                onTap: (index) {
+                  if (index < _banners.length) {
+                    final banner = _banners[index];
+                    // 处理轮播图点击事件
+                    _handleBannerTap(banner);
+                  }
+                },
+              ),
       ),
     );
   }
@@ -934,23 +1143,64 @@ class _HomePageState extends State<HomePage> {
             ),
           ),
           SizedBox(height: 16.h),
-          ...auctionProducts
-              .map((product) => Container(
-                    margin: EdgeInsets.only(bottom: 16.h),
-                    child: AuctionCard(
-                      product: product,
-                      onTap: () {
-                        Navigator.push(
-                          context,
-                          MaterialPageRoute(
-                            builder: (context) => ProductDetailPage(productData: product),
-                          ),
-                        );
-                      },
-                      onFavorite: () {},
+          // 显示加载状态或商品列表
+          if (_isLoading)
+            ...List.generate(
+                3,
+                (index) => Container(
+                      margin: EdgeInsets.only(bottom: 16.h),
+                      child: _buildProductCardSkeleton(),
+                    ))
+          else if (_hotProducts.isNotEmpty)
+            ..._hotProducts
+                .map((product) => Container(
+                      margin: EdgeInsets.only(bottom: 16.h),
+                      child: AuctionCard(
+                        product: _convertProductToMap(product),
+                        onTap: () {
+                          Navigator.push(
+                            context,
+                            MaterialPageRoute(
+                              builder: (context) => ProductDetailPage(
+                                  productData: _convertProductToMap(product)),
+                            ),
+                          );
+                        },
+                        onFavorite: () {
+                          // 处理收藏
+                          _toggleFavorite(product);
+                        },
+                      ),
+                    ))
+                .toList()
+          else
+            Container(
+              padding: EdgeInsets.all(32.w),
+              child: Center(
+                child: Column(
+                  children: [
+                    Icon(
+                      Icons.inventory_2_outlined,
+                      size: 48.w,
+                      color: Colors.grey[400],
                     ),
-                  ))
-              .toList(),
+                    SizedBox(height: 16.h),
+                    Text(
+                      _errorMessage ?? '暂无商品数据',
+                      style: TextStyle(
+                        fontSize: 14.sp,
+                        color: Colors.grey[600],
+                      ),
+                    ),
+                    SizedBox(height: 16.h),
+                    ElevatedButton(
+                      onPressed: _refreshData,
+                      child: const Text('刷新'),
+                    ),
+                  ],
+                ),
+              ),
+            ),
           SizedBox(height: 16.h),
         ],
       ),
@@ -1001,7 +1251,8 @@ class _HomePageState extends State<HomePage> {
                         Navigator.push(
                           context,
                           MaterialPageRoute(
-                            builder: (context) => ProductDetailPage(productData: product),
+                            builder: (context) =>
+                                ProductDetailPage(productData: product),
                           ),
                         );
                       },
@@ -1143,7 +1394,8 @@ class _HomePageState extends State<HomePage> {
                         Navigator.push(
                           context,
                           MaterialPageRoute(
-                            builder: (context) => ProductDetailPage(productData: product),
+                            builder: (context) =>
+                                ProductDetailPage(productData: product),
                           ),
                         );
                       },
@@ -1492,17 +1744,25 @@ class _HomePageState extends State<HomePage> {
   Widget _buildPetProductList() {
     final products = [
       {
+        'id': 1, // 添加真实ID
+        'title': '宠物标题宠物标题宠物标题宠物标题宠物标题',
         'name': '宠物标题宠物标题宠物标题宠物标题宠物标题',
         'price': 432,
+        'starting_price': 432,
         'image': 'https://picsum.photos/200/200?random=40',
+        'images': ['https://picsum.photos/200/200?random=40'],
         'isFavorite': false,
         'isBoutique': true,
         'timeLeft': '今天20:05截拍',
       },
       {
+        'id': 2, // 添加真实ID
+        'title': '宠物标题宠物标题宠物标题宠物标题宠物',
         'name': '宠物标题宠物标题宠物标题宠物标题宠物',
         'price': 432,
+        'starting_price': 432,
         'image': 'https://picsum.photos/200/200?random=41',
+        'images': ['https://picsum.photos/200/200?random=41'],
         'isFavorite': true,
         'isBoutique': true,
         'timeLeft': '今天20:05截拍',

@@ -14,9 +14,9 @@ class BidService {
     required double bidAmount,
   }) async {
     try {
-      final response = await _apiService.post('/bids', data: {
+      final response = await _apiService.post('/bids/', data: {
         'product_id': productId,
-        'bid_amount': bidAmount,
+        'amount': bidAmount,
       });
 
       if (response.statusCode == 200) {
