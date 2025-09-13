@@ -28,7 +28,8 @@ class HomePage extends StatefulWidget {
 class _HomePageState extends State<HomePage> {
   late PageController _pageController;
   int _currentTabIndex = 0;
-  final product_service.ProductService _productService = product_service.ProductService();
+  final product_service.ProductService _productService =
+      product_service.ProductService();
   final EventService _eventService = EventService();
   final home_service.HomeService _homeService = home_service.HomeService();
 
@@ -172,11 +173,23 @@ class _HomePageState extends State<HomePage> {
           // 处理首页数据
           if (results[0].success) {
             final homeData = results[0].data! as home_service.HomeData;
-            _hotProducts = (homeData.hotProducts as List<dynamic>).map((item) => product_models.Product.fromJson(item as Map<String, dynamic>)).toList();
-            _recentProducts = (homeData.recentProducts as List<dynamic>).map((item) => product_models.Product.fromJson(item as Map<String, dynamic>)).toList();
-            _recommendedProducts = (homeData.recommendedProducts as List<dynamic>).map((item) => product_models.Product.fromJson(item as Map<String, dynamic>)).toList();
+            _hotProducts = (homeData.hotProducts as List<dynamic>)
+                .map((item) => product_models.Product.fromJson(
+                    item as Map<String, dynamic>))
+                .toList();
+            _recentProducts = (homeData.recentProducts as List<dynamic>)
+                .map((item) => product_models.Product.fromJson(
+                    item as Map<String, dynamic>))
+                .toList();
+            _recommendedProducts =
+                (homeData.recommendedProducts as List<dynamic>)
+                    .map((item) => product_models.Product.fromJson(
+                        item as Map<String, dynamic>))
+                    .toList();
             _specialEvents = homeData.specialEvents;
-            _categories = (homeData.categories as List<dynamic>).map((item) => Category.fromJson(item as Map<String, dynamic>)).toList();
+            _categories = (homeData.categories as List<dynamic>)
+                .map((item) => Category.fromJson(item as Map<String, dynamic>))
+                .toList();
           } else {
             _errorMessage = results[0].message;
           }
@@ -593,7 +606,7 @@ class _HomePageState extends State<HomePage> {
                 height: 200.h,
                 color: Colors.grey[200],
                 child: const Center(
-                  child: CircularProgressIndicator(),
+                  child: Text('暂无轮播图数据'),
                 ),
               )
             : BannerSwiper(
@@ -608,6 +621,64 @@ class _HomePageState extends State<HomePage> {
               ),
       ),
     );
+  }
+
+  /// 构建专场区域
+  Widget _buildSpecialEventsSection() {
+    if (_specialEvents.isEmpty) {
+      return Container(
+        height: 120.h,
+        margin: EdgeInsets.symmetric(horizontal: 16.w),
+        decoration: BoxDecoration(
+          color: Colors.grey[100],
+          borderRadius: BorderRadius.circular(12.r),
+        ),
+        child: const Center(
+          child: Text('暂无专场数据'),
+        ),
+      );
+    }
+
+    return Container(
+      height: 120.h,
+      margin: EdgeInsets.symmetric(horizontal: 16.w),
+      child: ListView.builder(
+        scrollDirection: Axis.horizontal,
+        itemCount: _specialEvents.length,
+        itemBuilder: (context, index) {
+          final event = _specialEvents[index];
+          return Container(
+            width: 200.w,
+            margin: EdgeInsets.only(right: 12.w),
+            child: _buildSpecialCard(
+              '专场',
+              event.title,
+              _formatEventTime(event.endTime ?? DateTime.now()),
+              '进行中',
+              event.bannerImage ??
+                  'https://picsum.photos/200/150?random=event${event.id}',
+              const Color(0xFF4A90E2),
+            ),
+          );
+        },
+      ),
+    );
+  }
+
+  /// 格式化专场时间
+  String _formatEventTime(DateTime endTime) {
+    final now = DateTime.now();
+    final difference = endTime.difference(now);
+
+    if (difference.isNegative) {
+      return '已结束';
+    } else if (difference.inDays > 0) {
+      return '${difference.inDays}天后结束';
+    } else if (difference.inHours > 0) {
+      return '${difference.inHours}小时后结束';
+    } else {
+      return '${difference.inMinutes}分钟后结束';
+    }
   }
 
   Widget _buildFunctionGrid() {
@@ -798,32 +869,8 @@ class _HomePageState extends State<HomePage> {
           ),
           SizedBox(height: 16.h),
 
-          // 专场卡片
-          Row(
-            children: [
-              Expanded(
-                child: _buildSpecialCard(
-                  '今日专场',
-                  '山东鱼宠专场',
-                  '08-10 20:00 结标',
-                  '拍卖中：500 件',
-                  'https://picsum.photos/200/150?random=20',
-                  const Color(0xFF4A90E2),
-                ),
-              ),
-              SizedBox(width: 12.w),
-              Expanded(
-                child: _buildSpecialCard(
-                  '今日专场',
-                  '苏州宠物专场',
-                  '08-10 20:00 结标',
-                  '拍卖中：432 件',
-                  'https://picsum.photos/200/150?random=21',
-                  const Color(0xFF7B68EE),
-                ),
-              ),
-            ],
-          ),
+          // 专场卡片 - 使用后台数据
+          _buildSpecialEventsSection(),
           SizedBox(height: 16.h),
 
           SizedBox(height: 16.h), // 减少底部空间
