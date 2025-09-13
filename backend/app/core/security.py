@@ -78,3 +78,4 @@ def get_current_user_optional(token: str = Depends(oauth2_scheme)):
     except HTTPException:
         return None
 
+
