@@ -14,11 +14,34 @@ def load_env_file():
         env_path = Path(__file__).parent.parent.parent / env_file
         if env_path.exists():
             with open(env_path, 'r', encoding='utf-8') as f:
-                for line in f:
-                    line = line.strip()
-                    if line and not line.startswith('#') and '=' in line:
+                content = f.read()
+                # 处理多行值（如私钥）
+                lines = content.split('\n')
+                current_key = None
+                current_value = []
+                
+                for line in lines:
+                    line = line.rstrip()  # 只移除右侧空白，保留左侧缩进
+                    if not line or line.startswith('#'):
+                        continue
+                    
+                    if '=' in line and not line.startswith(' ') and not line.startswith('-') and not line.startswith('-----') and not line.endswith('='):
+                        # 保存上一个键值对
+                        if current_key:
+                            os.environ.setdefault(current_key, '\n'.join(current_value))
+                        
+                        # 开始新的键值对
                         key, value = line.split('=', 1)
-                        os.environ.setdefault(key.strip(), value.strip())
+                        current_key = key.strip()
+                        current_value = [value] if value.strip() else []
+                    else:
+                        # 继续当前值（多行）
+                        if current_key:
+                            current_value.append(line)
+                
+                # 保存最后一个键值对
+                if current_key:
+                    os.environ.setdefault(current_key, '\n'.join(current_value))
             break
 
 # 加载环境变量

@@ -333,8 +333,8 @@ async def create_alipay_app_payment(
 ):
     """创建支付宝App支付"""
     try:
-        # 使用测试支付服务
-        payment_data = await test_payment_service.create_payment(
+        # 使用真实支付宝服务
+        payment_data = await alipay_service.create_payment(
             db, order_id, current_user.id, notify_url=notify_url
         )
         return {
