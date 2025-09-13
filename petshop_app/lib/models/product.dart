@@ -32,6 +32,37 @@ class Product {
   });
 
   factory Product.fromJson(Map<String, dynamic> json) {
+    // 基于实际API响应格式解析
+    final int auctionType = json['auction_type'] ?? 1;
+    final ProductType productType = auctionType == 1 ? ProductType.auction : ProductType.fixed;
+    
+    // 构建AuctionInfo（如果是拍卖类型）
+    AuctionInfo? auctionInfo;
+    if (productType == ProductType.auction) {
+      auctionInfo = AuctionInfo(
+        startPrice: double.tryParse(json['starting_price']?.toString() ?? '0') ?? 0.0,
+        currentPrice: double.tryParse(json['current_price']?.toString() ?? '0') ?? 0.0,
+        bidIncrement: 10.0, // 默认值，API中没有这个字段
+        startTime: json['auction_start_time'] != null 
+            ? DateTime.parse(json['auction_start_time']) 
+            : DateTime.now(),
+        endTime: json['auction_end_time'] != null 
+            ? DateTime.parse(json['auction_end_time']) 
+            : DateTime.now().add(Duration(days: 7)),
+        bidCount: json['bid_count'] ?? 0,
+      );
+    }
+    
+    // 构建FixedInfo（如果是一口价类型）
+    FixedInfo? fixedInfo;
+    if (productType == ProductType.fixed) {
+      fixedInfo = FixedInfo(
+        price: double.tryParse(json['buy_now_price']?.toString() ?? '0') ?? 0.0,
+        stock: json['stock_quantity'] ?? 0,
+        salesCount: 0, // API中没有这个字段
+      );
+    }
+    
     return Product(
       id: json['id'] ?? 0,
       sellerId: json['seller_id'] ?? 0,
@@ -39,18 +70,18 @@ class Product {
       description: json['description'] ?? '',
       categoryId: json['category_id'] ?? 0,
       images: List<String>.from(json['images'] ?? []),
-      status: json['status'] ?? 'active',
-      type: ProductType.fromString(json['type'] ?? 'auction'),
-      auctionInfo: json['auction_info'] != null 
-          ? AuctionInfo.fromJson(json['auction_info']) 
-          : null,
-      fixedInfo: json['fixed_info'] != null 
-          ? FixedInfo.fromJson(json['fixed_info']) 
-          : null,
+      status: (json['status'] ?? 1).toString(),
+      type: productType,
+      auctionInfo: auctionInfo,
+      fixedInfo: fixedInfo,
       location: json['location'],
-      seller: json['seller'] != null ? Seller.fromJson(json['seller']) : null,
-      createdAt: DateTime.parse(json['created_at'] ?? DateTime.now().toIso8601String()),
-      updatedAt: DateTime.parse(json['updated_at'] ?? DateTime.now().toIso8601String()),
+      seller: null, // seller信息需要单独接口获取
+      createdAt: json['created_at'] != null 
+          ? DateTime.parse(json['created_at']) 
+          : DateTime.now(),
+      updatedAt: json['updated_at'] != null 
+          ? DateTime.parse(json['updated_at']) 
+          : DateTime.now(),
     );
   }
 

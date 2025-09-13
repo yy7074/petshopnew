@@ -153,6 +153,7 @@ class _HomePageState extends State<HomePage> {
 
   /// 加载首页数据
   Future<void> _loadHomeData() async {
+    print('===== 开始加载首页数据 =====');
     setState(() {
       _isLoading = true;
       _errorMessage = null;
@@ -166,32 +167,35 @@ class _HomePageState extends State<HomePage> {
         _homeService.getHomeStats(),
       ]);
 
+      print('API调用完成，开始处理结果...');
+      print('results[0].success: ${results[0].success}');
+      print('results[1].success: ${results[1].success}');
+      print('results[2].success: ${results[2].success}');
+
       if (mounted) {
+        print('组件仍然mounted，开始setState...');
         setState(() {
           _isLoading = false;
 
           // 处理首页数据
           if (results[0].success) {
             final homeData = results[0].data! as home_service.HomeData;
-            _hotProducts = (homeData.hotProducts as List<dynamic>)
-                .map((item) => product_models.Product.fromJson(
-                    item as Map<String, dynamic>))
-                .toList();
-            _recentProducts = (homeData.recentProducts as List<dynamic>)
-                .map((item) => product_models.Product.fromJson(
-                    item as Map<String, dynamic>))
-                .toList();
-            _recommendedProducts =
-                (homeData.recommendedProducts as List<dynamic>)
-                    .map((item) => product_models.Product.fromJson(
-                        item as Map<String, dynamic>))
-                    .toList();
+            print('首页数据类型: ${homeData.runtimeType}');
+            print('赋值前专场数量: ${homeData.specialEvents.length}');
+            print(
+                '专场数据详情: ${homeData.specialEvents.map((e) => '${e.id}-${e.title}').toList()}');
+
+            _hotProducts = homeData.hotProducts;
+            _recentProducts = homeData.recentProducts;
+            _recommendedProducts = homeData.recommendedProducts;
             _specialEvents = homeData.specialEvents;
-            print('专场数据加载成功: ${_specialEvents.length} 个');
-            _categories = (homeData.categories as List<dynamic>)
-                .map((item) => Category.fromJson(item as Map<String, dynamic>))
-                .toList();
+            _categories = homeData.categories;
+
+            print('赋值后_specialEvents长度: ${_specialEvents.length}');
+            print(
+                '赋值后_specialEvents内容: ${_specialEvents.map((e) => '${e.id}-${e.title}').toList()}');
           } else {
+            print('首页数据加载失败: ${results[0].message}');
             _errorMessage = results[0].message;
           }
 
@@ -199,25 +203,42 @@ class _HomePageState extends State<HomePage> {
           try {
             if (results[1].success) {
               final bannersData = results[1].data as List<dynamic>;
+              print('轮播图原始数据数量: ${bannersData.length}');
+              print('轮播图原始数据: ${bannersData}');
+
               _banners = bannersData
                   .map((item) => home_service.Banner.fromJson(
                       item as Map<String, dynamic>))
                   .toList();
-              print('轮播图数据加载成功: ${_banners.length} 个');
+
+              print('轮播图解析后数量: ${_banners.length}');
+              print(
+                  '轮播图解析后内容: ${_banners.map((b) => '${b.id}-${b.title}').toList()}');
             } else {
               print('轮播图数据加载失败: ${results[1].message}');
             }
           } catch (e) {
             print('轮播图数据解析错误: $e');
+            print('轮播图原始数据: ${results[1].data}');
           }
 
           // 处理统计数据
           if (results[2].success) {
             _homeStats = results[2].data! as home_service.HomeStats;
           }
+
+          print(
+              'setState内部最终检查 - 轮播图: ${_banners.length}, 专场: ${_specialEvents.length}');
         });
+
+        // setState外部再次检查
+        print(
+            'setState外部最终检查 - 轮播图: ${_banners.length}, 专场: ${_specialEvents.length}');
+      } else {
+        print('组件已经unmounted，跳过setState');
       }
     } catch (e) {
+      print('加载数据异常: $e');
       if (mounted) {
         setState(() {
           _isLoading = false;
@@ -225,6 +246,8 @@ class _HomePageState extends State<HomePage> {
         });
       }
     }
+
+    print('===== 首页数据加载完成 =====');
   }
 
   /// 刷新数据
@@ -597,6 +620,8 @@ class _HomePageState extends State<HomePage> {
 
   // 轮播图部分 - 与推广横幅同样大小
   Widget _buildBannerSection() {
+    print('构建轮播图区域，轮播图数量: ${_banners.length}');
+
     return Container(
       margin: EdgeInsets.symmetric(horizontal: 16.w, vertical: 8.h),
       height: 120.h, // 与推广横幅相同高度
@@ -615,10 +640,27 @@ class _HomePageState extends State<HomePage> {
         borderRadius: BorderRadius.circular(16.r),
         child: _banners.isEmpty
             ? Container(
-                height: 200.h,
+                height: 120.h,
                 color: Colors.grey[200],
                 child: Center(
-                  child: Text('暂无轮播图数据 (${_banners.length})'),
+                  child: Column(
+                    mainAxisAlignment: MainAxisAlignment.center,
+                    children: [
+                      Icon(
+                        Icons.image_outlined,
+                        size: 32.w,
+                        color: Colors.grey[400],
+                      ),
+                      SizedBox(height: 8.h),
+                      Text(
+                        '暂无轮播图数据 (${_banners.length})',
+                        style: TextStyle(
+                          fontSize: 12.sp,
+                          color: Colors.grey[600],
+                        ),
+                      ),
+                    ],
+                  ),
                 ),
               )
             : BannerSwiper(
@@ -637,6 +679,8 @@ class _HomePageState extends State<HomePage> {
 
   /// 构建专场区域
   Widget _buildSpecialEventsSection() {
+    print('构建专场区域，专场数量: ${_specialEvents.length}');
+
     if (_specialEvents.isEmpty) {
       return Container(
         height: 120.h,
@@ -646,7 +690,24 @@ class _HomePageState extends State<HomePage> {
           borderRadius: BorderRadius.circular(12.r),
         ),
         child: Center(
-          child: Text('暂无专场数据 (${_specialEvents.length})'),
+          child: Column(
+            mainAxisAlignment: MainAxisAlignment.center,
+            children: [
+              Icon(
+                Icons.event_available_outlined,
+                size: 32.w,
+                color: Colors.grey[400],
+              ),
+              SizedBox(height: 8.h),
+              Text(
+                '暂无专场数据 (${_specialEvents.length})',
+                style: TextStyle(
+                  fontSize: 12.sp,
+                  color: Colors.grey[600],
+                ),
+              ),
+            ],
+          ),
         ),
       );
     }
