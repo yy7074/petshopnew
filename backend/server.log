@@ -2319,3 +2319,63 @@ Traceback (most recent call last):
   File "/opt/homebrew/lib/python3.10/site-packages/pydantic_settings/sources.py", line 253, in __call__
     raise SettingsError(
 pydantic_settings.sources.SettingsError: error parsing value for field "ALLOWED_HOSTS" from source "EnvSettingsSource"
+WARNING:  WatchFiles detected changes in 'app/core/env_config.py'. Reloading...
+Process SpawnProcess-45:
+Traceback (most recent call last):
+  File "/opt/homebrew/lib/python3.10/site-packages/pydantic_settings/sources.py", line 251, in __call__
+    field_value = self.prepare_field_value(field_name, field, field_value, value_is_complex)
+  File "/opt/homebrew/lib/python3.10/site-packages/pydantic_settings/sources.py", line 434, in prepare_field_value
+    raise e
+  File "/opt/homebrew/lib/python3.10/site-packages/pydantic_settings/sources.py", line 431, in prepare_field_value
+    value = self.decode_complex_value(field_name, field, value)
+  File "/opt/homebrew/lib/python3.10/site-packages/pydantic_settings/sources.py", line 102, in decode_complex_value
+    return json.loads(value)
+  File "/opt/homebrew/Cellar/python@3.10/3.10.17/Frameworks/Python.framework/Versions/3.10/lib/python3.10/json/__init__.py", line 346, in loads
+    return _default_decoder.decode(s)
+  File "/opt/homebrew/Cellar/python@3.10/3.10.17/Frameworks/Python.framework/Versions/3.10/lib/python3.10/json/decoder.py", line 337, in decode
+    obj, end = self.raw_decode(s, idx=_w(s, 0).end())
+  File "/opt/homebrew/Cellar/python@3.10/3.10.17/Frameworks/Python.framework/Versions/3.10/lib/python3.10/json/decoder.py", line 355, in raw_decode
+    raise JSONDecodeError("Expecting value", s, err.value) from None
+json.decoder.JSONDecodeError: Expecting value: line 1 column 1 (char 0)
+
+The above exception was the direct cause of the following exception:
+
+Traceback (most recent call last):
+  File "/opt/homebrew/Cellar/python@3.10/3.10.17/Frameworks/Python.framework/Versions/3.10/lib/python3.10/multiprocessing/process.py", line 314, in _bootstrap
+    self.run()
+  File "/opt/homebrew/Cellar/python@3.10/3.10.17/Frameworks/Python.framework/Versions/3.10/lib/python3.10/multiprocessing/process.py", line 108, in run
+    self._target(*self._args, **self._kwargs)
+  File "/opt/homebrew/lib/python3.10/site-packages/uvicorn/_subprocess.py", line 76, in subprocess_started
+    target(sockets=sockets)
+  File "/opt/homebrew/lib/python3.10/site-packages/uvicorn/server.py", line 61, in run
+    return asyncio.run(self.serve(sockets=sockets))
+  File "/opt/homebrew/Cellar/python@3.10/3.10.17/Frameworks/Python.framework/Versions/3.10/lib/python3.10/asyncio/runners.py", line 44, in run
+    return loop.run_until_complete(main)
+  File "uvloop/loop.pyx", line 1517, in uvloop.loop.Loop.run_until_complete
+  File "/opt/homebrew/lib/python3.10/site-packages/uvicorn/server.py", line 68, in serve
+    config.load()
+  File "/opt/homebrew/lib/python3.10/site-packages/uvicorn/config.py", line 467, in load
+    self.loaded_app = import_from_string(self.app)
+  File "/opt/homebrew/lib/python3.10/site-packages/uvicorn/importer.py", line 21, in import_from_string
+    module = importlib.import_module(module_str)
+  File "/opt/homebrew/Cellar/python@3.10/3.10.17/Frameworks/Python.framework/Versions/3.10/lib/python3.10/importlib/__init__.py", line 126, in import_module
+    return _bootstrap._gcd_import(name[level:], package, level)
+  File "<frozen importlib._bootstrap>", line 1050, in _gcd_import
+  File "<frozen importlib._bootstrap>", line 1027, in _find_and_load
+  File "<frozen importlib._bootstrap>", line 1006, in _find_and_load_unlocked
+  File "<frozen importlib._bootstrap>", line 688, in _load_unlocked
+  File "<frozen importlib._bootstrap_external>", line 883, in exec_module
+  File "<frozen importlib._bootstrap>", line 241, in _call_with_frames_removed
+  File "/Users/yy/Documents/GitHub/petshopnew/backend/main.py", line 8, in <module>
+    from app.core.config import settings
+  File "/Users/yy/Documents/GitHub/petshopnew/backend/app/core/config.py", line 59, in <module>
+    settings = Settings()
+  File "/opt/homebrew/lib/python3.10/site-packages/pydantic_settings/main.py", line 72, in __init__
+    **__pydantic_self__._settings_build_values(
+  File "/opt/homebrew/lib/python3.10/site-packages/pydantic_settings/main.py", line 160, in _settings_build_values
+    return deep_update(*reversed([source() for source in sources]))
+  File "/opt/homebrew/lib/python3.10/site-packages/pydantic_settings/main.py", line 160, in <listcomp>
+    return deep_update(*reversed([source() for source in sources]))
+  File "/opt/homebrew/lib/python3.10/site-packages/pydantic_settings/sources.py", line 253, in __call__
+    raise SettingsError(
+pydantic_settings.sources.SettingsError: error parsing value for field "ALLOWED_HOSTS" from source "EnvSettingsSource"
