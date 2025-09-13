@@ -2,11 +2,12 @@ from fastapi import APIRouter, Depends, HTTPException, Query, BackgroundTasks
 from sqlalchemy.orm import Session
 from typing import List, Optional
 from decimal import Decimal
+import time
 
 from ..core.database import get_db
 from ..core.security import get_current_user
 from ..models.user import User
-from ..models.order import Payment
+from ..models.order import Order, Payment
 from ..schemas.order import (
     OrderCreate, OrderResponse, OrderListResponse, OrderUpdate,
     PaymentCreate, PaymentResponse, LogisticsResponse
@@ -15,12 +16,14 @@ from ..services.order_service import OrderService
 from ..services.payment_service import PaymentService
 from ..services.logistics_service import LogisticsService
 from ..services.alipay_service import AlipayService
+from ..services.test_payment_service import TestPaymentService
 
 router = APIRouter()
 order_service = OrderService()
 payment_service = PaymentService()
 logistics_service = LogisticsService()
 alipay_service = AlipayService()
+test_payment_service = TestPaymentService()
 
 @router.post("/", response_model=OrderResponse)
 async def create_order(
@@ -267,6 +270,60 @@ async def get_order_statistics(
     return await order_service.get_user_order_statistics(db, current_user.id, period)
 
 # 支付宝支付接口
+@router.post("/test/create")
+async def create_test_order(
+    db: Session = Depends(get_db),
+    current_user: User = Depends(get_current_user)
+):
+    """创建测试订单"""
+    try:
+        # 创建测试订单
+        order = Order(
+            order_no=f"TEST_{int(time.time())}",
+            buyer_id=current_user.id,
+            seller_id=1,  # 测试卖家
+            product_id=1,  # 测试商品
+            final_price=0.01,  # 测试金额
+            total_amount=0.01,
+            shipping_fee=0.00,
+            payment_method=1,  # 1:支付宝
+            payment_status=1,  # 1:待支付
+            order_status=1,  # 1:待支付
+        )
+        
+        db.add(order)
+        db.commit()
+        db.refresh(order)
+        
+        # 创建订单项
+        from ..models.order import OrderItem
+        order_item = OrderItem(
+            order_id=order.id,
+            product_id=1,
+            product_title="测试商品",
+            product_image="https://picsum.photos/200/200?random=1",
+            quantity=1,
+            unit_price=0.01,
+            total_price=0.01
+        )
+        
+        db.add(order_item)
+        db.commit()
+        
+        return {
+            "success": True,
+            "data": {
+                "order_id": order.id,
+                "order_no": order.order_no,
+                "total_amount": str(order.total_amount)
+            }
+        }
+    except Exception as e:
+        print(f"创建测试订单失败: {e}")
+        import traceback
+        traceback.print_exc()
+        raise HTTPException(status_code=500, detail=f"创建测试订单失败: {str(e)}")
+
 @router.post("/{order_id}/alipay/app")
 async def create_alipay_app_payment(
     order_id: int,
@@ -276,7 +333,8 @@ async def create_alipay_app_payment(
 ):
     """创建支付宝App支付"""
     try:
-        payment_data = await alipay_service.create_payment(
+        # 使用测试支付服务
+        payment_data = await test_payment_service.create_payment(
             db, order_id, current_user.id, notify_url=notify_url
         )
         return {
@@ -291,6 +349,35 @@ async def create_alipay_app_payment(
         import traceback
         traceback.print_exc()
         raise HTTPException(status_code=500, detail=f"创建支付失败: {str(e)}")
+
+@router.get("/payments/{payment_id}/alipay/query")
+async def query_alipay_payment(
+    payment_id: int,
+    db: Session = Depends(get_db),
+    current_user: User = Depends(get_current_user)
+):
+    """查询支付宝支付状态"""
+    try:
+        # 使用测试支付服务查询
+        payment = db.query(Payment).filter(Payment.id == payment_id).first()
+        if not payment:
+            raise HTTPException(status_code=404, detail="支付记录不存在")
+            
+        if payment.user_id != current_user.id:
+            raise HTTPException(status_code=403, detail="无权限查询此支付记录")
+            
+        # 模拟查询结果
+        result = await test_payment_service.query_payment(payment.transaction_id)
+        
+        return {
+            "success": True,
+            "data": result
+        }
+    except HTTPException:
+        raise
+    except Exception as e:
+        print(f"查询支付状态失败: {e}")
+        raise HTTPException(status_code=500, detail=f"查询支付状态失败: {str(e)}")
 
 # 创建测试订单接口
 @router.post("/test/create")
