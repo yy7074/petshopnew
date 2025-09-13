@@ -121,8 +121,8 @@ async def update_order_status(
 @router.post("/{order_id}/cancel")
 async def cancel_order(
     order_id: int,
-    reason: Optional[str] = None,
     background_tasks: BackgroundTasks,
+    reason: Optional[str] = None,
     db: Session = Depends(get_db),
     current_user: User = Depends(get_current_user)
 ):

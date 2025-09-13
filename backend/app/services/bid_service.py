@@ -4,8 +4,7 @@ from typing import List, Optional, Dict, Any
 from datetime import datetime, timedelta
 from decimal import Decimal
 
-from ..models.bid import Bid, AutoBid
-from ..models.product import Product
+from ..models.product import Bid, AutoBid, Product
 from ..models.user import User
 from ..schemas.bid import BidCreate, BidResponse, BidListResponse, AutoBidCreate
 from ..core.config import settings
@@ -457,6 +456,6 @@ class BidService:
             } if user else None,
             product_info={
                 "title": product.title,
-                "image": product.main_image
+                "image": product.images[0] if product.images else None
             } if product else None
         )

@@ -35,12 +35,12 @@ os.makedirs(settings.UPLOAD_DIR, exist_ok=True)
 app.mount("/static", StaticFiles(directory="static"), name="static")
 
 # 注册路由
-from app.api import auth  # products, bids, orders, search, chat
+from app.api import auth, products, bids, orders  # search, chat
 
 app.include_router(auth.router, prefix="/api/v1/auth", tags=["认证"])
-# app.include_router(products.router, prefix="/api/v1/products", tags=["商品"])
-# app.include_router(bids.router, prefix="/api/v1/bids", tags=["竞拍"])
-# app.include_router(orders.router, prefix="/api/v1/orders", tags=["订单"])
+app.include_router(products.router, prefix="/api/v1/products", tags=["商品"])
+app.include_router(bids.router, prefix="/api/v1/bids", tags=["竞拍"])
+app.include_router(orders.router, prefix="/api/v1/orders", tags=["订单"])
 # app.include_router(search.router, prefix="/api/v1/search", tags=["搜索"])
 # app.include_router(chat.router, prefix="/api/v1/chat", tags=["聊天"])
 

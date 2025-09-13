@@ -6,9 +6,8 @@ from decimal import Decimal
 import uuid
 
 from ..models.order import Order, OrderItem, Payment, Logistics
-from ..models.product import Product
+from ..models.product import Product, Bid
 from ..models.user import User
-from ..models.bid import Bid
 from ..schemas.order import OrderCreate, OrderResponse, OrderListResponse, OrderUpdate
 from ..core.config import settings
 
@@ -90,7 +89,7 @@ class OrderService:
             order_id=order.id,
             product_id=order_data.product_id,
             product_title=product.title,
-            product_image=product.main_image,
+            product_image=product.images[0] if product.images else None,
             quantity=order_data.quantity,
             unit_price=product.current_price,
             total_price=total_amount

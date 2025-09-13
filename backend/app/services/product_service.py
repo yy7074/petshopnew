@@ -53,8 +53,7 @@ class ProductService:
             query = query.filter(
                 or_(
                     Product.title.like(search_term),
-                    Product.description.like(search_term),
-                    Product.tags.like(search_term)
+                    Product.description.like(search_term)
                 )
             )
         
@@ -145,8 +144,7 @@ class ProductService:
             seller_info={
                 "id": seller.id,
                 "username": seller.username,
-                "avatar": seller.avatar,
-                "rating": seller.rating
+                "avatar": seller.avatar_url
             } if seller else None
         )
     

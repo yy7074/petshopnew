@@ -24,6 +24,44 @@ class Order(Base):
     created_at = Column(DateTime, server_default=func.now())
     updated_at = Column(DateTime, server_default=func.now(), onupdate=func.now())
 
+class OrderItem(Base):
+    __tablename__ = "order_items"
+
+    id = Column(Integer, primary_key=True, index=True, autoincrement=True)
+    order_id = Column(Integer, nullable=False, index=True)
+    product_id = Column(Integer, nullable=False, index=True)
+    product_title = Column(String(200), nullable=False)
+    product_image = Column(String(500))
+    quantity = Column(Integer, nullable=False)
+    unit_price = Column(DECIMAL(10, 2), nullable=False)
+    total_price = Column(DECIMAL(10, 2), nullable=False)
+    created_at = Column(DateTime, server_default=func.now())
+
+class Payment(Base):
+    __tablename__ = "payments"
+
+    id = Column(Integer, primary_key=True, index=True, autoincrement=True)
+    order_id = Column(Integer, nullable=False, index=True)
+    user_id = Column(Integer, nullable=False, index=True)
+    payment_method = Column(Integer, nullable=False, comment="1:支付宝,2:微信,3:银行卡")
+    amount = Column(DECIMAL(10, 2), nullable=False)
+    transaction_id = Column(String(100), unique=True)
+    payment_type = Column(String(20), default="payment", comment="payment:支付, refund:退款")
+    status = Column(String(20), default="pending", comment="pending:待支付, paid:已支付, failed:失败, refunded:已退款")
+    created_at = Column(DateTime, server_default=func.now())
+    updated_at = Column(DateTime, server_default=func.now(), onupdate=func.now())
+
+class Logistics(Base):
+    __tablename__ = "logistics"
+
+    id = Column(Integer, primary_key=True, index=True, autoincrement=True)
+    order_id = Column(Integer, nullable=False, index=True)
+    tracking_number = Column(String(50), index=True)
+    logistics_company = Column(String(50))
+    status = Column(String(20), default="pending")
+    created_at = Column(DateTime, server_default=func.now())
+    updated_at = Column(DateTime, server_default=func.now(), onupdate=func.now())
+
 class Message(Base):
     __tablename__ = "messages"
 

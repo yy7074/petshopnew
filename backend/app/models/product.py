@@ -54,6 +54,15 @@ class Bid(Base):
     status = Column(Integer, default=1, comment="1:有效,2:被超越,3:撤销")
     created_at = Column(DateTime, server_default=func.now())
 
+class ProductImage(Base):
+    __tablename__ = "product_images"
+
+    id = Column(Integer, primary_key=True, index=True, autoincrement=True)
+    product_id = Column(Integer, nullable=False, index=True)
+    image_url = Column(String(500), nullable=False)
+    sort_order = Column(Integer, default=0)
+    created_at = Column(DateTime, server_default=func.now())
+
 class ProductFavorite(Base):
     __tablename__ = "product_favorites"
 
@@ -105,6 +114,18 @@ class SpecialEvent(Base):
     start_time = Column(DateTime, nullable=False)
     end_time = Column(DateTime, nullable=False)
     is_active = Column(Boolean, default=True)
+    created_at = Column(DateTime, server_default=func.now())
+    updated_at = Column(DateTime, server_default=func.now(), onupdate=func.now())
+
+class AutoBid(Base):
+    __tablename__ = "auto_bids"
+
+    id = Column(Integer, primary_key=True, index=True, autoincrement=True)
+    product_id = Column(Integer, nullable=False, index=True)
+    user_id = Column(Integer, nullable=False, index=True)
+    max_amount = Column(DECIMAL(10, 2), nullable=False)
+    increment_amount = Column(DECIMAL(10, 2), default=1.00)
+    status = Column(String(20), default="active", comment="active:活跃, paused:暂停, completed:完成, cancelled:取消")
     created_at = Column(DateTime, server_default=func.now())
     updated_at = Column(DateTime, server_default=func.now(), onupdate=func.now())
 
