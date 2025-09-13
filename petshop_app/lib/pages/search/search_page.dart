@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import '../../constants/app_colors.dart';
 import '../../widgets/auction_card.dart';
+import '../product/product_detail_page.dart';
 
 class SearchPage extends StatefulWidget {
   const SearchPage({super.key});
@@ -500,10 +501,11 @@ class _SearchPageState extends State<SearchPage> {
                 child: AuctionCard(
                   product: product,
                   onTap: () {
-                    Navigator.pushNamed(
+                    Navigator.push(
                       context,
-                      '/product-detail',
-                      arguments: product,
+                      MaterialPageRoute(
+                        builder: (context) => ProductDetailPage(productData: product),
+                      ),
                     );
                   },
                   onFavorite: () {

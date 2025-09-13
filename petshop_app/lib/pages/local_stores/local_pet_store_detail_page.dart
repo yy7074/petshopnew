@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import '../../constants/app_colors.dart';
+import '../product/product_detail_page.dart';
 
 class LocalPetStoreDetailPage extends StatefulWidget {
   final Map<String, dynamic> store;
@@ -235,7 +236,12 @@ class _LocalPetStoreDetailPageState extends State<LocalPetStoreDetailPage> {
   Widget _buildDetailProductItem(Map<String, dynamic> product) {
     return GestureDetector(
       onTap: () {
-        // TODO: 导航到商品详情页
+        Navigator.push(
+          context,
+          MaterialPageRoute(
+            builder: (context) => ProductDetailPage(productData: product),
+          ),
+        );
       },
       child: Container(
         decoration: BoxDecoration(

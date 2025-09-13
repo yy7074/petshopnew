@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:cached_network_image/cached_network_image.dart';
 import '../search/search_page.dart';
+import '../product/product_detail_page.dart';
 
 class SpecialEventPage extends StatefulWidget {
   final String? title;
@@ -387,7 +388,12 @@ class _SpecialEventPageState extends State<SpecialEventPage> {
   Widget _buildProductCard(Map<String, dynamic> product) {
     return GestureDetector(
       onTap: () {
-        print('点击了商品: ${product['name']}');
+        Navigator.push(
+          context,
+          MaterialPageRoute(
+            builder: (context) => ProductDetailPage(productData: product),
+          ),
+        );
       },
       child: Container(
         decoration: BoxDecoration(

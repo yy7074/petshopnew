@@ -10,6 +10,7 @@ import '../aquarium_design/aquarium_design_page.dart';
 import '../door_service/door_service_page.dart';
 import '../search/search_page.dart';
 import '../special_event/special_event_page.dart';
+import '../product/product_detail_page.dart';
 
 class HomePage extends StatefulWidget {
   const HomePage({super.key});
@@ -916,8 +917,12 @@ class _HomePageState extends State<HomePage> {
                     child: AuctionCard(
                       product: product,
                       onTap: () {
-                        Navigator.pushNamed(context, '/product-detail',
-                            arguments: product);
+                        Navigator.push(
+                          context,
+                          MaterialPageRoute(
+                            builder: (context) => ProductDetailPage(productData: product),
+                          ),
+                        );
                       },
                       onFavorite: () {},
                     ),
@@ -970,8 +975,12 @@ class _HomePageState extends State<HomePage> {
                     child: AuctionCard(
                       product: product,
                       onTap: () {
-                        Navigator.pushNamed(context, '/product-detail',
-                            arguments: product);
+                        Navigator.push(
+                          context,
+                          MaterialPageRoute(
+                            builder: (context) => ProductDetailPage(productData: product),
+                          ),
+                        );
                       },
                       onFavorite: () {},
                     ),
@@ -1108,8 +1117,12 @@ class _HomePageState extends State<HomePage> {
                     child: AuctionCard(
                       product: product,
                       onTap: () {
-                        Navigator.pushNamed(context, '/product-detail',
-                            arguments: product);
+                        Navigator.push(
+                          context,
+                          MaterialPageRoute(
+                            builder: (context) => ProductDetailPage(productData: product),
+                          ),
+                        );
                       },
                       onFavorite: () {},
                     ),
