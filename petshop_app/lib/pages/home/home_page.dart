@@ -187,6 +187,7 @@ class _HomePageState extends State<HomePage> {
                         item as Map<String, dynamic>))
                     .toList();
             _specialEvents = homeData.specialEvents;
+            print('专场数据加载成功: ${_specialEvents.length} 个');
             _categories = (homeData.categories as List<dynamic>)
                 .map((item) => Category.fromJson(item as Map<String, dynamic>))
                 .toList();
@@ -195,8 +196,19 @@ class _HomePageState extends State<HomePage> {
           }
 
           // 处理轮播图数据
-          if (results[1].success) {
-            _banners = results[1].data! as List<home_service.Banner>;
+          try {
+            if (results[1].success) {
+              final bannersData = results[1].data as List<dynamic>;
+              _banners = bannersData
+                  .map((item) => home_service.Banner.fromJson(
+                      item as Map<String, dynamic>))
+                  .toList();
+              print('轮播图数据加载成功: ${_banners.length} 个');
+            } else {
+              print('轮播图数据加载失败: ${results[1].message}');
+            }
+          } catch (e) {
+            print('轮播图数据解析错误: $e');
           }
 
           // 处理统计数据
@@ -605,8 +617,8 @@ class _HomePageState extends State<HomePage> {
             ? Container(
                 height: 200.h,
                 color: Colors.grey[200],
-                child: const Center(
-                  child: Text('暂无轮播图数据'),
+                child: Center(
+                  child: Text('暂无轮播图数据 (${_banners.length})'),
                 ),
               )
             : BannerSwiper(
@@ -633,8 +645,8 @@ class _HomePageState extends State<HomePage> {
           color: Colors.grey[100],
           borderRadius: BorderRadius.circular(12.r),
         ),
-        child: const Center(
-          child: Text('暂无专场数据'),
+        child: Center(
+          child: Text('暂无专场数据 (${_specialEvents.length})'),
         ),
       );
     }
