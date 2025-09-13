@@ -58,7 +58,7 @@ class AlipayService:
         out_trade_no = f"ORDER_{order_id}_{datetime.now().strftime('%Y%m%d%H%M%S')}"
         
         # 订单信息
-        subject = f"宠物拍卖订单-{order.order_no}"
+        subject = f"宠物订单-{order.order_no}"
         body = f"订单号: {order.order_no}"
         total_amount = str(order.total_amount)
         
