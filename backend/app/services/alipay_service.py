@@ -86,7 +86,7 @@ class AlipayService:
             "body": body,
             "timeout_express": "30m"
         }
-        request.biz_content = json.dumps(biz_content)
+        request.biz_content = biz_content  # 直接传递字典，不需要json.dumps
         request.notify_url = notify_url or f"https://catdog.dachaonet.com/api/orders/payments/{payment.id}/alipay/notify"
         
         # 执行请求

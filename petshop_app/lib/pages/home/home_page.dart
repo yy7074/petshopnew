@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:cached_network_image/cached_network_image.dart';
+import 'package:get/get.dart';
 import '../../constants/app_colors.dart';
 import '../../widgets/auction_card.dart';
 import '../../widgets/banner_swiper.dart';
@@ -78,6 +79,11 @@ class _HomePageState extends State<HomePage> {
       'name': '合作方及代理',
       'icon': 'assets/icons/cooperation.png',
       'color': Color(0xFFAB47BC)
+    },
+    {
+      'name': '支付测试',
+      'icon': 'assets/icons/transaction_query.png',
+      'color': Color(0xFFE91E63)
     },
   ];
 
@@ -432,6 +438,9 @@ class _HomePageState extends State<HomePage> {
                     ),
                   ),
                 );
+              } else if (item['name'] == '支付测试') {
+                // 跳转到支付测试页面
+                Get.toNamed('/test-payment');
               } else {
                 debugPrint('点击了：${item['name']}');
               }

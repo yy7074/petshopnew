@@ -284,9 +284,56 @@ async def create_alipay_app_payment(
             "data": payment_data
         }
     except ValueError as e:
+        print(f"支付宝支付ValueError: {e}")
         raise HTTPException(status_code=400, detail=str(e))
     except Exception as e:
-        raise HTTPException(status_code=500, detail="创建支付失败")
+        print(f"支付宝支付Exception: {e}")
+        import traceback
+        traceback.print_exc()
+        raise HTTPException(status_code=500, detail=f"创建支付失败: {str(e)}")
+
+# 创建测试订单接口
+@router.post("/test/create")
+async def create_test_order(
+    db: Session = Depends(get_db),
+    current_user: User = Depends(get_current_user)
+):
+    """创建测试订单"""
+    try:
+        from ..models.order import Order
+        from datetime import datetime
+        import uuid
+        
+        # 创建测试订单
+        test_order = Order(
+            order_no=f"TEST{datetime.now().strftime('%Y%m%d%H%M%S')}{str(uuid.uuid4().int)[:6]}",
+            buyer_id=current_user.id,
+            seller_id=current_user.id,  # 自己卖给自己用于测试
+            product_id=1,  # 假设存在商品ID 1
+            final_price=0.01,
+            shipping_fee=0.00,
+            total_amount=0.01,
+            order_status=1,  # 待支付
+            payment_status=1,  # 待支付
+            payment_method=1,  # 支付宝
+            shipping_address={"name": "测试用户", "phone": "13800138000", "address": "测试地址"}
+        )
+        
+        db.add(test_order)
+        db.commit()
+        db.refresh(test_order)
+        
+        return {
+            "success": True,
+            "message": "测试订单创建成功",
+            "data": {
+                "order_id": test_order.id,
+                "order_no": test_order.order_no,
+                "total_amount": test_order.total_amount
+            }
+        }
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=f"创建测试订单失败: {str(e)}")
 
 @router.post("/{order_id}/alipay/web")
 async def create_alipay_web_payment(
