@@ -159,3 +159,18 @@ temp/
 
 # Local setup scripts with sensitive data
 setup_local_env.py
+
+# Sensitive configuration files
+.env*
+!.env.example
+*.key
+*.pem
+*.p12
+*.pfx
+config.json
+secrets.json
+
+# Backup files
+*.backup
+*.bak
+*~
