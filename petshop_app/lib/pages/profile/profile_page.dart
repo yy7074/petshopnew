@@ -10,6 +10,7 @@ import '../../services/storage_service.dart';
 import '../../models/user.dart';
 import '../auth/login_page.dart';
 import '../wallet/wallet_page.dart';
+import '../deposit/deposit_page.dart';
 
 class ProfilePage extends StatefulWidget {
   const ProfilePage({super.key});
@@ -717,22 +718,44 @@ class _ProfilePageState extends State<ProfilePage>
   Widget _buildFunctionRows() {
     return Padding(
       padding: EdgeInsets.symmetric(horizontal: 16.w),
-      child: Row(
+      child: Column(
         children: [
-          Expanded(
-            child: _buildFunctionCard(
-              '钱包',
-              '余额、红包等',
-              Icons.account_balance_wallet,
-            ),
+          Row(
+            children: [
+              Expanded(
+                child: _buildFunctionCard(
+                  '钱包',
+                  '余额、红包等',
+                  Icons.account_balance_wallet,
+                ),
+              ),
+              SizedBox(width: 12.w),
+              Expanded(
+                child: _buildFunctionCard(
+                  '保证金',
+                  '拍卖保证金',
+                  Icons.security,
+                ),
+              ),
+            ],
           ),
-          SizedBox(width: 12.w),
-          Expanded(
-            child: _buildFunctionCard(
-              '出价/围观',
-              '参与拍品 24',
-              Icons.visibility,
-            ),
+          SizedBox(height: 12.h),
+          Row(
+            children: [
+              Expanded(
+                child: _buildFunctionCard(
+                  '出价/围观',
+                  '参与拍品 24',
+                  Icons.visibility,
+                ),
+              ),
+              SizedBox(width: 12.w),
+              Expanded(
+                child: Container(
+                  height: 80.h, // 占位，保持对称
+                ),
+              ),
+            ],
           ),
         ],
       ),
@@ -747,6 +770,13 @@ class _ProfilePageState extends State<ProfilePage>
             context,
             MaterialPageRoute(
               builder: (context) => const WalletPage(),
+            ),
+          );
+        } else if (title == '保证金') {
+          Navigator.push(
+            context,
+            MaterialPageRoute(
+              builder: (context) => const DepositPage(),
             ),
           );
         }
