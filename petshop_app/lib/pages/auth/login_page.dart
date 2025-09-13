@@ -3,6 +3,7 @@ import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:get/get.dart';
 import '../../constants/app_colors.dart';
 import '../../utils/app_routes.dart';
+import '../../services/auth_service.dart';
 
 class LoginPage extends StatefulWidget {
   const LoginPage({super.key});
@@ -15,6 +16,7 @@ class _LoginPageState extends State<LoginPage> {
   final _formKey = GlobalKey<FormState>();
   final _phoneController = TextEditingController();
   final _passwordController = TextEditingController();
+  final _authService = AuthService();
   bool _obscurePassword = true;
   bool _isLoading = false;
 
@@ -26,19 +28,55 @@ class _LoginPageState extends State<LoginPage> {
   }
 
   void _login() async {
+    if (!_formKey.currentState!.validate()) {
+      return;
+    }
+
     setState(() {
       _isLoading = true;
     });
 
-    // 模拟短暂加载
-    await Future.delayed(const Duration(milliseconds: 500));
+    try {
+      final result = await _authService.login(
+        phone: _phoneController.text.trim(),
+        password: _passwordController.text,
+      );
 
-    setState(() {
-      _isLoading = false;
-    });
-
-    // 直接跳转到主页，无需任何验证
-    Get.offAllNamed(AppRoutes.main);
+      if (result.success) {
+        // 登录成功，跳转到主页
+        Get.offAllNamed(AppRoutes.main);
+        Get.snackbar(
+          '登录成功',
+          '欢迎回来，${result.data?.user.nickname ?? '用户'}！',
+          snackPosition: SnackPosition.TOP,
+          backgroundColor: Colors.green,
+          colorText: Colors.white,
+        );
+      } else {
+        // 登录失败，显示错误信息
+        Get.snackbar(
+          '登录失败',
+          result.message,
+          snackPosition: SnackPosition.TOP,
+          backgroundColor: Colors.red,
+          colorText: Colors.white,
+        );
+      }
+    } catch (e) {
+      Get.snackbar(
+        '登录失败',
+        '网络错误，请重试',
+        snackPosition: SnackPosition.TOP,
+        backgroundColor: Colors.red,
+        colorText: Colors.white,
+      );
+    } finally {
+      if (mounted) {
+        setState(() {
+          _isLoading = false;
+        });
+      }
+    }
   }
 
   @override

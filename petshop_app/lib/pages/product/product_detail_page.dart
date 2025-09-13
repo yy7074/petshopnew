@@ -2,6 +2,8 @@ import 'package:flutter/material.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:card_swiper/card_swiper.dart';
 import '../../constants/app_colors.dart';
+import '../../services/bid_service.dart';
+import '../../models/bid.dart';
 
 class ProductDetailPage extends StatefulWidget {
   final Map<String, dynamic>? productData;
@@ -16,6 +18,9 @@ class _ProductDetailPageState extends State<ProductDetailPage> {
   int currentImageIndex = 0;
   final TextEditingController _bidController = TextEditingController();
   final TextEditingController _messageController = TextEditingController();
+  final BidService _bidService = BidService();
+  List<Bid> _bidHistory = [];
+  bool _isLoadingBids = false;
 
   final List<String> productImages = [
     'assets/images/aquarium1.jpg',

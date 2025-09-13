@@ -1,4 +1,6 @@
 import 'package:shared_preferences/shared_preferences.dart';
+import 'dart:convert';
+import '../models/user.dart';
 
 class StorageService {
   static SharedPreferences? _prefs;
@@ -33,6 +35,11 @@ class StorageService {
     return await _prefs?.setString(_keyUserToken, token) ?? false;
   }
 
+  // 保存用户Token (别名方法，兼容AuthService)
+  static Future<bool> saveUserToken(String token) async {
+    return await setUserToken(token);
+  }
+
   // 获取用户信息
   static String? getUserInfo() {
     return _prefs?.getString(_keyUserInfo);
@@ -41,6 +48,26 @@ class StorageService {
   // 设置用户信息
   static Future<bool> setUserInfo(String userInfo) async {
     return await _prefs?.setString(_keyUserInfo, userInfo) ?? false;
+  }
+
+  // 保存用户对象
+  static Future<bool> saveUser(User user) async {
+    final userJson = jsonEncode(user.toJson());
+    return await setUserInfo(userJson);
+  }
+
+  // 获取用户对象
+  static User? getUser() {
+    final userJson = getUserInfo();
+    if (userJson != null && userJson.isNotEmpty) {
+      try {
+        final userMap = jsonDecode(userJson) as Map<String, dynamic>;
+        return User.fromJson(userMap);
+      } catch (e) {
+        return null;
+      }
+    }
+    return null;
   }
 
   // 是否首次启动

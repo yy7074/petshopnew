@@ -11,6 +11,8 @@ import '../door_service/door_service_page.dart';
 import '../search/search_page.dart';
 import '../special_event/special_event_page.dart';
 import '../product/product_detail_page.dart';
+import '../../services/product_service.dart';
+import '../../models/product.dart';
 
 class HomePage extends StatefulWidget {
   const HomePage({super.key});
@@ -22,6 +24,10 @@ class HomePage extends StatefulWidget {
 class _HomePageState extends State<HomePage> {
   late PageController _pageController;
   int _currentTabIndex = 0;
+  final ProductService _productService = ProductService();
+  List<Product> _products = [];
+  List<Product> _hotProducts = [];
+  bool _isLoading = false;
 
   final List<String> tabs = [
     '首页·AI',

@@ -1,0 +1,275 @@
+class Product {
+  final int id;
+  final int sellerId;
+  final String title;
+  final String description;
+  final int categoryId;
+  final List<String> images;
+  final String status;
+  final ProductType type;
+  final AuctionInfo? auctionInfo;
+  final FixedInfo? fixedInfo;
+  final String? location;
+  final Seller? seller;
+  final DateTime createdAt;
+  final DateTime updatedAt;
+
+  Product({
+    required this.id,
+    required this.sellerId,
+    required this.title,
+    required this.description,
+    required this.categoryId,
+    required this.images,
+    required this.status,
+    required this.type,
+    this.auctionInfo,
+    this.fixedInfo,
+    this.location,
+    this.seller,
+    required this.createdAt,
+    required this.updatedAt,
+  });
+
+  factory Product.fromJson(Map<String, dynamic> json) {
+    return Product(
+      id: json['id'] ?? 0,
+      sellerId: json['seller_id'] ?? 0,
+      title: json['title'] ?? '',
+      description: json['description'] ?? '',
+      categoryId: json['category_id'] ?? 0,
+      images: List<String>.from(json['images'] ?? []),
+      status: json['status'] ?? 'active',
+      type: ProductType.fromString(json['type'] ?? 'auction'),
+      auctionInfo: json['auction_info'] != null 
+          ? AuctionInfo.fromJson(json['auction_info']) 
+          : null,
+      fixedInfo: json['fixed_info'] != null 
+          ? FixedInfo.fromJson(json['fixed_info']) 
+          : null,
+      location: json['location'],
+      seller: json['seller'] != null ? Seller.fromJson(json['seller']) : null,
+      createdAt: DateTime.parse(json['created_at'] ?? DateTime.now().toIso8601String()),
+      updatedAt: DateTime.parse(json['updated_at'] ?? DateTime.now().toIso8601String()),
+    );
+  }
+
+  Map<String, dynamic> toJson() {
+    return {
+      'id': id,
+      'seller_id': sellerId,
+      'title': title,
+      'description': description,
+      'category_id': categoryId,
+      'images': images,
+      'status': status,
+      'type': type.toString(),
+      'auction_info': auctionInfo?.toJson(),
+      'fixed_info': fixedInfo?.toJson(),
+      'location': location,
+      'seller': seller?.toJson(),
+      'created_at': createdAt.toIso8601String(),
+      'updated_at': updatedAt.toIso8601String(),
+    };
+  }
+
+  // 获取当前价格
+  double get currentPrice {
+    if (type == ProductType.auction) {
+      return auctionInfo?.currentPrice ?? 0;
+    } else {
+      return fixedInfo?.price ?? 0;
+    }
+  }
+
+  // 获取主图
+  String get mainImage {
+    return images.isNotEmpty ? images.first : '';
+  }
+
+  // 是否正在拍卖中
+  bool get isAuctionActive {
+    if (type != ProductType.auction || auctionInfo == null) return false;
+    final now = DateTime.now();
+    return now.isAfter(auctionInfo!.startTime) && 
+           now.isBefore(auctionInfo!.endTime);
+  }
+
+  // 获取剩余时间
+  Duration? get timeLeft {
+    if (type != ProductType.auction || auctionInfo == null) return null;
+    final now = DateTime.now();
+    if (now.isAfter(auctionInfo!.endTime)) return null;
+    return auctionInfo!.endTime.difference(now);
+  }
+}
+
+enum ProductType {
+  auction,
+  fixed;
+
+  static ProductType fromString(String value) {
+    switch (value.toLowerCase()) {
+      case 'auction':
+        return ProductType.auction;
+      case 'fixed':
+        return ProductType.fixed;
+      default:
+        return ProductType.auction;
+    }
+  }
+
+  @override
+  String toString() {
+    switch (this) {
+      case ProductType.auction:
+        return 'auction';
+      case ProductType.fixed:
+        return 'fixed';
+    }
+  }
+}
+
+class AuctionInfo {
+  final double startPrice;
+  final double currentPrice;
+  final double bidIncrement;
+  final DateTime startTime;
+  final DateTime endTime;
+  final int bidCount;
+
+  AuctionInfo({
+    required this.startPrice,
+    required this.currentPrice,
+    required this.bidIncrement,
+    required this.startTime,
+    required this.endTime,
+    required this.bidCount,
+  });
+
+  factory AuctionInfo.fromJson(Map<String, dynamic> json) {
+    return AuctionInfo(
+      startPrice: (json['start_price'] ?? 0).toDouble(),
+      currentPrice: (json['current_price'] ?? 0).toDouble(),
+      bidIncrement: (json['bid_increment'] ?? 0).toDouble(),
+      startTime: DateTime.parse(json['start_time'] ?? DateTime.now().toIso8601String()),
+      endTime: DateTime.parse(json['end_time'] ?? DateTime.now().toIso8601String()),
+      bidCount: json['bid_count'] ?? 0,
+    );
+  }
+
+  Map<String, dynamic> toJson() {
+    return {
+      'start_price': startPrice,
+      'current_price': currentPrice,
+      'bid_increment': bidIncrement,
+      'start_time': startTime.toIso8601String(),
+      'end_time': endTime.toIso8601String(),
+      'bid_count': bidCount,
+    };
+  }
+}
+
+class FixedInfo {
+  final double price;
+  final int stock;
+  final int salesCount;
+
+  FixedInfo({
+    required this.price,
+    required this.stock,
+    required this.salesCount,
+  });
+
+  factory FixedInfo.fromJson(Map<String, dynamic> json) {
+    return FixedInfo(
+      price: (json['price'] ?? 0).toDouble(),
+      stock: json['stock'] ?? 0,
+      salesCount: json['sales_count'] ?? 0,
+    );
+  }
+
+  Map<String, dynamic> toJson() {
+    return {
+      'price': price,
+      'stock': stock,
+      'sales_count': salesCount,
+    };
+  }
+}
+
+class Seller {
+  final int id;
+  final String name;
+  final String? avatar;
+  final double rating;
+  final int followerCount;
+
+  Seller({
+    required this.id,
+    required this.name,
+    this.avatar,
+    required this.rating,
+    required this.followerCount,
+  });
+
+  factory Seller.fromJson(Map<String, dynamic> json) {
+    return Seller(
+      id: json['id'] ?? 0,
+      name: json['name'] ?? '',
+      avatar: json['avatar'],
+      rating: (json['rating'] ?? 0).toDouble(),
+      followerCount: json['follower_count'] ?? 0,
+    );
+  }
+
+  Map<String, dynamic> toJson() {
+    return {
+      'id': id,
+      'name': name,
+      'avatar': avatar,
+      'rating': rating,
+      'follower_count': followerCount,
+    };
+  }
+}
+
+class Category {
+  final int id;
+  final String name;
+  final int? parentId;
+  final int sortOrder;
+  final String? icon;
+  final String status;
+
+  Category({
+    required this.id,
+    required this.name,
+    this.parentId,
+    required this.sortOrder,
+    this.icon,
+    required this.status,
+  });
+
+  factory Category.fromJson(Map<String, dynamic> json) {
+    return Category(
+      id: json['id'] ?? 0,
+      name: json['name'] ?? '',
+      parentId: json['parent_id'],
+      sortOrder: json['sort_order'] ?? 0,
+      icon: json['icon'],
+      status: json['status'] ?? 'active',
+    );
+  }
+
+  Map<String, dynamic> toJson() {
+    return {
+      'id': id,
+      'name': name,
+      'parent_id': parentId,
+      'sort_order': sortOrder,
+      'icon': icon,
+      'status': status,
+    };
+  }
+}

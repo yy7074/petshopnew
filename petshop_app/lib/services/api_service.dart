@@ -5,7 +5,7 @@ import 'storage_service.dart';
 
 class ApiService extends ChangeNotifier {
   late Dio _dio;
-  static const String baseUrl = 'http://localhost:8000/api';
+  static const String baseUrl = 'https://api.petauction.com/api/v1';
 
   ApiService() {
     _dio = Dio(BaseOptions(
