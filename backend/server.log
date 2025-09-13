@@ -1377,3 +1377,945 @@ INFO:     Finished server process [4282]
 INFO:     Started server process [6288]
 INFO:     Waiting for application startup.
 INFO:     Application startup complete.
+WARNING:  WatchFiles detected changes in 'app/core/config.py'. Reloading...
+INFO:     Shutting down
+INFO:     Waiting for application shutdown.
+INFO:     Application shutdown complete.
+INFO:     Finished server process [6288]
+2025-09-13 14:47:20,154 INFO sqlalchemy.engine.Engine SELECT DATABASE()
+2025-09-13 14:47:20,154 INFO sqlalchemy.engine.Engine [raw sql] {}
+2025-09-13 14:47:20,155 INFO sqlalchemy.engine.Engine SELECT @@sql_mode
+2025-09-13 14:47:20,155 INFO sqlalchemy.engine.Engine [raw sql] {}
+2025-09-13 14:47:20,155 INFO sqlalchemy.engine.Engine SELECT @@lower_case_table_names
+2025-09-13 14:47:20,155 INFO sqlalchemy.engine.Engine [raw sql] {}
+2025-09-13 14:47:20,155 INFO sqlalchemy.engine.Engine BEGIN (implicit)
+2025-09-13 14:47:20,156 INFO sqlalchemy.engine.Engine DESCRIBE `petshop_auction`.`users`
+2025-09-13 14:47:20,156 INFO sqlalchemy.engine.Engine [raw sql] {}
+2025-09-13 14:47:20,159 INFO sqlalchemy.engine.Engine DESCRIBE `petshop_auction`.`user_follows`
+2025-09-13 14:47:20,159 INFO sqlalchemy.engine.Engine [raw sql] {}
+2025-09-13 14:47:20,160 INFO sqlalchemy.engine.Engine DESCRIBE `petshop_auction`.`user_addresses`
+2025-09-13 14:47:20,161 INFO sqlalchemy.engine.Engine [raw sql] {}
+2025-09-13 14:47:20,162 INFO sqlalchemy.engine.Engine DESCRIBE `petshop_auction`.`user_checkins`
+2025-09-13 14:47:20,162 INFO sqlalchemy.engine.Engine [raw sql] {}
+2025-09-13 14:47:20,165 INFO sqlalchemy.engine.Engine DESCRIBE `petshop_auction`.`keyword_subscriptions`
+2025-09-13 14:47:20,165 INFO sqlalchemy.engine.Engine [raw sql] {}
+2025-09-13 14:47:20,166 INFO sqlalchemy.engine.Engine DESCRIBE `petshop_auction`.`categories`
+2025-09-13 14:47:20,166 INFO sqlalchemy.engine.Engine [raw sql] {}
+2025-09-13 14:47:20,168 INFO sqlalchemy.engine.Engine DESCRIBE `petshop_auction`.`products`
+2025-09-13 14:47:20,168 INFO sqlalchemy.engine.Engine [raw sql] {}
+2025-09-13 14:47:20,169 INFO sqlalchemy.engine.Engine DESCRIBE `petshop_auction`.`bids`
+2025-09-13 14:47:20,169 INFO sqlalchemy.engine.Engine [raw sql] {}
+2025-09-13 14:47:20,170 INFO sqlalchemy.engine.Engine DESCRIBE `petshop_auction`.`product_images`
+2025-09-13 14:47:20,170 INFO sqlalchemy.engine.Engine [raw sql] {}
+2025-09-13 14:47:20,171 INFO sqlalchemy.engine.Engine DESCRIBE `petshop_auction`.`product_favorites`
+2025-09-13 14:47:20,171 INFO sqlalchemy.engine.Engine [raw sql] {}
+2025-09-13 14:47:20,172 INFO sqlalchemy.engine.Engine DESCRIBE `petshop_auction`.`shops`
+2025-09-13 14:47:20,172 INFO sqlalchemy.engine.Engine [raw sql] {}
+2025-09-13 14:47:20,174 INFO sqlalchemy.engine.Engine DESCRIBE `petshop_auction`.`local_services`
+2025-09-13 14:47:20,174 INFO sqlalchemy.engine.Engine [raw sql] {}
+2025-09-13 14:47:20,175 INFO sqlalchemy.engine.Engine DESCRIBE `petshop_auction`.`special_events`
+2025-09-13 14:47:20,175 INFO sqlalchemy.engine.Engine [raw sql] {}
+2025-09-13 14:47:20,177 INFO sqlalchemy.engine.Engine DESCRIBE `petshop_auction`.`auto_bids`
+2025-09-13 14:47:20,177 INFO sqlalchemy.engine.Engine [raw sql] {}
+2025-09-13 14:47:20,178 INFO sqlalchemy.engine.Engine DESCRIBE `petshop_auction`.`event_products`
+2025-09-13 14:47:20,178 INFO sqlalchemy.engine.Engine [raw sql] {}
+2025-09-13 14:47:20,180 INFO sqlalchemy.engine.Engine DESCRIBE `petshop_auction`.`orders`
+2025-09-13 14:47:20,180 INFO sqlalchemy.engine.Engine [raw sql] {}
+2025-09-13 14:47:20,181 INFO sqlalchemy.engine.Engine DESCRIBE `petshop_auction`.`order_items`
+2025-09-13 14:47:20,181 INFO sqlalchemy.engine.Engine [raw sql] {}
+2025-09-13 14:47:20,182 INFO sqlalchemy.engine.Engine DESCRIBE `petshop_auction`.`payments`
+2025-09-13 14:47:20,182 INFO sqlalchemy.engine.Engine [raw sql] {}
+2025-09-13 14:47:20,184 INFO sqlalchemy.engine.Engine DESCRIBE `petshop_auction`.`logistics`
+2025-09-13 14:47:20,184 INFO sqlalchemy.engine.Engine [raw sql] {}
+2025-09-13 14:47:20,185 INFO sqlalchemy.engine.Engine DESCRIBE `petshop_auction`.`messages`
+2025-09-13 14:47:20,185 INFO sqlalchemy.engine.Engine [raw sql] {}
+2025-09-13 14:47:20,186 INFO sqlalchemy.engine.Engine DESCRIBE `petshop_auction`.`sms_codes`
+2025-09-13 14:47:20,186 INFO sqlalchemy.engine.Engine [raw sql] {}
+2025-09-13 14:47:20,187 INFO sqlalchemy.engine.Engine COMMIT
+INFO:     Started server process [30914]
+INFO:     Waiting for application startup.
+INFO:     Application startup complete.
+WARNING:  WatchFiles detected changes in 'app/core/env_config.py'. Reloading...
+INFO:     Shutting down
+INFO:     Waiting for application shutdown.
+INFO:     Application shutdown complete.
+INFO:     Finished server process [30914]
+WARNING:  WatchFiles detected changes in 'app/core/env_config.py'. Reloading...
+2025-09-13 14:48:10,273 INFO sqlalchemy.engine.Engine SELECT DATABASE()
+2025-09-13 14:48:10,273 INFO sqlalchemy.engine.Engine [raw sql] {}
+2025-09-13 14:48:10,273 INFO sqlalchemy.engine.Engine SELECT @@sql_mode
+2025-09-13 14:48:10,273 INFO sqlalchemy.engine.Engine [raw sql] {}
+2025-09-13 14:48:10,273 INFO sqlalchemy.engine.Engine SELECT @@lower_case_table_names
+2025-09-13 14:48:10,274 INFO sqlalchemy.engine.Engine [raw sql] {}
+2025-09-13 14:48:10,274 INFO sqlalchemy.engine.Engine BEGIN (implicit)
+2025-09-13 14:48:10,274 INFO sqlalchemy.engine.Engine DESCRIBE `petshop_auction`.`users`
+2025-09-13 14:48:10,274 INFO sqlalchemy.engine.Engine [raw sql] {}
+2025-09-13 14:48:10,283 INFO sqlalchemy.engine.Engine DESCRIBE `petshop_auction`.`user_follows`
+2025-09-13 14:48:10,283 INFO sqlalchemy.engine.Engine [raw sql] {}
+2025-09-13 14:48:10,285 INFO sqlalchemy.engine.Engine DESCRIBE `petshop_auction`.`user_addresses`
+2025-09-13 14:48:10,285 INFO sqlalchemy.engine.Engine [raw sql] {}
+2025-09-13 14:48:10,286 INFO sqlalchemy.engine.Engine DESCRIBE `petshop_auction`.`user_checkins`
+2025-09-13 14:48:10,286 INFO sqlalchemy.engine.Engine [raw sql] {}
+2025-09-13 14:48:10,287 INFO sqlalchemy.engine.Engine DESCRIBE `petshop_auction`.`keyword_subscriptions`
+2025-09-13 14:48:10,287 INFO sqlalchemy.engine.Engine [raw sql] {}
+2025-09-13 14:48:10,289 INFO sqlalchemy.engine.Engine DESCRIBE `petshop_auction`.`categories`
+2025-09-13 14:48:10,289 INFO sqlalchemy.engine.Engine [raw sql] {}
+2025-09-13 14:48:10,290 INFO sqlalchemy.engine.Engine DESCRIBE `petshop_auction`.`products`
+2025-09-13 14:48:10,290 INFO sqlalchemy.engine.Engine [raw sql] {}
+2025-09-13 14:48:10,293 INFO sqlalchemy.engine.Engine DESCRIBE `petshop_auction`.`bids`
+2025-09-13 14:48:10,293 INFO sqlalchemy.engine.Engine [raw sql] {}
+2025-09-13 14:48:10,295 INFO sqlalchemy.engine.Engine DESCRIBE `petshop_auction`.`product_images`
+2025-09-13 14:48:10,295 INFO sqlalchemy.engine.Engine [raw sql] {}
+2025-09-13 14:48:10,297 INFO sqlalchemy.engine.Engine DESCRIBE `petshop_auction`.`product_favorites`
+2025-09-13 14:48:10,297 INFO sqlalchemy.engine.Engine [raw sql] {}
+2025-09-13 14:48:10,299 INFO sqlalchemy.engine.Engine DESCRIBE `petshop_auction`.`shops`
+2025-09-13 14:48:10,299 INFO sqlalchemy.engine.Engine [raw sql] {}
+2025-09-13 14:48:10,300 INFO sqlalchemy.engine.Engine DESCRIBE `petshop_auction`.`local_services`
+2025-09-13 14:48:10,300 INFO sqlalchemy.engine.Engine [raw sql] {}
+2025-09-13 14:48:10,301 INFO sqlalchemy.engine.Engine DESCRIBE `petshop_auction`.`special_events`
+2025-09-13 14:48:10,302 INFO sqlalchemy.engine.Engine [raw sql] {}
+2025-09-13 14:48:10,302 INFO sqlalchemy.engine.Engine DESCRIBE `petshop_auction`.`auto_bids`
+2025-09-13 14:48:10,303 INFO sqlalchemy.engine.Engine [raw sql] {}
+2025-09-13 14:48:10,304 INFO sqlalchemy.engine.Engine DESCRIBE `petshop_auction`.`event_products`
+2025-09-13 14:48:10,304 INFO sqlalchemy.engine.Engine [raw sql] {}
+2025-09-13 14:48:10,305 INFO sqlalchemy.engine.Engine DESCRIBE `petshop_auction`.`orders`
+2025-09-13 14:48:10,305 INFO sqlalchemy.engine.Engine [raw sql] {}
+2025-09-13 14:48:10,306 INFO sqlalchemy.engine.Engine DESCRIBE `petshop_auction`.`order_items`
+2025-09-13 14:48:10,306 INFO sqlalchemy.engine.Engine [raw sql] {}
+2025-09-13 14:48:10,308 INFO sqlalchemy.engine.Engine DESCRIBE `petshop_auction`.`payments`
+2025-09-13 14:48:10,308 INFO sqlalchemy.engine.Engine [raw sql] {}
+2025-09-13 14:48:10,310 INFO sqlalchemy.engine.Engine DESCRIBE `petshop_auction`.`logistics`
+2025-09-13 14:48:10,310 INFO sqlalchemy.engine.Engine [raw sql] {}
+2025-09-13 14:48:10,312 INFO sqlalchemy.engine.Engine DESCRIBE `petshop_auction`.`messages`
+2025-09-13 14:48:10,312 INFO sqlalchemy.engine.Engine [raw sql] {}
+2025-09-13 14:48:10,314 INFO sqlalchemy.engine.Engine DESCRIBE `petshop_auction`.`sms_codes`
+2025-09-13 14:48:10,314 INFO sqlalchemy.engine.Engine [raw sql] {}
+2025-09-13 14:48:10,315 INFO sqlalchemy.engine.Engine COMMIT
+INFO:     Started server process [32853]
+INFO:     Waiting for application startup.
+INFO:     Application startup complete.
+WARNING:  WatchFiles detected changes in 'app/core/config.py'. Reloading...
+INFO:     Shutting down
+INFO:     Waiting for application shutdown.
+INFO:     Application shutdown complete.
+INFO:     Finished server process [32853]
+2025-09-13 14:48:29,079 INFO sqlalchemy.engine.Engine SELECT DATABASE()
+2025-09-13 14:48:29,079 INFO sqlalchemy.engine.Engine [raw sql] {}
+2025-09-13 14:48:29,080 INFO sqlalchemy.engine.Engine SELECT @@sql_mode
+2025-09-13 14:48:29,080 INFO sqlalchemy.engine.Engine [raw sql] {}
+2025-09-13 14:48:29,080 INFO sqlalchemy.engine.Engine SELECT @@lower_case_table_names
+2025-09-13 14:48:29,080 INFO sqlalchemy.engine.Engine [raw sql] {}
+2025-09-13 14:48:29,081 INFO sqlalchemy.engine.Engine BEGIN (implicit)
+2025-09-13 14:48:29,081 INFO sqlalchemy.engine.Engine DESCRIBE `petshop_auction`.`users`
+2025-09-13 14:48:29,081 INFO sqlalchemy.engine.Engine [raw sql] {}
+2025-09-13 14:48:29,082 INFO sqlalchemy.engine.Engine DESCRIBE `petshop_auction`.`user_follows`
+2025-09-13 14:48:29,082 INFO sqlalchemy.engine.Engine [raw sql] {}
+2025-09-13 14:48:29,083 INFO sqlalchemy.engine.Engine DESCRIBE `petshop_auction`.`user_addresses`
+2025-09-13 14:48:29,083 INFO sqlalchemy.engine.Engine [raw sql] {}
+2025-09-13 14:48:29,084 INFO sqlalchemy.engine.Engine DESCRIBE `petshop_auction`.`user_checkins`
+2025-09-13 14:48:29,084 INFO sqlalchemy.engine.Engine [raw sql] {}
+2025-09-13 14:48:29,085 INFO sqlalchemy.engine.Engine DESCRIBE `petshop_auction`.`keyword_subscriptions`
+2025-09-13 14:48:29,085 INFO sqlalchemy.engine.Engine [raw sql] {}
+2025-09-13 14:48:29,086 INFO sqlalchemy.engine.Engine DESCRIBE `petshop_auction`.`categories`
+2025-09-13 14:48:29,086 INFO sqlalchemy.engine.Engine [raw sql] {}
+2025-09-13 14:48:29,087 INFO sqlalchemy.engine.Engine DESCRIBE `petshop_auction`.`products`
+2025-09-13 14:48:29,087 INFO sqlalchemy.engine.Engine [raw sql] {}
+2025-09-13 14:48:29,088 INFO sqlalchemy.engine.Engine DESCRIBE `petshop_auction`.`bids`
+2025-09-13 14:48:29,088 INFO sqlalchemy.engine.Engine [raw sql] {}
+2025-09-13 14:48:29,089 INFO sqlalchemy.engine.Engine DESCRIBE `petshop_auction`.`product_images`
+2025-09-13 14:48:29,089 INFO sqlalchemy.engine.Engine [raw sql] {}
+2025-09-13 14:48:29,090 INFO sqlalchemy.engine.Engine DESCRIBE `petshop_auction`.`product_favorites`
+2025-09-13 14:48:29,090 INFO sqlalchemy.engine.Engine [raw sql] {}
+2025-09-13 14:48:29,091 INFO sqlalchemy.engine.Engine DESCRIBE `petshop_auction`.`shops`
+2025-09-13 14:48:29,091 INFO sqlalchemy.engine.Engine [raw sql] {}
+2025-09-13 14:48:29,092 INFO sqlalchemy.engine.Engine DESCRIBE `petshop_auction`.`local_services`
+2025-09-13 14:48:29,092 INFO sqlalchemy.engine.Engine [raw sql] {}
+2025-09-13 14:48:29,093 INFO sqlalchemy.engine.Engine DESCRIBE `petshop_auction`.`special_events`
+2025-09-13 14:48:29,093 INFO sqlalchemy.engine.Engine [raw sql] {}
+2025-09-13 14:48:29,094 INFO sqlalchemy.engine.Engine DESCRIBE `petshop_auction`.`auto_bids`
+2025-09-13 14:48:29,094 INFO sqlalchemy.engine.Engine [raw sql] {}
+2025-09-13 14:48:29,095 INFO sqlalchemy.engine.Engine DESCRIBE `petshop_auction`.`event_products`
+2025-09-13 14:48:29,095 INFO sqlalchemy.engine.Engine [raw sql] {}
+2025-09-13 14:48:29,096 INFO sqlalchemy.engine.Engine DESCRIBE `petshop_auction`.`orders`
+2025-09-13 14:48:29,096 INFO sqlalchemy.engine.Engine [raw sql] {}
+2025-09-13 14:48:29,098 INFO sqlalchemy.engine.Engine DESCRIBE `petshop_auction`.`order_items`
+2025-09-13 14:48:29,098 INFO sqlalchemy.engine.Engine [raw sql] {}
+2025-09-13 14:48:29,099 INFO sqlalchemy.engine.Engine DESCRIBE `petshop_auction`.`payments`
+2025-09-13 14:48:29,099 INFO sqlalchemy.engine.Engine [raw sql] {}
+2025-09-13 14:48:29,100 INFO sqlalchemy.engine.Engine DESCRIBE `petshop_auction`.`logistics`
+2025-09-13 14:48:29,100 INFO sqlalchemy.engine.Engine [raw sql] {}
+2025-09-13 14:48:29,101 INFO sqlalchemy.engine.Engine DESCRIBE `petshop_auction`.`messages`
+2025-09-13 14:48:29,101 INFO sqlalchemy.engine.Engine [raw sql] {}
+2025-09-13 14:48:29,102 INFO sqlalchemy.engine.Engine DESCRIBE `petshop_auction`.`sms_codes`
+2025-09-13 14:48:29,102 INFO sqlalchemy.engine.Engine [raw sql] {}
+2025-09-13 14:48:29,103 INFO sqlalchemy.engine.Engine COMMIT
+INFO:     Started server process [33546]
+INFO:     Waiting for application startup.
+INFO:     Application startup complete.
+WARNING:  WatchFiles detected changes in 'app/core/env_config.py'. Reloading...
+INFO:     Shutting down
+INFO:     Waiting for application shutdown.
+INFO:     Application shutdown complete.
+INFO:     Finished server process [33546]
+2025-09-13 14:49:11,496 INFO sqlalchemy.engine.Engine SELECT DATABASE()
+2025-09-13 14:49:11,496 INFO sqlalchemy.engine.Engine [raw sql] {}
+2025-09-13 14:49:11,497 INFO sqlalchemy.engine.Engine SELECT @@sql_mode
+2025-09-13 14:49:11,497 INFO sqlalchemy.engine.Engine [raw sql] {}
+2025-09-13 14:49:11,498 INFO sqlalchemy.engine.Engine SELECT @@lower_case_table_names
+2025-09-13 14:49:11,498 INFO sqlalchemy.engine.Engine [raw sql] {}
+2025-09-13 14:49:11,498 INFO sqlalchemy.engine.Engine BEGIN (implicit)
+2025-09-13 14:49:11,498 INFO sqlalchemy.engine.Engine DESCRIBE `petshop_auction`.`users`
+2025-09-13 14:49:11,498 INFO sqlalchemy.engine.Engine [raw sql] {}
+2025-09-13 14:49:11,501 INFO sqlalchemy.engine.Engine DESCRIBE `petshop_auction`.`user_follows`
+2025-09-13 14:49:11,501 INFO sqlalchemy.engine.Engine [raw sql] {}
+2025-09-13 14:49:11,503 INFO sqlalchemy.engine.Engine DESCRIBE `petshop_auction`.`user_addresses`
+2025-09-13 14:49:11,503 INFO sqlalchemy.engine.Engine [raw sql] {}
+2025-09-13 14:49:11,505 INFO sqlalchemy.engine.Engine DESCRIBE `petshop_auction`.`user_checkins`
+2025-09-13 14:49:11,505 INFO sqlalchemy.engine.Engine [raw sql] {}
+2025-09-13 14:49:11,508 INFO sqlalchemy.engine.Engine DESCRIBE `petshop_auction`.`keyword_subscriptions`
+2025-09-13 14:49:11,509 INFO sqlalchemy.engine.Engine [raw sql] {}
+2025-09-13 14:49:11,509 INFO sqlalchemy.engine.Engine DESCRIBE `petshop_auction`.`categories`
+2025-09-13 14:49:11,510 INFO sqlalchemy.engine.Engine [raw sql] {}
+2025-09-13 14:49:11,511 INFO sqlalchemy.engine.Engine DESCRIBE `petshop_auction`.`products`
+2025-09-13 14:49:11,511 INFO sqlalchemy.engine.Engine [raw sql] {}
+2025-09-13 14:49:11,513 INFO sqlalchemy.engine.Engine DESCRIBE `petshop_auction`.`bids`
+2025-09-13 14:49:11,513 INFO sqlalchemy.engine.Engine [raw sql] {}
+2025-09-13 14:49:11,515 INFO sqlalchemy.engine.Engine DESCRIBE `petshop_auction`.`product_images`
+2025-09-13 14:49:11,515 INFO sqlalchemy.engine.Engine [raw sql] {}
+2025-09-13 14:49:11,516 INFO sqlalchemy.engine.Engine DESCRIBE `petshop_auction`.`product_favorites`
+2025-09-13 14:49:11,516 INFO sqlalchemy.engine.Engine [raw sql] {}
+2025-09-13 14:49:11,517 INFO sqlalchemy.engine.Engine DESCRIBE `petshop_auction`.`shops`
+2025-09-13 14:49:11,517 INFO sqlalchemy.engine.Engine [raw sql] {}
+2025-09-13 14:49:11,518 INFO sqlalchemy.engine.Engine DESCRIBE `petshop_auction`.`local_services`
+2025-09-13 14:49:11,518 INFO sqlalchemy.engine.Engine [raw sql] {}
+2025-09-13 14:49:11,519 INFO sqlalchemy.engine.Engine DESCRIBE `petshop_auction`.`special_events`
+2025-09-13 14:49:11,519 INFO sqlalchemy.engine.Engine [raw sql] {}
+2025-09-13 14:49:11,520 INFO sqlalchemy.engine.Engine DESCRIBE `petshop_auction`.`auto_bids`
+2025-09-13 14:49:11,520 INFO sqlalchemy.engine.Engine [raw sql] {}
+2025-09-13 14:49:11,521 INFO sqlalchemy.engine.Engine DESCRIBE `petshop_auction`.`event_products`
+2025-09-13 14:49:11,521 INFO sqlalchemy.engine.Engine [raw sql] {}
+2025-09-13 14:49:11,522 INFO sqlalchemy.engine.Engine DESCRIBE `petshop_auction`.`orders`
+2025-09-13 14:49:11,522 INFO sqlalchemy.engine.Engine [raw sql] {}
+2025-09-13 14:49:11,524 INFO sqlalchemy.engine.Engine DESCRIBE `petshop_auction`.`order_items`
+2025-09-13 14:49:11,524 INFO sqlalchemy.engine.Engine [raw sql] {}
+2025-09-13 14:49:11,525 INFO sqlalchemy.engine.Engine DESCRIBE `petshop_auction`.`payments`
+2025-09-13 14:49:11,525 INFO sqlalchemy.engine.Engine [raw sql] {}
+2025-09-13 14:49:11,526 INFO sqlalchemy.engine.Engine DESCRIBE `petshop_auction`.`logistics`
+2025-09-13 14:49:11,526 INFO sqlalchemy.engine.Engine [raw sql] {}
+2025-09-13 14:49:11,527 INFO sqlalchemy.engine.Engine DESCRIBE `petshop_auction`.`messages`
+2025-09-13 14:49:11,527 INFO sqlalchemy.engine.Engine [raw sql] {}
+2025-09-13 14:49:11,528 INFO sqlalchemy.engine.Engine DESCRIBE `petshop_auction`.`sms_codes`
+2025-09-13 14:49:11,528 INFO sqlalchemy.engine.Engine [raw sql] {}
+2025-09-13 14:49:11,531 INFO sqlalchemy.engine.Engine COMMIT
+INFO:     Started server process [35180]
+INFO:     Waiting for application startup.
+INFO:     Application startup complete.
+WARNING:  WatchFiles detected changes in 'check_config.py'. Reloading...
+INFO:     Shutting down
+INFO:     Waiting for application shutdown.
+INFO:     Application shutdown complete.
+INFO:     Finished server process [35180]
+WARNING:  WatchFiles detected changes in 'check_config.py'. Reloading...
+2025-09-13 14:49:18,057 INFO sqlalchemy.engine.Engine SELECT DATABASE()
+2025-09-13 14:49:18,057 INFO sqlalchemy.engine.Engine [raw sql] {}
+2025-09-13 14:49:18,058 INFO sqlalchemy.engine.Engine SELECT @@sql_mode
+2025-09-13 14:49:18,058 INFO sqlalchemy.engine.Engine [raw sql] {}
+2025-09-13 14:49:18,058 INFO sqlalchemy.engine.Engine SELECT @@lower_case_table_names
+2025-09-13 14:49:18,058 INFO sqlalchemy.engine.Engine [raw sql] {}
+2025-09-13 14:49:18,058 INFO sqlalchemy.engine.Engine BEGIN (implicit)
+2025-09-13 14:49:18,058 INFO sqlalchemy.engine.Engine DESCRIBE `petshop_auction`.`users`
+2025-09-13 14:49:18,058 INFO sqlalchemy.engine.Engine [raw sql] {}
+2025-09-13 14:49:18,060 INFO sqlalchemy.engine.Engine DESCRIBE `petshop_auction`.`user_follows`
+2025-09-13 14:49:18,060 INFO sqlalchemy.engine.Engine [raw sql] {}
+2025-09-13 14:49:18,061 INFO sqlalchemy.engine.Engine DESCRIBE `petshop_auction`.`user_addresses`
+2025-09-13 14:49:18,061 INFO sqlalchemy.engine.Engine [raw sql] {}
+2025-09-13 14:49:18,062 INFO sqlalchemy.engine.Engine DESCRIBE `petshop_auction`.`user_checkins`
+2025-09-13 14:49:18,063 INFO sqlalchemy.engine.Engine [raw sql] {}
+2025-09-13 14:49:18,064 INFO sqlalchemy.engine.Engine DESCRIBE `petshop_auction`.`keyword_subscriptions`
+2025-09-13 14:49:18,064 INFO sqlalchemy.engine.Engine [raw sql] {}
+2025-09-13 14:49:18,066 INFO sqlalchemy.engine.Engine DESCRIBE `petshop_auction`.`categories`
+2025-09-13 14:49:18,067 INFO sqlalchemy.engine.Engine [raw sql] {}
+2025-09-13 14:49:18,069 INFO sqlalchemy.engine.Engine DESCRIBE `petshop_auction`.`products`
+2025-09-13 14:49:18,069 INFO sqlalchemy.engine.Engine [raw sql] {}
+2025-09-13 14:49:18,070 INFO sqlalchemy.engine.Engine DESCRIBE `petshop_auction`.`bids`
+2025-09-13 14:49:18,070 INFO sqlalchemy.engine.Engine [raw sql] {}
+2025-09-13 14:49:18,071 INFO sqlalchemy.engine.Engine DESCRIBE `petshop_auction`.`product_images`
+2025-09-13 14:49:18,071 INFO sqlalchemy.engine.Engine [raw sql] {}
+2025-09-13 14:49:18,072 INFO sqlalchemy.engine.Engine DESCRIBE `petshop_auction`.`product_favorites`
+2025-09-13 14:49:18,072 INFO sqlalchemy.engine.Engine [raw sql] {}
+2025-09-13 14:49:18,074 INFO sqlalchemy.engine.Engine DESCRIBE `petshop_auction`.`shops`
+2025-09-13 14:49:18,074 INFO sqlalchemy.engine.Engine [raw sql] {}
+2025-09-13 14:49:18,075 INFO sqlalchemy.engine.Engine DESCRIBE `petshop_auction`.`local_services`
+2025-09-13 14:49:18,076 INFO sqlalchemy.engine.Engine [raw sql] {}
+2025-09-13 14:49:18,077 INFO sqlalchemy.engine.Engine DESCRIBE `petshop_auction`.`special_events`
+2025-09-13 14:49:18,077 INFO sqlalchemy.engine.Engine [raw sql] {}
+2025-09-13 14:49:18,078 INFO sqlalchemy.engine.Engine DESCRIBE `petshop_auction`.`auto_bids`
+2025-09-13 14:49:18,078 INFO sqlalchemy.engine.Engine [raw sql] {}
+2025-09-13 14:49:18,079 INFO sqlalchemy.engine.Engine DESCRIBE `petshop_auction`.`event_products`
+2025-09-13 14:49:18,079 INFO sqlalchemy.engine.Engine [raw sql] {}
+2025-09-13 14:49:18,080 INFO sqlalchemy.engine.Engine DESCRIBE `petshop_auction`.`orders`
+2025-09-13 14:49:18,080 INFO sqlalchemy.engine.Engine [raw sql] {}
+2025-09-13 14:49:18,082 INFO sqlalchemy.engine.Engine DESCRIBE `petshop_auction`.`order_items`
+2025-09-13 14:49:18,082 INFO sqlalchemy.engine.Engine [raw sql] {}
+2025-09-13 14:49:18,083 INFO sqlalchemy.engine.Engine DESCRIBE `petshop_auction`.`payments`
+2025-09-13 14:49:18,083 INFO sqlalchemy.engine.Engine [raw sql] {}
+2025-09-13 14:49:18,085 INFO sqlalchemy.engine.Engine DESCRIBE `petshop_auction`.`logistics`
+2025-09-13 14:49:18,085 INFO sqlalchemy.engine.Engine [raw sql] {}
+2025-09-13 14:49:18,086 INFO sqlalchemy.engine.Engine DESCRIBE `petshop_auction`.`messages`
+2025-09-13 14:49:18,086 INFO sqlalchemy.engine.Engine [raw sql] {}
+2025-09-13 14:49:18,087 INFO sqlalchemy.engine.Engine DESCRIBE `petshop_auction`.`sms_codes`
+2025-09-13 14:49:18,087 INFO sqlalchemy.engine.Engine [raw sql] {}
+2025-09-13 14:49:18,088 INFO sqlalchemy.engine.Engine COMMIT
+INFO:     Started server process [35437]
+INFO:     Waiting for application startup.
+INFO:     Application startup complete.
+WARNING:  WatchFiles detected changes in 'app/core/env_config.py'. Reloading...
+INFO:     Shutting down
+INFO:     Waiting for application shutdown.
+INFO:     Application shutdown complete.
+INFO:     Finished server process [35437]
+2025-09-13 14:49:28,264 INFO sqlalchemy.engine.Engine SELECT DATABASE()
+2025-09-13 14:49:28,264 INFO sqlalchemy.engine.Engine [raw sql] {}
+2025-09-13 14:49:28,265 INFO sqlalchemy.engine.Engine SELECT @@sql_mode
+2025-09-13 14:49:28,265 INFO sqlalchemy.engine.Engine [raw sql] {}
+2025-09-13 14:49:28,266 INFO sqlalchemy.engine.Engine SELECT @@lower_case_table_names
+2025-09-13 14:49:28,266 INFO sqlalchemy.engine.Engine [raw sql] {}
+2025-09-13 14:49:28,266 INFO sqlalchemy.engine.Engine BEGIN (implicit)
+2025-09-13 14:49:28,266 INFO sqlalchemy.engine.Engine DESCRIBE `petshop_auction`.`users`
+2025-09-13 14:49:28,266 INFO sqlalchemy.engine.Engine [raw sql] {}
+2025-09-13 14:49:28,269 INFO sqlalchemy.engine.Engine DESCRIBE `petshop_auction`.`user_follows`
+2025-09-13 14:49:28,269 INFO sqlalchemy.engine.Engine [raw sql] {}
+2025-09-13 14:49:28,270 INFO sqlalchemy.engine.Engine DESCRIBE `petshop_auction`.`user_addresses`
+2025-09-13 14:49:28,270 INFO sqlalchemy.engine.Engine [raw sql] {}
+2025-09-13 14:49:28,271 INFO sqlalchemy.engine.Engine DESCRIBE `petshop_auction`.`user_checkins`
+2025-09-13 14:49:28,271 INFO sqlalchemy.engine.Engine [raw sql] {}
+2025-09-13 14:49:28,272 INFO sqlalchemy.engine.Engine DESCRIBE `petshop_auction`.`keyword_subscriptions`
+2025-09-13 14:49:28,272 INFO sqlalchemy.engine.Engine [raw sql] {}
+2025-09-13 14:49:28,273 INFO sqlalchemy.engine.Engine DESCRIBE `petshop_auction`.`categories`
+2025-09-13 14:49:28,273 INFO sqlalchemy.engine.Engine [raw sql] {}
+2025-09-13 14:49:28,275 INFO sqlalchemy.engine.Engine DESCRIBE `petshop_auction`.`products`
+2025-09-13 14:49:28,275 INFO sqlalchemy.engine.Engine [raw sql] {}
+2025-09-13 14:49:28,276 INFO sqlalchemy.engine.Engine DESCRIBE `petshop_auction`.`bids`
+2025-09-13 14:49:28,276 INFO sqlalchemy.engine.Engine [raw sql] {}
+2025-09-13 14:49:28,278 INFO sqlalchemy.engine.Engine DESCRIBE `petshop_auction`.`product_images`
+2025-09-13 14:49:28,278 INFO sqlalchemy.engine.Engine [raw sql] {}
+2025-09-13 14:49:28,279 INFO sqlalchemy.engine.Engine DESCRIBE `petshop_auction`.`product_favorites`
+2025-09-13 14:49:28,279 INFO sqlalchemy.engine.Engine [raw sql] {}
+2025-09-13 14:49:28,281 INFO sqlalchemy.engine.Engine DESCRIBE `petshop_auction`.`shops`
+2025-09-13 14:49:28,281 INFO sqlalchemy.engine.Engine [raw sql] {}
+2025-09-13 14:49:28,283 INFO sqlalchemy.engine.Engine DESCRIBE `petshop_auction`.`local_services`
+2025-09-13 14:49:28,283 INFO sqlalchemy.engine.Engine [raw sql] {}
+2025-09-13 14:49:28,285 INFO sqlalchemy.engine.Engine DESCRIBE `petshop_auction`.`special_events`
+2025-09-13 14:49:28,285 INFO sqlalchemy.engine.Engine [raw sql] {}
+2025-09-13 14:49:28,286 INFO sqlalchemy.engine.Engine DESCRIBE `petshop_auction`.`auto_bids`
+2025-09-13 14:49:28,286 INFO sqlalchemy.engine.Engine [raw sql] {}
+2025-09-13 14:49:28,287 INFO sqlalchemy.engine.Engine DESCRIBE `petshop_auction`.`event_products`
+2025-09-13 14:49:28,287 INFO sqlalchemy.engine.Engine [raw sql] {}
+2025-09-13 14:49:28,288 INFO sqlalchemy.engine.Engine DESCRIBE `petshop_auction`.`orders`
+2025-09-13 14:49:28,288 INFO sqlalchemy.engine.Engine [raw sql] {}
+2025-09-13 14:49:28,290 INFO sqlalchemy.engine.Engine DESCRIBE `petshop_auction`.`order_items`
+2025-09-13 14:49:28,290 INFO sqlalchemy.engine.Engine [raw sql] {}
+2025-09-13 14:49:28,291 INFO sqlalchemy.engine.Engine DESCRIBE `petshop_auction`.`payments`
+2025-09-13 14:49:28,291 INFO sqlalchemy.engine.Engine [raw sql] {}
+2025-09-13 14:49:28,292 INFO sqlalchemy.engine.Engine DESCRIBE `petshop_auction`.`logistics`
+2025-09-13 14:49:28,292 INFO sqlalchemy.engine.Engine [raw sql] {}
+2025-09-13 14:49:28,293 INFO sqlalchemy.engine.Engine DESCRIBE `petshop_auction`.`messages`
+2025-09-13 14:49:28,293 INFO sqlalchemy.engine.Engine [raw sql] {}
+2025-09-13 14:49:28,294 INFO sqlalchemy.engine.Engine DESCRIBE `petshop_auction`.`sms_codes`
+2025-09-13 14:49:28,294 INFO sqlalchemy.engine.Engine [raw sql] {}
+2025-09-13 14:49:28,295 INFO sqlalchemy.engine.Engine COMMIT
+INFO:     Started server process [35831]
+INFO:     Waiting for application startup.
+INFO:     Application startup complete.
+WARNING:  WatchFiles detected changes in 'app/core/env_config.py'. Reloading...
+INFO:     Shutting down
+INFO:     Waiting for application shutdown.
+INFO:     Application shutdown complete.
+INFO:     Finished server process [35831]
+2025-09-13 14:49:41,181 INFO sqlalchemy.engine.Engine SELECT DATABASE()
+2025-09-13 14:49:41,181 INFO sqlalchemy.engine.Engine [raw sql] {}
+2025-09-13 14:49:41,182 INFO sqlalchemy.engine.Engine SELECT @@sql_mode
+2025-09-13 14:49:41,182 INFO sqlalchemy.engine.Engine [raw sql] {}
+2025-09-13 14:49:41,182 INFO sqlalchemy.engine.Engine SELECT @@lower_case_table_names
+2025-09-13 14:49:41,182 INFO sqlalchemy.engine.Engine [raw sql] {}
+2025-09-13 14:49:41,183 INFO sqlalchemy.engine.Engine BEGIN (implicit)
+2025-09-13 14:49:41,183 INFO sqlalchemy.engine.Engine DESCRIBE `petshop_auction`.`users`
+2025-09-13 14:49:41,183 INFO sqlalchemy.engine.Engine [raw sql] {}
+2025-09-13 14:49:41,184 INFO sqlalchemy.engine.Engine DESCRIBE `petshop_auction`.`user_follows`
+2025-09-13 14:49:41,184 INFO sqlalchemy.engine.Engine [raw sql] {}
+2025-09-13 14:49:41,185 INFO sqlalchemy.engine.Engine DESCRIBE `petshop_auction`.`user_addresses`
+2025-09-13 14:49:41,185 INFO sqlalchemy.engine.Engine [raw sql] {}
+2025-09-13 14:49:41,186 INFO sqlalchemy.engine.Engine DESCRIBE `petshop_auction`.`user_checkins`
+2025-09-13 14:49:41,187 INFO sqlalchemy.engine.Engine [raw sql] {}
+2025-09-13 14:49:41,188 INFO sqlalchemy.engine.Engine DESCRIBE `petshop_auction`.`keyword_subscriptions`
+2025-09-13 14:49:41,188 INFO sqlalchemy.engine.Engine [raw sql] {}
+2025-09-13 14:49:41,189 INFO sqlalchemy.engine.Engine DESCRIBE `petshop_auction`.`categories`
+2025-09-13 14:49:41,189 INFO sqlalchemy.engine.Engine [raw sql] {}
+2025-09-13 14:49:41,190 INFO sqlalchemy.engine.Engine DESCRIBE `petshop_auction`.`products`
+2025-09-13 14:49:41,190 INFO sqlalchemy.engine.Engine [raw sql] {}
+2025-09-13 14:49:41,191 INFO sqlalchemy.engine.Engine DESCRIBE `petshop_auction`.`bids`
+2025-09-13 14:49:41,191 INFO sqlalchemy.engine.Engine [raw sql] {}
+2025-09-13 14:49:41,192 INFO sqlalchemy.engine.Engine DESCRIBE `petshop_auction`.`product_images`
+2025-09-13 14:49:41,192 INFO sqlalchemy.engine.Engine [raw sql] {}
+2025-09-13 14:49:41,193 INFO sqlalchemy.engine.Engine DESCRIBE `petshop_auction`.`product_favorites`
+2025-09-13 14:49:41,193 INFO sqlalchemy.engine.Engine [raw sql] {}
+2025-09-13 14:49:41,194 INFO sqlalchemy.engine.Engine DESCRIBE `petshop_auction`.`shops`
+2025-09-13 14:49:41,194 INFO sqlalchemy.engine.Engine [raw sql] {}
+2025-09-13 14:49:41,195 INFO sqlalchemy.engine.Engine DESCRIBE `petshop_auction`.`local_services`
+2025-09-13 14:49:41,195 INFO sqlalchemy.engine.Engine [raw sql] {}
+2025-09-13 14:49:41,197 INFO sqlalchemy.engine.Engine DESCRIBE `petshop_auction`.`special_events`
+2025-09-13 14:49:41,197 INFO sqlalchemy.engine.Engine [raw sql] {}
+2025-09-13 14:49:41,199 INFO sqlalchemy.engine.Engine DESCRIBE `petshop_auction`.`auto_bids`
+2025-09-13 14:49:41,199 INFO sqlalchemy.engine.Engine [raw sql] {}
+2025-09-13 14:49:41,200 INFO sqlalchemy.engine.Engine DESCRIBE `petshop_auction`.`event_products`
+2025-09-13 14:49:41,200 INFO sqlalchemy.engine.Engine [raw sql] {}
+2025-09-13 14:49:41,201 INFO sqlalchemy.engine.Engine DESCRIBE `petshop_auction`.`orders`
+2025-09-13 14:49:41,201 INFO sqlalchemy.engine.Engine [raw sql] {}
+2025-09-13 14:49:41,203 INFO sqlalchemy.engine.Engine DESCRIBE `petshop_auction`.`order_items`
+2025-09-13 14:49:41,203 INFO sqlalchemy.engine.Engine [raw sql] {}
+2025-09-13 14:49:41,204 INFO sqlalchemy.engine.Engine DESCRIBE `petshop_auction`.`payments`
+2025-09-13 14:49:41,204 INFO sqlalchemy.engine.Engine [raw sql] {}
+2025-09-13 14:49:41,205 INFO sqlalchemy.engine.Engine DESCRIBE `petshop_auction`.`logistics`
+2025-09-13 14:49:41,205 INFO sqlalchemy.engine.Engine [raw sql] {}
+2025-09-13 14:49:41,206 INFO sqlalchemy.engine.Engine DESCRIBE `petshop_auction`.`messages`
+2025-09-13 14:49:41,206 INFO sqlalchemy.engine.Engine [raw sql] {}
+2025-09-13 14:49:41,207 INFO sqlalchemy.engine.Engine DESCRIBE `petshop_auction`.`sms_codes`
+2025-09-13 14:49:41,207 INFO sqlalchemy.engine.Engine [raw sql] {}
+2025-09-13 14:49:41,208 INFO sqlalchemy.engine.Engine COMMIT
+INFO:     Started server process [36355]
+INFO:     Waiting for application startup.
+INFO:     Application startup complete.
+WARNING:  WatchFiles detected changes in 'app/core/env_config.py', 'check_config.py', 'app/core/config.py'. Reloading...
+INFO:     Shutting down
+INFO:     Waiting for application shutdown.
+INFO:     Application shutdown complete.
+INFO:     Finished server process [36355]
+2025-09-13 14:50:38,392 INFO sqlalchemy.engine.Engine SELECT DATABASE()
+2025-09-13 14:50:38,392 INFO sqlalchemy.engine.Engine [raw sql] {}
+2025-09-13 14:50:38,393 INFO sqlalchemy.engine.Engine SELECT @@sql_mode
+2025-09-13 14:50:38,393 INFO sqlalchemy.engine.Engine [raw sql] {}
+2025-09-13 14:50:38,393 INFO sqlalchemy.engine.Engine SELECT @@lower_case_table_names
+2025-09-13 14:50:38,393 INFO sqlalchemy.engine.Engine [raw sql] {}
+2025-09-13 14:50:38,394 INFO sqlalchemy.engine.Engine BEGIN (implicit)
+2025-09-13 14:50:38,394 INFO sqlalchemy.engine.Engine DESCRIBE `petshop_auction`.`users`
+2025-09-13 14:50:38,394 INFO sqlalchemy.engine.Engine [raw sql] {}
+2025-09-13 14:50:38,398 INFO sqlalchemy.engine.Engine DESCRIBE `petshop_auction`.`user_follows`
+2025-09-13 14:50:38,398 INFO sqlalchemy.engine.Engine [raw sql] {}
+2025-09-13 14:50:38,400 INFO sqlalchemy.engine.Engine DESCRIBE `petshop_auction`.`user_addresses`
+2025-09-13 14:50:38,400 INFO sqlalchemy.engine.Engine [raw sql] {}
+2025-09-13 14:50:38,402 INFO sqlalchemy.engine.Engine DESCRIBE `petshop_auction`.`user_checkins`
+2025-09-13 14:50:38,402 INFO sqlalchemy.engine.Engine [raw sql] {}
+2025-09-13 14:50:38,404 INFO sqlalchemy.engine.Engine DESCRIBE `petshop_auction`.`keyword_subscriptions`
+2025-09-13 14:50:38,404 INFO sqlalchemy.engine.Engine [raw sql] {}
+2025-09-13 14:50:38,406 INFO sqlalchemy.engine.Engine DESCRIBE `petshop_auction`.`categories`
+2025-09-13 14:50:38,406 INFO sqlalchemy.engine.Engine [raw sql] {}
+2025-09-13 14:50:38,408 INFO sqlalchemy.engine.Engine DESCRIBE `petshop_auction`.`products`
+2025-09-13 14:50:38,408 INFO sqlalchemy.engine.Engine [raw sql] {}
+2025-09-13 14:50:38,410 INFO sqlalchemy.engine.Engine DESCRIBE `petshop_auction`.`bids`
+2025-09-13 14:50:38,410 INFO sqlalchemy.engine.Engine [raw sql] {}
+2025-09-13 14:50:38,412 INFO sqlalchemy.engine.Engine DESCRIBE `petshop_auction`.`product_images`
+2025-09-13 14:50:38,412 INFO sqlalchemy.engine.Engine [raw sql] {}
+2025-09-13 14:50:38,414 INFO sqlalchemy.engine.Engine DESCRIBE `petshop_auction`.`product_favorites`
+2025-09-13 14:50:38,415 INFO sqlalchemy.engine.Engine [raw sql] {}
+2025-09-13 14:50:38,416 INFO sqlalchemy.engine.Engine DESCRIBE `petshop_auction`.`shops`
+2025-09-13 14:50:38,416 INFO sqlalchemy.engine.Engine [raw sql] {}
+2025-09-13 14:50:38,419 INFO sqlalchemy.engine.Engine DESCRIBE `petshop_auction`.`local_services`
+2025-09-13 14:50:38,419 INFO sqlalchemy.engine.Engine [raw sql] {}
+2025-09-13 14:50:38,421 INFO sqlalchemy.engine.Engine DESCRIBE `petshop_auction`.`special_events`
+2025-09-13 14:50:38,421 INFO sqlalchemy.engine.Engine [raw sql] {}
+2025-09-13 14:50:38,422 INFO sqlalchemy.engine.Engine DESCRIBE `petshop_auction`.`auto_bids`
+2025-09-13 14:50:38,422 INFO sqlalchemy.engine.Engine [raw sql] {}
+2025-09-13 14:50:38,424 INFO sqlalchemy.engine.Engine DESCRIBE `petshop_auction`.`event_products`
+2025-09-13 14:50:38,425 INFO sqlalchemy.engine.Engine [raw sql] {}
+2025-09-13 14:50:38,426 INFO sqlalchemy.engine.Engine DESCRIBE `petshop_auction`.`orders`
+2025-09-13 14:50:38,426 INFO sqlalchemy.engine.Engine [raw sql] {}
+2025-09-13 14:50:38,429 INFO sqlalchemy.engine.Engine DESCRIBE `petshop_auction`.`order_items`
+2025-09-13 14:50:38,429 INFO sqlalchemy.engine.Engine [raw sql] {}
+2025-09-13 14:50:38,430 INFO sqlalchemy.engine.Engine DESCRIBE `petshop_auction`.`payments`
+2025-09-13 14:50:38,430 INFO sqlalchemy.engine.Engine [raw sql] {}
+2025-09-13 14:50:38,432 INFO sqlalchemy.engine.Engine DESCRIBE `petshop_auction`.`logistics`
+2025-09-13 14:50:38,432 INFO sqlalchemy.engine.Engine [raw sql] {}
+2025-09-13 14:50:38,434 INFO sqlalchemy.engine.Engine DESCRIBE `petshop_auction`.`messages`
+2025-09-13 14:50:38,434 INFO sqlalchemy.engine.Engine [raw sql] {}
+2025-09-13 14:50:38,436 INFO sqlalchemy.engine.Engine DESCRIBE `petshop_auction`.`sms_codes`
+2025-09-13 14:50:38,436 INFO sqlalchemy.engine.Engine [raw sql] {}
+2025-09-13 14:50:38,438 INFO sqlalchemy.engine.Engine COMMIT
+INFO:     Started server process [38603]
+INFO:     Waiting for application startup.
+INFO:     Application startup complete.
+WARNING:  WatchFiles detected changes in 'check_config.py', 'app/core/config.py'. Reloading...
+INFO:     Shutting down
+INFO:     Waiting for application shutdown.
+INFO:     Application shutdown complete.
+INFO:     Finished server process [38603]
+2025-09-13 14:50:48,798 INFO sqlalchemy.engine.Engine SELECT DATABASE()
+2025-09-13 14:50:48,798 INFO sqlalchemy.engine.Engine [raw sql] {}
+2025-09-13 14:50:48,798 INFO sqlalchemy.engine.Engine SELECT @@sql_mode
+2025-09-13 14:50:48,798 INFO sqlalchemy.engine.Engine [raw sql] {}
+2025-09-13 14:50:48,799 INFO sqlalchemy.engine.Engine SELECT @@lower_case_table_names
+2025-09-13 14:50:48,799 INFO sqlalchemy.engine.Engine [raw sql] {}
+2025-09-13 14:50:48,799 INFO sqlalchemy.engine.Engine BEGIN (implicit)
+2025-09-13 14:50:48,799 INFO sqlalchemy.engine.Engine DESCRIBE `petshop_auction`.`users`
+2025-09-13 14:50:48,799 INFO sqlalchemy.engine.Engine [raw sql] {}
+2025-09-13 14:50:48,806 INFO sqlalchemy.engine.Engine DESCRIBE `petshop_auction`.`user_follows`
+2025-09-13 14:50:48,806 INFO sqlalchemy.engine.Engine [raw sql] {}
+2025-09-13 14:50:48,807 INFO sqlalchemy.engine.Engine DESCRIBE `petshop_auction`.`user_addresses`
+2025-09-13 14:50:48,807 INFO sqlalchemy.engine.Engine [raw sql] {}
+2025-09-13 14:50:48,809 INFO sqlalchemy.engine.Engine DESCRIBE `petshop_auction`.`user_checkins`
+2025-09-13 14:50:48,809 INFO sqlalchemy.engine.Engine [raw sql] {}
+2025-09-13 14:50:48,810 INFO sqlalchemy.engine.Engine DESCRIBE `petshop_auction`.`keyword_subscriptions`
+2025-09-13 14:50:48,810 INFO sqlalchemy.engine.Engine [raw sql] {}
+2025-09-13 14:50:48,813 INFO sqlalchemy.engine.Engine DESCRIBE `petshop_auction`.`categories`
+2025-09-13 14:50:48,814 INFO sqlalchemy.engine.Engine [raw sql] {}
+2025-09-13 14:50:48,816 INFO sqlalchemy.engine.Engine DESCRIBE `petshop_auction`.`products`
+2025-09-13 14:50:48,816 INFO sqlalchemy.engine.Engine [raw sql] {}
+2025-09-13 14:50:48,817 INFO sqlalchemy.engine.Engine DESCRIBE `petshop_auction`.`bids`
+2025-09-13 14:50:48,817 INFO sqlalchemy.engine.Engine [raw sql] {}
+2025-09-13 14:50:48,818 INFO sqlalchemy.engine.Engine DESCRIBE `petshop_auction`.`product_images`
+2025-09-13 14:50:48,819 INFO sqlalchemy.engine.Engine [raw sql] {}
+2025-09-13 14:50:48,820 INFO sqlalchemy.engine.Engine DESCRIBE `petshop_auction`.`product_favorites`
+2025-09-13 14:50:48,820 INFO sqlalchemy.engine.Engine [raw sql] {}
+2025-09-13 14:50:48,821 INFO sqlalchemy.engine.Engine DESCRIBE `petshop_auction`.`shops`
+2025-09-13 14:50:48,821 INFO sqlalchemy.engine.Engine [raw sql] {}
+2025-09-13 14:50:48,822 INFO sqlalchemy.engine.Engine DESCRIBE `petshop_auction`.`local_services`
+2025-09-13 14:50:48,822 INFO sqlalchemy.engine.Engine [raw sql] {}
+2025-09-13 14:50:48,824 INFO sqlalchemy.engine.Engine DESCRIBE `petshop_auction`.`special_events`
+2025-09-13 14:50:48,824 INFO sqlalchemy.engine.Engine [raw sql] {}
+2025-09-13 14:50:48,825 INFO sqlalchemy.engine.Engine DESCRIBE `petshop_auction`.`auto_bids`
+2025-09-13 14:50:48,825 INFO sqlalchemy.engine.Engine [raw sql] {}
+2025-09-13 14:50:48,826 INFO sqlalchemy.engine.Engine DESCRIBE `petshop_auction`.`event_products`
+2025-09-13 14:50:48,826 INFO sqlalchemy.engine.Engine [raw sql] {}
+2025-09-13 14:50:48,827 INFO sqlalchemy.engine.Engine DESCRIBE `petshop_auction`.`orders`
+2025-09-13 14:50:48,827 INFO sqlalchemy.engine.Engine [raw sql] {}
+2025-09-13 14:50:48,830 INFO sqlalchemy.engine.Engine DESCRIBE `petshop_auction`.`order_items`
+2025-09-13 14:50:48,830 INFO sqlalchemy.engine.Engine [raw sql] {}
+2025-09-13 14:50:48,831 INFO sqlalchemy.engine.Engine DESCRIBE `petshop_auction`.`payments`
+2025-09-13 14:50:48,831 INFO sqlalchemy.engine.Engine [raw sql] {}
+2025-09-13 14:50:48,833 INFO sqlalchemy.engine.Engine DESCRIBE `petshop_auction`.`logistics`
+2025-09-13 14:50:48,833 INFO sqlalchemy.engine.Engine [raw sql] {}
+2025-09-13 14:50:48,834 INFO sqlalchemy.engine.Engine DESCRIBE `petshop_auction`.`messages`
+2025-09-13 14:50:48,834 INFO sqlalchemy.engine.Engine [raw sql] {}
+2025-09-13 14:50:48,836 INFO sqlalchemy.engine.Engine DESCRIBE `petshop_auction`.`sms_codes`
+2025-09-13 14:50:48,836 INFO sqlalchemy.engine.Engine [raw sql] {}
+2025-09-13 14:50:48,837 INFO sqlalchemy.engine.Engine COMMIT
+INFO:     Started server process [39049]
+INFO:     Waiting for application startup.
+INFO:     Application startup complete.
+WARNING:  WatchFiles detected changes in 'app/core/config.py'. Reloading...
+INFO:     Shutting down
+INFO:     Waiting for application shutdown.
+INFO:     Application shutdown complete.
+INFO:     Finished server process [39049]
+2025-09-13 14:55:09,784 INFO sqlalchemy.engine.Engine SELECT DATABASE()
+2025-09-13 14:55:09,784 INFO sqlalchemy.engine.Engine [raw sql] {}
+2025-09-13 14:55:09,785 INFO sqlalchemy.engine.Engine SELECT @@sql_mode
+2025-09-13 14:55:09,785 INFO sqlalchemy.engine.Engine [raw sql] {}
+2025-09-13 14:55:09,785 INFO sqlalchemy.engine.Engine SELECT @@lower_case_table_names
+2025-09-13 14:55:09,785 INFO sqlalchemy.engine.Engine [raw sql] {}
+2025-09-13 14:55:09,786 INFO sqlalchemy.engine.Engine BEGIN (implicit)
+2025-09-13 14:55:09,786 INFO sqlalchemy.engine.Engine DESCRIBE `petshop_auction`.`users`
+2025-09-13 14:55:09,786 INFO sqlalchemy.engine.Engine [raw sql] {}
+2025-09-13 14:55:09,789 INFO sqlalchemy.engine.Engine DESCRIBE `petshop_auction`.`user_follows`
+2025-09-13 14:55:09,789 INFO sqlalchemy.engine.Engine [raw sql] {}
+2025-09-13 14:55:09,790 INFO sqlalchemy.engine.Engine DESCRIBE `petshop_auction`.`user_addresses`
+2025-09-13 14:55:09,790 INFO sqlalchemy.engine.Engine [raw sql] {}
+2025-09-13 14:55:09,792 INFO sqlalchemy.engine.Engine DESCRIBE `petshop_auction`.`user_checkins`
+2025-09-13 14:55:09,792 INFO sqlalchemy.engine.Engine [raw sql] {}
+2025-09-13 14:55:09,793 INFO sqlalchemy.engine.Engine DESCRIBE `petshop_auction`.`keyword_subscriptions`
+2025-09-13 14:55:09,793 INFO sqlalchemy.engine.Engine [raw sql] {}
+2025-09-13 14:55:09,795 INFO sqlalchemy.engine.Engine DESCRIBE `petshop_auction`.`categories`
+2025-09-13 14:55:09,795 INFO sqlalchemy.engine.Engine [raw sql] {}
+2025-09-13 14:55:09,797 INFO sqlalchemy.engine.Engine DESCRIBE `petshop_auction`.`products`
+2025-09-13 14:55:09,797 INFO sqlalchemy.engine.Engine [raw sql] {}
+2025-09-13 14:55:09,799 INFO sqlalchemy.engine.Engine DESCRIBE `petshop_auction`.`bids`
+2025-09-13 14:55:09,799 INFO sqlalchemy.engine.Engine [raw sql] {}
+2025-09-13 14:55:09,800 INFO sqlalchemy.engine.Engine DESCRIBE `petshop_auction`.`product_images`
+2025-09-13 14:55:09,800 INFO sqlalchemy.engine.Engine [raw sql] {}
+2025-09-13 14:55:09,802 INFO sqlalchemy.engine.Engine DESCRIBE `petshop_auction`.`product_favorites`
+2025-09-13 14:55:09,802 INFO sqlalchemy.engine.Engine [raw sql] {}
+2025-09-13 14:55:09,803 INFO sqlalchemy.engine.Engine DESCRIBE `petshop_auction`.`shops`
+2025-09-13 14:55:09,803 INFO sqlalchemy.engine.Engine [raw sql] {}
+2025-09-13 14:55:09,804 INFO sqlalchemy.engine.Engine DESCRIBE `petshop_auction`.`local_services`
+2025-09-13 14:55:09,804 INFO sqlalchemy.engine.Engine [raw sql] {}
+2025-09-13 14:55:09,805 INFO sqlalchemy.engine.Engine DESCRIBE `petshop_auction`.`special_events`
+2025-09-13 14:55:09,806 INFO sqlalchemy.engine.Engine [raw sql] {}
+2025-09-13 14:55:09,807 INFO sqlalchemy.engine.Engine DESCRIBE `petshop_auction`.`auto_bids`
+2025-09-13 14:55:09,807 INFO sqlalchemy.engine.Engine [raw sql] {}
+2025-09-13 14:55:09,809 INFO sqlalchemy.engine.Engine DESCRIBE `petshop_auction`.`event_products`
+2025-09-13 14:55:09,809 INFO sqlalchemy.engine.Engine [raw sql] {}
+2025-09-13 14:55:09,811 INFO sqlalchemy.engine.Engine DESCRIBE `petshop_auction`.`orders`
+2025-09-13 14:55:09,811 INFO sqlalchemy.engine.Engine [raw sql] {}
+2025-09-13 14:55:09,813 INFO sqlalchemy.engine.Engine DESCRIBE `petshop_auction`.`order_items`
+2025-09-13 14:55:09,813 INFO sqlalchemy.engine.Engine [raw sql] {}
+2025-09-13 14:55:09,815 INFO sqlalchemy.engine.Engine DESCRIBE `petshop_auction`.`payments`
+2025-09-13 14:55:09,815 INFO sqlalchemy.engine.Engine [raw sql] {}
+2025-09-13 14:55:09,816 INFO sqlalchemy.engine.Engine DESCRIBE `petshop_auction`.`logistics`
+2025-09-13 14:55:09,816 INFO sqlalchemy.engine.Engine [raw sql] {}
+2025-09-13 14:55:09,817 INFO sqlalchemy.engine.Engine DESCRIBE `petshop_auction`.`messages`
+2025-09-13 14:55:09,817 INFO sqlalchemy.engine.Engine [raw sql] {}
+2025-09-13 14:55:09,819 INFO sqlalchemy.engine.Engine DESCRIBE `petshop_auction`.`sms_codes`
+2025-09-13 14:55:09,819 INFO sqlalchemy.engine.Engine [raw sql] {}
+2025-09-13 14:55:09,820 INFO sqlalchemy.engine.Engine COMMIT
+INFO:     Started server process [49488]
+INFO:     Waiting for application startup.
+INFO:     Application startup complete.
+WARNING:  WatchFiles detected changes in 'app/core/env_config.py'. Reloading...
+INFO:     Shutting down
+INFO:     Waiting for application shutdown.
+INFO:     Application shutdown complete.
+INFO:     Finished server process [49488]
+2025-09-13 14:58:49,174 INFO sqlalchemy.engine.Engine SELECT DATABASE()
+2025-09-13 14:58:49,174 INFO sqlalchemy.engine.Engine [raw sql] {}
+2025-09-13 14:58:49,175 INFO sqlalchemy.engine.Engine SELECT @@sql_mode
+2025-09-13 14:58:49,175 INFO sqlalchemy.engine.Engine [raw sql] {}
+2025-09-13 14:58:49,175 INFO sqlalchemy.engine.Engine SELECT @@lower_case_table_names
+2025-09-13 14:58:49,176 INFO sqlalchemy.engine.Engine [raw sql] {}
+2025-09-13 14:58:49,176 INFO sqlalchemy.engine.Engine BEGIN (implicit)
+2025-09-13 14:58:49,177 INFO sqlalchemy.engine.Engine DESCRIBE `petshop_auction`.`users`
+2025-09-13 14:58:49,177 INFO sqlalchemy.engine.Engine [raw sql] {}
+2025-09-13 14:58:49,179 INFO sqlalchemy.engine.Engine DESCRIBE `petshop_auction`.`user_follows`
+2025-09-13 14:58:49,180 INFO sqlalchemy.engine.Engine [raw sql] {}
+2025-09-13 14:58:49,181 INFO sqlalchemy.engine.Engine DESCRIBE `petshop_auction`.`user_addresses`
+2025-09-13 14:58:49,181 INFO sqlalchemy.engine.Engine [raw sql] {}
+2025-09-13 14:58:49,182 INFO sqlalchemy.engine.Engine DESCRIBE `petshop_auction`.`user_checkins`
+2025-09-13 14:58:49,182 INFO sqlalchemy.engine.Engine [raw sql] {}
+2025-09-13 14:58:49,184 INFO sqlalchemy.engine.Engine DESCRIBE `petshop_auction`.`keyword_subscriptions`
+2025-09-13 14:58:49,184 INFO sqlalchemy.engine.Engine [raw sql] {}
+2025-09-13 14:58:49,184 INFO sqlalchemy.engine.Engine DESCRIBE `petshop_auction`.`categories`
+2025-09-13 14:58:49,185 INFO sqlalchemy.engine.Engine [raw sql] {}
+2025-09-13 14:58:49,186 INFO sqlalchemy.engine.Engine DESCRIBE `petshop_auction`.`products`
+2025-09-13 14:58:49,186 INFO sqlalchemy.engine.Engine [raw sql] {}
+2025-09-13 14:58:49,187 INFO sqlalchemy.engine.Engine DESCRIBE `petshop_auction`.`bids`
+2025-09-13 14:58:49,188 INFO sqlalchemy.engine.Engine [raw sql] {}
+2025-09-13 14:58:49,188 INFO sqlalchemy.engine.Engine DESCRIBE `petshop_auction`.`product_images`
+2025-09-13 14:58:49,188 INFO sqlalchemy.engine.Engine [raw sql] {}
+2025-09-13 14:58:49,189 INFO sqlalchemy.engine.Engine DESCRIBE `petshop_auction`.`product_favorites`
+2025-09-13 14:58:49,189 INFO sqlalchemy.engine.Engine [raw sql] {}
+2025-09-13 14:58:49,190 INFO sqlalchemy.engine.Engine DESCRIBE `petshop_auction`.`shops`
+2025-09-13 14:58:49,190 INFO sqlalchemy.engine.Engine [raw sql] {}
+2025-09-13 14:58:49,193 INFO sqlalchemy.engine.Engine DESCRIBE `petshop_auction`.`local_services`
+2025-09-13 14:58:49,193 INFO sqlalchemy.engine.Engine [raw sql] {}
+2025-09-13 14:58:49,194 INFO sqlalchemy.engine.Engine DESCRIBE `petshop_auction`.`special_events`
+2025-09-13 14:58:49,194 INFO sqlalchemy.engine.Engine [raw sql] {}
+2025-09-13 14:58:49,196 INFO sqlalchemy.engine.Engine DESCRIBE `petshop_auction`.`auto_bids`
+2025-09-13 14:58:49,196 INFO sqlalchemy.engine.Engine [raw sql] {}
+2025-09-13 14:58:49,197 INFO sqlalchemy.engine.Engine DESCRIBE `petshop_auction`.`event_products`
+2025-09-13 14:58:49,197 INFO sqlalchemy.engine.Engine [raw sql] {}
+2025-09-13 14:58:49,198 INFO sqlalchemy.engine.Engine DESCRIBE `petshop_auction`.`orders`
+2025-09-13 14:58:49,198 INFO sqlalchemy.engine.Engine [raw sql] {}
+2025-09-13 14:58:49,199 INFO sqlalchemy.engine.Engine DESCRIBE `petshop_auction`.`order_items`
+2025-09-13 14:58:49,199 INFO sqlalchemy.engine.Engine [raw sql] {}
+2025-09-13 14:58:49,200 INFO sqlalchemy.engine.Engine DESCRIBE `petshop_auction`.`payments`
+2025-09-13 14:58:49,200 INFO sqlalchemy.engine.Engine [raw sql] {}
+2025-09-13 14:58:49,202 INFO sqlalchemy.engine.Engine DESCRIBE `petshop_auction`.`logistics`
+2025-09-13 14:58:49,202 INFO sqlalchemy.engine.Engine [raw sql] {}
+2025-09-13 14:58:49,203 INFO sqlalchemy.engine.Engine DESCRIBE `petshop_auction`.`messages`
+2025-09-13 14:58:49,203 INFO sqlalchemy.engine.Engine [raw sql] {}
+2025-09-13 14:58:49,204 INFO sqlalchemy.engine.Engine DESCRIBE `petshop_auction`.`sms_codes`
+2025-09-13 14:58:49,204 INFO sqlalchemy.engine.Engine [raw sql] {}
+2025-09-13 14:58:49,205 INFO sqlalchemy.engine.Engine COMMIT
+INFO:     Started server process [58236]
+INFO:     Waiting for application startup.
+INFO:     Application startup complete.
+WARNING:  WatchFiles detected changes in 'app/core/env_config.py'. Reloading...
+INFO:     Shutting down
+INFO:     Waiting for application shutdown.
+INFO:     Application shutdown complete.
+INFO:     Finished server process [58236]
+2025-09-13 14:59:36,148 INFO sqlalchemy.engine.Engine SELECT DATABASE()
+2025-09-13 14:59:36,148 INFO sqlalchemy.engine.Engine [raw sql] {}
+2025-09-13 14:59:36,148 INFO sqlalchemy.engine.Engine SELECT @@sql_mode
+2025-09-13 14:59:36,148 INFO sqlalchemy.engine.Engine [raw sql] {}
+2025-09-13 14:59:36,149 INFO sqlalchemy.engine.Engine SELECT @@lower_case_table_names
+2025-09-13 14:59:36,149 INFO sqlalchemy.engine.Engine [raw sql] {}
+2025-09-13 14:59:36,149 INFO sqlalchemy.engine.Engine BEGIN (implicit)
+2025-09-13 14:59:36,149 INFO sqlalchemy.engine.Engine DESCRIBE `petshop_auction`.`users`
+2025-09-13 14:59:36,149 INFO sqlalchemy.engine.Engine [raw sql] {}
+2025-09-13 14:59:36,153 INFO sqlalchemy.engine.Engine DESCRIBE `petshop_auction`.`user_follows`
+2025-09-13 14:59:36,153 INFO sqlalchemy.engine.Engine [raw sql] {}
+2025-09-13 14:59:36,154 INFO sqlalchemy.engine.Engine DESCRIBE `petshop_auction`.`user_addresses`
+2025-09-13 14:59:36,154 INFO sqlalchemy.engine.Engine [raw sql] {}
+2025-09-13 14:59:36,156 INFO sqlalchemy.engine.Engine DESCRIBE `petshop_auction`.`user_checkins`
+2025-09-13 14:59:36,156 INFO sqlalchemy.engine.Engine [raw sql] {}
+2025-09-13 14:59:36,157 INFO sqlalchemy.engine.Engine DESCRIBE `petshop_auction`.`keyword_subscriptions`
+2025-09-13 14:59:36,157 INFO sqlalchemy.engine.Engine [raw sql] {}
+2025-09-13 14:59:36,157 INFO sqlalchemy.engine.Engine DESCRIBE `petshop_auction`.`categories`
+2025-09-13 14:59:36,158 INFO sqlalchemy.engine.Engine [raw sql] {}
+2025-09-13 14:59:36,159 INFO sqlalchemy.engine.Engine DESCRIBE `petshop_auction`.`products`
+2025-09-13 14:59:36,159 INFO sqlalchemy.engine.Engine [raw sql] {}
+2025-09-13 14:59:36,160 INFO sqlalchemy.engine.Engine DESCRIBE `petshop_auction`.`bids`
+2025-09-13 14:59:36,160 INFO sqlalchemy.engine.Engine [raw sql] {}
+2025-09-13 14:59:36,161 INFO sqlalchemy.engine.Engine DESCRIBE `petshop_auction`.`product_images`
+2025-09-13 14:59:36,162 INFO sqlalchemy.engine.Engine [raw sql] {}
+2025-09-13 14:59:36,162 INFO sqlalchemy.engine.Engine DESCRIBE `petshop_auction`.`product_favorites`
+2025-09-13 14:59:36,162 INFO sqlalchemy.engine.Engine [raw sql] {}
+2025-09-13 14:59:36,164 INFO sqlalchemy.engine.Engine DESCRIBE `petshop_auction`.`shops`
+2025-09-13 14:59:36,164 INFO sqlalchemy.engine.Engine [raw sql] {}
+2025-09-13 14:59:36,165 INFO sqlalchemy.engine.Engine DESCRIBE `petshop_auction`.`local_services`
+2025-09-13 14:59:36,165 INFO sqlalchemy.engine.Engine [raw sql] {}
+2025-09-13 14:59:36,166 INFO sqlalchemy.engine.Engine DESCRIBE `petshop_auction`.`special_events`
+2025-09-13 14:59:36,166 INFO sqlalchemy.engine.Engine [raw sql] {}
+2025-09-13 14:59:36,167 INFO sqlalchemy.engine.Engine DESCRIBE `petshop_auction`.`auto_bids`
+2025-09-13 14:59:36,167 INFO sqlalchemy.engine.Engine [raw sql] {}
+2025-09-13 14:59:36,168 INFO sqlalchemy.engine.Engine DESCRIBE `petshop_auction`.`event_products`
+2025-09-13 14:59:36,168 INFO sqlalchemy.engine.Engine [raw sql] {}
+2025-09-13 14:59:36,170 INFO sqlalchemy.engine.Engine DESCRIBE `petshop_auction`.`orders`
+2025-09-13 14:59:36,170 INFO sqlalchemy.engine.Engine [raw sql] {}
+2025-09-13 14:59:36,171 INFO sqlalchemy.engine.Engine DESCRIBE `petshop_auction`.`order_items`
+2025-09-13 14:59:36,171 INFO sqlalchemy.engine.Engine [raw sql] {}
+2025-09-13 14:59:36,172 INFO sqlalchemy.engine.Engine DESCRIBE `petshop_auction`.`payments`
+2025-09-13 14:59:36,172 INFO sqlalchemy.engine.Engine [raw sql] {}
+2025-09-13 14:59:36,173 INFO sqlalchemy.engine.Engine DESCRIBE `petshop_auction`.`logistics`
+2025-09-13 14:59:36,173 INFO sqlalchemy.engine.Engine [raw sql] {}
+2025-09-13 14:59:36,174 INFO sqlalchemy.engine.Engine DESCRIBE `petshop_auction`.`messages`
+2025-09-13 14:59:36,174 INFO sqlalchemy.engine.Engine [raw sql] {}
+2025-09-13 14:59:36,175 INFO sqlalchemy.engine.Engine DESCRIBE `petshop_auction`.`sms_codes`
+2025-09-13 14:59:36,175 INFO sqlalchemy.engine.Engine [raw sql] {}
+2025-09-13 14:59:36,176 INFO sqlalchemy.engine.Engine COMMIT
+INFO:     Started server process [60005]
+INFO:     Waiting for application startup.
+INFO:     Application startup complete.
+WARNING:  WatchFiles detected changes in 'setup_local_env.py'. Reloading...
+INFO:     Shutting down
+INFO:     Waiting for application shutdown.
+INFO:     Application shutdown complete.
+INFO:     Finished server process [60005]
+WARNING:  WatchFiles detected changes in 'setup_local_env.py'. Reloading...
+2025-09-13 14:59:51,722 INFO sqlalchemy.engine.Engine SELECT DATABASE()
+2025-09-13 14:59:51,722 INFO sqlalchemy.engine.Engine [raw sql] {}
+2025-09-13 14:59:51,722 INFO sqlalchemy.engine.Engine SELECT @@sql_mode
+2025-09-13 14:59:51,722 INFO sqlalchemy.engine.Engine [raw sql] {}
+2025-09-13 14:59:51,723 INFO sqlalchemy.engine.Engine SELECT @@lower_case_table_names
+2025-09-13 14:59:51,723 INFO sqlalchemy.engine.Engine [raw sql] {}
+2025-09-13 14:59:51,723 INFO sqlalchemy.engine.Engine BEGIN (implicit)
+2025-09-13 14:59:51,723 INFO sqlalchemy.engine.Engine DESCRIBE `petshop_auction`.`users`
+2025-09-13 14:59:51,723 INFO sqlalchemy.engine.Engine [raw sql] {}
+2025-09-13 14:59:51,725 INFO sqlalchemy.engine.Engine DESCRIBE `petshop_auction`.`user_follows`
+2025-09-13 14:59:51,725 INFO sqlalchemy.engine.Engine [raw sql] {}
+2025-09-13 14:59:51,726 INFO sqlalchemy.engine.Engine DESCRIBE `petshop_auction`.`user_addresses`
+2025-09-13 14:59:51,726 INFO sqlalchemy.engine.Engine [raw sql] {}
+2025-09-13 14:59:51,727 INFO sqlalchemy.engine.Engine DESCRIBE `petshop_auction`.`user_checkins`
+2025-09-13 14:59:51,727 INFO sqlalchemy.engine.Engine [raw sql] {}
+2025-09-13 14:59:51,728 INFO sqlalchemy.engine.Engine DESCRIBE `petshop_auction`.`keyword_subscriptions`
+2025-09-13 14:59:51,728 INFO sqlalchemy.engine.Engine [raw sql] {}
+2025-09-13 14:59:51,730 INFO sqlalchemy.engine.Engine DESCRIBE `petshop_auction`.`categories`
+2025-09-13 14:59:51,730 INFO sqlalchemy.engine.Engine [raw sql] {}
+2025-09-13 14:59:51,731 INFO sqlalchemy.engine.Engine DESCRIBE `petshop_auction`.`products`
+2025-09-13 14:59:51,731 INFO sqlalchemy.engine.Engine [raw sql] {}
+2025-09-13 14:59:51,733 INFO sqlalchemy.engine.Engine DESCRIBE `petshop_auction`.`bids`
+2025-09-13 14:59:51,733 INFO sqlalchemy.engine.Engine [raw sql] {}
+2025-09-13 14:59:51,734 INFO sqlalchemy.engine.Engine DESCRIBE `petshop_auction`.`product_images`
+2025-09-13 14:59:51,734 INFO sqlalchemy.engine.Engine [raw sql] {}
+2025-09-13 14:59:51,735 INFO sqlalchemy.engine.Engine DESCRIBE `petshop_auction`.`product_favorites`
+2025-09-13 14:59:51,735 INFO sqlalchemy.engine.Engine [raw sql] {}
+2025-09-13 14:59:51,737 INFO sqlalchemy.engine.Engine DESCRIBE `petshop_auction`.`shops`
+2025-09-13 14:59:51,737 INFO sqlalchemy.engine.Engine [raw sql] {}
+2025-09-13 14:59:51,738 INFO sqlalchemy.engine.Engine DESCRIBE `petshop_auction`.`local_services`
+2025-09-13 14:59:51,738 INFO sqlalchemy.engine.Engine [raw sql] {}
+2025-09-13 14:59:51,739 INFO sqlalchemy.engine.Engine DESCRIBE `petshop_auction`.`special_events`
+2025-09-13 14:59:51,739 INFO sqlalchemy.engine.Engine [raw sql] {}
+2025-09-13 14:59:51,741 INFO sqlalchemy.engine.Engine DESCRIBE `petshop_auction`.`auto_bids`
+2025-09-13 14:59:51,741 INFO sqlalchemy.engine.Engine [raw sql] {}
+2025-09-13 14:59:51,742 INFO sqlalchemy.engine.Engine DESCRIBE `petshop_auction`.`event_products`
+2025-09-13 14:59:51,742 INFO sqlalchemy.engine.Engine [raw sql] {}
+2025-09-13 14:59:51,743 INFO sqlalchemy.engine.Engine DESCRIBE `petshop_auction`.`orders`
+2025-09-13 14:59:51,743 INFO sqlalchemy.engine.Engine [raw sql] {}
+2025-09-13 14:59:51,744 INFO sqlalchemy.engine.Engine DESCRIBE `petshop_auction`.`order_items`
+2025-09-13 14:59:51,744 INFO sqlalchemy.engine.Engine [raw sql] {}
+2025-09-13 14:59:51,745 INFO sqlalchemy.engine.Engine DESCRIBE `petshop_auction`.`payments`
+2025-09-13 14:59:51,745 INFO sqlalchemy.engine.Engine [raw sql] {}
+2025-09-13 14:59:51,746 INFO sqlalchemy.engine.Engine DESCRIBE `petshop_auction`.`logistics`
+2025-09-13 14:59:51,746 INFO sqlalchemy.engine.Engine [raw sql] {}
+2025-09-13 14:59:51,748 INFO sqlalchemy.engine.Engine DESCRIBE `petshop_auction`.`messages`
+2025-09-13 14:59:51,748 INFO sqlalchemy.engine.Engine [raw sql] {}
+2025-09-13 14:59:51,749 INFO sqlalchemy.engine.Engine DESCRIBE `petshop_auction`.`sms_codes`
+2025-09-13 14:59:51,749 INFO sqlalchemy.engine.Engine [raw sql] {}
+2025-09-13 14:59:51,750 INFO sqlalchemy.engine.Engine COMMIT
+INFO:     Started server process [60611]
+INFO:     Waiting for application startup.
+INFO:     Application startup complete.
+WARNING:  WatchFiles detected changes in 'setup_env_template.py'. Reloading...
+INFO:     Shutting down
+INFO:     Waiting for application shutdown.
+INFO:     Application shutdown complete.
+INFO:     Finished server process [60611]
+WARNING:  WatchFiles detected changes in 'setup_env_template.py'. Reloading...
+Process SpawnProcess-42:
+Traceback (most recent call last):
+  File "/opt/homebrew/lib/python3.10/site-packages/pydantic_settings/sources.py", line 251, in __call__
+    field_value = self.prepare_field_value(field_name, field, field_value, value_is_complex)
+  File "/opt/homebrew/lib/python3.10/site-packages/pydantic_settings/sources.py", line 434, in prepare_field_value
+    raise e
+  File "/opt/homebrew/lib/python3.10/site-packages/pydantic_settings/sources.py", line 431, in prepare_field_value
+    value = self.decode_complex_value(field_name, field, value)
+  File "/opt/homebrew/lib/python3.10/site-packages/pydantic_settings/sources.py", line 102, in decode_complex_value
+    return json.loads(value)
+  File "/opt/homebrew/Cellar/python@3.10/3.10.17/Frameworks/Python.framework/Versions/3.10/lib/python3.10/json/__init__.py", line 346, in loads
+    return _default_decoder.decode(s)
+  File "/opt/homebrew/Cellar/python@3.10/3.10.17/Frameworks/Python.framework/Versions/3.10/lib/python3.10/json/decoder.py", line 337, in decode
+    obj, end = self.raw_decode(s, idx=_w(s, 0).end())
+  File "/opt/homebrew/Cellar/python@3.10/3.10.17/Frameworks/Python.framework/Versions/3.10/lib/python3.10/json/decoder.py", line 355, in raw_decode
+    raise JSONDecodeError("Expecting value", s, err.value) from None
+json.decoder.JSONDecodeError: Expecting value: line 1 column 1 (char 0)
+
+The above exception was the direct cause of the following exception:
+
+Traceback (most recent call last):
+  File "/opt/homebrew/Cellar/python@3.10/3.10.17/Frameworks/Python.framework/Versions/3.10/lib/python3.10/multiprocessing/process.py", line 314, in _bootstrap
+    self.run()
+  File "/opt/homebrew/Cellar/python@3.10/3.10.17/Frameworks/Python.framework/Versions/3.10/lib/python3.10/multiprocessing/process.py", line 108, in run
+    self._target(*self._args, **self._kwargs)
+  File "/opt/homebrew/lib/python3.10/site-packages/uvicorn/_subprocess.py", line 76, in subprocess_started
+    target(sockets=sockets)
+  File "/opt/homebrew/lib/python3.10/site-packages/uvicorn/server.py", line 61, in run
+    return asyncio.run(self.serve(sockets=sockets))
+  File "/opt/homebrew/Cellar/python@3.10/3.10.17/Frameworks/Python.framework/Versions/3.10/lib/python3.10/asyncio/runners.py", line 44, in run
+    return loop.run_until_complete(main)
+  File "uvloop/loop.pyx", line 1517, in uvloop.loop.Loop.run_until_complete
+  File "/opt/homebrew/lib/python3.10/site-packages/uvicorn/server.py", line 68, in serve
+    config.load()
+  File "/opt/homebrew/lib/python3.10/site-packages/uvicorn/config.py", line 467, in load
+    self.loaded_app = import_from_string(self.app)
+  File "/opt/homebrew/lib/python3.10/site-packages/uvicorn/importer.py", line 21, in import_from_string
+    module = importlib.import_module(module_str)
+  File "/opt/homebrew/Cellar/python@3.10/3.10.17/Frameworks/Python.framework/Versions/3.10/lib/python3.10/importlib/__init__.py", line 126, in import_module
+    return _bootstrap._gcd_import(name[level:], package, level)
+  File "<frozen importlib._bootstrap>", line 1050, in _gcd_import
+  File "<frozen importlib._bootstrap>", line 1027, in _find_and_load
+  File "<frozen importlib._bootstrap>", line 1006, in _find_and_load_unlocked
+  File "<frozen importlib._bootstrap>", line 688, in _load_unlocked
+  File "<frozen importlib._bootstrap_external>", line 883, in exec_module
+  File "<frozen importlib._bootstrap>", line 241, in _call_with_frames_removed
+  File "/Users/yy/Documents/GitHub/petshopnew/backend/main.py", line 8, in <module>
+    from app.core.config import settings
+  File "/Users/yy/Documents/GitHub/petshopnew/backend/app/core/config.py", line 59, in <module>
+    settings = Settings()
+  File "/opt/homebrew/lib/python3.10/site-packages/pydantic_settings/main.py", line 72, in __init__
+    **__pydantic_self__._settings_build_values(
+  File "/opt/homebrew/lib/python3.10/site-packages/pydantic_settings/main.py", line 160, in _settings_build_values
+    return deep_update(*reversed([source() for source in sources]))
+  File "/opt/homebrew/lib/python3.10/site-packages/pydantic_settings/main.py", line 160, in <listcomp>
+    return deep_update(*reversed([source() for source in sources]))
+  File "/opt/homebrew/lib/python3.10/site-packages/pydantic_settings/sources.py", line 253, in __call__
+    raise SettingsError(
+pydantic_settings.sources.SettingsError: error parsing value for field "ALLOWED_HOSTS" from source "EnvSettingsSource"
+WARNING:  WatchFiles detected changes in 'setup_local_env.py'. Reloading...
+Process SpawnProcess-43:
+Traceback (most recent call last):
+  File "/opt/homebrew/lib/python3.10/site-packages/pydantic_settings/sources.py", line 251, in __call__
+    field_value = self.prepare_field_value(field_name, field, field_value, value_is_complex)
+  File "/opt/homebrew/lib/python3.10/site-packages/pydantic_settings/sources.py", line 434, in prepare_field_value
+    raise e
+  File "/opt/homebrew/lib/python3.10/site-packages/pydantic_settings/sources.py", line 431, in prepare_field_value
+    value = self.decode_complex_value(field_name, field, value)
+  File "/opt/homebrew/lib/python3.10/site-packages/pydantic_settings/sources.py", line 102, in decode_complex_value
+    return json.loads(value)
+  File "/opt/homebrew/Cellar/python@3.10/3.10.17/Frameworks/Python.framework/Versions/3.10/lib/python3.10/json/__init__.py", line 346, in loads
+    return _default_decoder.decode(s)
+  File "/opt/homebrew/Cellar/python@3.10/3.10.17/Frameworks/Python.framework/Versions/3.10/lib/python3.10/json/decoder.py", line 337, in decode
+    obj, end = self.raw_decode(s, idx=_w(s, 0).end())
+  File "/opt/homebrew/Cellar/python@3.10/3.10.17/Frameworks/Python.framework/Versions/3.10/lib/python3.10/json/decoder.py", line 355, in raw_decode
+    raise JSONDecodeError("Expecting value", s, err.value) from None
+json.decoder.JSONDecodeError: Expecting value: line 1 column 1 (char 0)
+
+The above exception was the direct cause of the following exception:
+
+Traceback (most recent call last):
+  File "/opt/homebrew/Cellar/python@3.10/3.10.17/Frameworks/Python.framework/Versions/3.10/lib/python3.10/multiprocessing/process.py", line 314, in _bootstrap
+    self.run()
+  File "/opt/homebrew/Cellar/python@3.10/3.10.17/Frameworks/Python.framework/Versions/3.10/lib/python3.10/multiprocessing/process.py", line 108, in run
+    self._target(*self._args, **self._kwargs)
+  File "/opt/homebrew/lib/python3.10/site-packages/uvicorn/_subprocess.py", line 76, in subprocess_started
+    target(sockets=sockets)
+  File "/opt/homebrew/lib/python3.10/site-packages/uvicorn/server.py", line 61, in run
+    return asyncio.run(self.serve(sockets=sockets))
+  File "/opt/homebrew/Cellar/python@3.10/3.10.17/Frameworks/Python.framework/Versions/3.10/lib/python3.10/asyncio/runners.py", line 44, in run
+    return loop.run_until_complete(main)
+  File "uvloop/loop.pyx", line 1517, in uvloop.loop.Loop.run_until_complete
+  File "/opt/homebrew/lib/python3.10/site-packages/uvicorn/server.py", line 68, in serve
+    config.load()
+  File "/opt/homebrew/lib/python3.10/site-packages/uvicorn/config.py", line 467, in load
+    self.loaded_app = import_from_string(self.app)
+  File "/opt/homebrew/lib/python3.10/site-packages/uvicorn/importer.py", line 21, in import_from_string
+    module = importlib.import_module(module_str)
+  File "/opt/homebrew/Cellar/python@3.10/3.10.17/Frameworks/Python.framework/Versions/3.10/lib/python3.10/importlib/__init__.py", line 126, in import_module
+    return _bootstrap._gcd_import(name[level:], package, level)
+  File "<frozen importlib._bootstrap>", line 1050, in _gcd_import
+  File "<frozen importlib._bootstrap>", line 1027, in _find_and_load
+  File "<frozen importlib._bootstrap>", line 1006, in _find_and_load_unlocked
+  File "<frozen importlib._bootstrap>", line 688, in _load_unlocked
+  File "<frozen importlib._bootstrap_external>", line 883, in exec_module
+  File "<frozen importlib._bootstrap>", line 241, in _call_with_frames_removed
+  File "/Users/yy/Documents/GitHub/petshopnew/backend/main.py", line 8, in <module>
+    from app.core.config import settings
+  File "/Users/yy/Documents/GitHub/petshopnew/backend/app/core/config.py", line 59, in <module>
+    settings = Settings()
+  File "/opt/homebrew/lib/python3.10/site-packages/pydantic_settings/main.py", line 72, in __init__
+    **__pydantic_self__._settings_build_values(
+  File "/opt/homebrew/lib/python3.10/site-packages/pydantic_settings/main.py", line 160, in _settings_build_values
+    return deep_update(*reversed([source() for source in sources]))
+  File "/opt/homebrew/lib/python3.10/site-packages/pydantic_settings/main.py", line 160, in <listcomp>
+    return deep_update(*reversed([source() for source in sources]))
+  File "/opt/homebrew/lib/python3.10/site-packages/pydantic_settings/sources.py", line 253, in __call__
+    raise SettingsError(
+pydantic_settings.sources.SettingsError: error parsing value for field "ALLOWED_HOSTS" from source "EnvSettingsSource"
+WARNING:  WatchFiles detected changes in 'app/core/env_config.py', 'setup_local_env.py', 'setup_env_template.py'. Reloading...
+Process SpawnProcess-44:
+Traceback (most recent call last):
+  File "/opt/homebrew/lib/python3.10/site-packages/pydantic_settings/sources.py", line 251, in __call__
+    field_value = self.prepare_field_value(field_name, field, field_value, value_is_complex)
+  File "/opt/homebrew/lib/python3.10/site-packages/pydantic_settings/sources.py", line 434, in prepare_field_value
+    raise e
+  File "/opt/homebrew/lib/python3.10/site-packages/pydantic_settings/sources.py", line 431, in prepare_field_value
+    value = self.decode_complex_value(field_name, field, value)
+  File "/opt/homebrew/lib/python3.10/site-packages/pydantic_settings/sources.py", line 102, in decode_complex_value
+    return json.loads(value)
+  File "/opt/homebrew/Cellar/python@3.10/3.10.17/Frameworks/Python.framework/Versions/3.10/lib/python3.10/json/__init__.py", line 346, in loads
+    return _default_decoder.decode(s)
+  File "/opt/homebrew/Cellar/python@3.10/3.10.17/Frameworks/Python.framework/Versions/3.10/lib/python3.10/json/decoder.py", line 337, in decode
+    obj, end = self.raw_decode(s, idx=_w(s, 0).end())
+  File "/opt/homebrew/Cellar/python@3.10/3.10.17/Frameworks/Python.framework/Versions/3.10/lib/python3.10/json/decoder.py", line 355, in raw_decode
+    raise JSONDecodeError("Expecting value", s, err.value) from None
+json.decoder.JSONDecodeError: Expecting value: line 1 column 1 (char 0)
+
+The above exception was the direct cause of the following exception:
+
+Traceback (most recent call last):
+  File "/opt/homebrew/Cellar/python@3.10/3.10.17/Frameworks/Python.framework/Versions/3.10/lib/python3.10/multiprocessing/process.py", line 314, in _bootstrap
+    self.run()
+  File "/opt/homebrew/Cellar/python@3.10/3.10.17/Frameworks/Python.framework/Versions/3.10/lib/python3.10/multiprocessing/process.py", line 108, in run
+    self._target(*self._args, **self._kwargs)
+  File "/opt/homebrew/lib/python3.10/site-packages/uvicorn/_subprocess.py", line 76, in subprocess_started
+    target(sockets=sockets)
+  File "/opt/homebrew/lib/python3.10/site-packages/uvicorn/server.py", line 61, in run
+    return asyncio.run(self.serve(sockets=sockets))
+  File "/opt/homebrew/Cellar/python@3.10/3.10.17/Frameworks/Python.framework/Versions/3.10/lib/python3.10/asyncio/runners.py", line 44, in run
+    return loop.run_until_complete(main)
+  File "uvloop/loop.pyx", line 1517, in uvloop.loop.Loop.run_until_complete
+  File "/opt/homebrew/lib/python3.10/site-packages/uvicorn/server.py", line 68, in serve
+    config.load()
+  File "/opt/homebrew/lib/python3.10/site-packages/uvicorn/config.py", line 467, in load
+    self.loaded_app = import_from_string(self.app)
+  File "/opt/homebrew/lib/python3.10/site-packages/uvicorn/importer.py", line 21, in import_from_string
+    module = importlib.import_module(module_str)
+  File "/opt/homebrew/Cellar/python@3.10/3.10.17/Frameworks/Python.framework/Versions/3.10/lib/python3.10/importlib/__init__.py", line 126, in import_module
+    return _bootstrap._gcd_import(name[level:], package, level)
+  File "<frozen importlib._bootstrap>", line 1050, in _gcd_import
+  File "<frozen importlib._bootstrap>", line 1027, in _find_and_load
+  File "<frozen importlib._bootstrap>", line 1006, in _find_and_load_unlocked
+  File "<frozen importlib._bootstrap>", line 688, in _load_unlocked
+  File "<frozen importlib._bootstrap_external>", line 883, in exec_module
+  File "<frozen importlib._bootstrap>", line 241, in _call_with_frames_removed
+  File "/Users/yy/Documents/GitHub/petshopnew/backend/main.py", line 8, in <module>
+    from app.core.config import settings
+  File "/Users/yy/Documents/GitHub/petshopnew/backend/app/core/config.py", line 59, in <module>
+    settings = Settings()
+  File "/opt/homebrew/lib/python3.10/site-packages/pydantic_settings/main.py", line 72, in __init__
+    **__pydantic_self__._settings_build_values(
+  File "/opt/homebrew/lib/python3.10/site-packages/pydantic_settings/main.py", line 160, in _settings_build_values
+    return deep_update(*reversed([source() for source in sources]))
+  File "/opt/homebrew/lib/python3.10/site-packages/pydantic_settings/main.py", line 160, in <listcomp>
+    return deep_update(*reversed([source() for source in sources]))
+  File "/opt/homebrew/lib/python3.10/site-packages/pydantic_settings/sources.py", line 253, in __call__
+    raise SettingsError(
+pydantic_settings.sources.SettingsError: error parsing value for field "ALLOWED_HOSTS" from source "EnvSettingsSource"
