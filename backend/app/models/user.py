@@ -1,4 +1,5 @@
 from sqlalchemy import Column, Integer, String, Boolean, DateTime, Text, DECIMAL, Date
+from sqlalchemy.orm import relationship
 from sqlalchemy.sql import func
 from app.core.database import Base
 
@@ -24,6 +25,9 @@ class User(Base):
     last_login_at = Column(DateTime)
     created_at = Column(DateTime, server_default=func.now())
     updated_at = Column(DateTime, server_default=func.now(), onupdate=func.now())
+    
+    # 关联关系
+    wallet_transactions = relationship("WalletTransaction", back_populates="user")
 
 class UserFollow(Base):
     __tablename__ = "user_follows"

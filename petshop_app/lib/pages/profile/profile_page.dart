@@ -9,6 +9,7 @@ import '../test_api_page.dart';
 import '../../services/storage_service.dart';
 import '../../models/user.dart';
 import '../auth/login_page.dart';
+import '../wallet/wallet_page.dart';
 
 class ProfilePage extends StatefulWidget {
   const ProfilePage({super.key});
@@ -740,7 +741,16 @@ class _ProfilePageState extends State<ProfilePage>
 
   Widget _buildFunctionCard(String title, String subtitle, IconData icon) {
     return GestureDetector(
-      onTap: () {},
+      onTap: () {
+        if (title == '钱包') {
+          Navigator.push(
+            context,
+            MaterialPageRoute(
+              builder: (context) => const WalletPage(),
+            ),
+          );
+        }
+      },
       child: Container(
         padding: EdgeInsets.all(16.w),
         decoration: BoxDecoration(
