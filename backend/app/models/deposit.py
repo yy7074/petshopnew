@@ -9,7 +9,7 @@ class Deposit(Base):
 
     id = Column(Integer, primary_key=True, index=True, autoincrement=True)
     user_id = Column(Integer, ForeignKey("users.id"), nullable=False, index=True)
-    auction_id = Column(Integer, ForeignKey("auctions.id"), nullable=True, index=True)  # 关联的拍卖，可为空表示通用保证金
+    auction_id = Column(Integer, nullable=True, index=True)  # 关联的拍卖ID，可为空表示通用保证金
     amount = Column(DECIMAL(10, 2), nullable=False)
     type = Column(String(20), nullable=False, comment="缴纳类型: auction(拍卖保证金), general(通用保证金)")
     status = Column(String(20), default="active", comment="状态: active(活跃), frozen(冻结), refunded(已退还), forfeited(没收)")

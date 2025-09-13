@@ -31,11 +31,7 @@ class _ProductDetailPageState extends State<ProductDetailPage> {
   bool _isLoadingAuctionStatus = false;
   bool _isWinner = false;
 
-  final List<String> productImages = [
-    'assets/images/aquarium1.jpg',
-    'assets/images/aquarium2.jpg',
-    'assets/images/aquarium3.jpg',
-  ];
+  List<String> productImages = [];
 
   final List<Map<String, dynamic>> bidHistory = [
     {'user': '用户A', 'price': 450, 'time': '23:45'},
@@ -46,7 +42,18 @@ class _ProductDetailPageState extends State<ProductDetailPage> {
   @override
   void initState() {
     super.initState();
+    _initializeProductImages();
     _loadAuctionStatus();
+  }
+
+  void _initializeProductImages() {
+    final images = widget.productData?['images'] as List?;
+    if (images != null && images.isNotEmpty) {
+      productImages = images.cast<String>();
+    } else {
+      // 如果没有图片，使用默认图片
+      productImages = ['https://picsum.photos/400/400?random=product'];
+    }
   }
 
   Future<void> _loadAuctionStatus() async {
@@ -239,10 +246,31 @@ class _ProductDetailPageState extends State<ProductDetailPage> {
                               margin: EdgeInsets.symmetric(horizontal: 16.w),
                               decoration: BoxDecoration(
                                 borderRadius: BorderRadius.circular(8.w),
-                                image: const DecorationImage(
-                                  image:
-                                      AssetImage('assets/images/aquarium1.jpg'),
+                              ),
+                              child: ClipRRect(
+                                borderRadius: BorderRadius.circular(8.w),
+                                child: Image.network(
+                                  productImages[index],
                                   fit: BoxFit.cover,
+                                  errorBuilder: (context, error, stackTrace) {
+                                    return Container(
+                                      color: Colors.grey[200],
+                                      child: const Icon(
+                                        Icons.image_not_supported,
+                                        color: Colors.grey,
+                                        size: 50,
+                                      ),
+                                    );
+                                  },
+                                  loadingBuilder: (context, child, loadingProgress) {
+                                    if (loadingProgress == null) return child;
+                                    return Container(
+                                      color: Colors.grey[200],
+                                      child: const Center(
+                                        child: CircularProgressIndicator(),
+                                      ),
+                                    );
+                                  },
                                 ),
                               ),
                             );

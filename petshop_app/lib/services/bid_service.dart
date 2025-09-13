@@ -20,10 +20,10 @@ class BidService {
       });
 
       if (response.statusCode == 200) {
-        final bid = Bid.fromJson(response.data['data']);
+        final bid = Bid.fromJson(response.data);
         return ApiResult.success(bid);
       } else {
-        return ApiResult.error(response.data['message'] ?? '出价失败');
+        return ApiResult.error(response.data['detail'] ?? '出价失败');
       }
     } on DioException catch (e) {
       return ApiResult.error(_handleError(e));
@@ -43,11 +43,11 @@ class BidService {
       });
 
       if (response.statusCode == 200) {
-        final List<dynamic> bidsJson = response.data['data']['items'] ?? [];
+        final List<dynamic> bidsJson = response.data['items'] ?? [];
         final bids = bidsJson.map((json) => Bid.fromJson(json)).toList();
         return ApiResult.success(bids);
       } else {
-        return ApiResult.error(response.data['message'] ?? '获取竞拍记录失败');
+        return ApiResult.error(response.data['detail'] ?? '获取竞拍记录失败');
       }
     } on DioException catch (e) {
       return ApiResult.error(_handleError(e));
@@ -71,11 +71,11 @@ class BidService {
       final response = await _apiService.get('/bids/user', queryParameters: queryParams);
 
       if (response.statusCode == 200) {
-        final List<dynamic> bidsJson = response.data['data']['items'] ?? [];
+        final List<dynamic> bidsJson = response.data['items'] ?? [];
         final bids = bidsJson.map((json) => Bid.fromJson(json)).toList();
         return ApiResult.success(bids);
       } else {
-        return ApiResult.error(response.data['message'] ?? '获取竞拍记录失败');
+        return ApiResult.error(response.data['detail'] ?? '获取竞拍记录失败');
       }
     } on DioException catch (e) {
       return ApiResult.error(_handleError(e));

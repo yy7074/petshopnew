@@ -211,8 +211,8 @@ class DepositService:
     async def freeze_deposit(
         self, 
         deposit_id: int, 
-        reason: str = "系统冻结", 
-        db: Session
+        db: Session,
+        reason: str = "系统冻结"
     ) -> bool:
         """冻结保证金"""
         deposit = db.query(Deposit).filter(Deposit.id == deposit_id).first()
@@ -236,8 +236,8 @@ class DepositService:
     async def unfreeze_deposit(
         self, 
         deposit_id: int, 
+        db: Session,
         reason: str = "系统解冻", 
-        db: Session
     ) -> bool:
         """解冻保证金"""
         deposit = db.query(Deposit).filter(Deposit.id == deposit_id).first()
@@ -261,8 +261,8 @@ class DepositService:
     async def forfeit_deposit(
         self, 
         deposit_id: int, 
+        db: Session,
         reason: str = "违约没收", 
-        db: Session
     ) -> bool:
         """没收保证金"""
         deposit = db.query(Deposit).filter(Deposit.id == deposit_id).first()
