@@ -85,6 +85,11 @@ class _HomePageState extends State<HomePage> {
       'icon': 'assets/icons/transaction_query.png',
       'color': Color(0xFFE91E63)
     },
+    {
+      'name': '拍卖测试',
+      'icon': 'assets/icons/limited_auction.png',
+      'color': Color(0xFF2196F3)
+    },
   ];
 
   final List<Map<String, dynamic>> auctionProducts = [
@@ -441,6 +446,9 @@ class _HomePageState extends State<HomePage> {
               } else if (item['name'] == '支付测试') {
                 // 跳转到支付测试页面
                 Get.toNamed('/test-payment');
+              } else if (item['name'] == '拍卖测试') {
+                // 跳转到拍卖测试页面
+                Get.toNamed('/auction-test');
               } else {
                 debugPrint('点击了：${item['name']}');
               }

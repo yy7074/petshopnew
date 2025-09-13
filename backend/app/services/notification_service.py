@@ -47,6 +47,71 @@ class NotificationService:
         except Exception as e:
             print(f"发送出价通知失败: {e}")
             # 不抛出异常，避免影响出价流程
+    
+    async def send_auction_winner_notification(
+        self,
+        db: Session,
+        user_id: int,
+        product_title: str,
+        winning_amount: str,
+        order_id: int
+    ):
+        """发送拍卖获胜通知"""
+        try:
+            message = Message(
+                sender_id=None,  # 系统消息
+                receiver_id=user_id,
+                message_type=3,  # 拍卖通知
+                title="恭喜您中标！",
+                content=f"恭喜您以 ¥{winning_amount} 的价格中标商品 '{product_title}'，请及时完成支付。订单号：{order_id}",
+                related_id=order_id
+            )
+            db.add(message)
+            db.commit()
+        except Exception as e:
+            print(f"发送获胜通知失败: {e}")
+    
+    async def send_auction_loser_notification(
+        self,
+        db: Session,
+        user_id: int,
+        product_title: str
+    ):
+        """发送拍卖失败通知"""
+        try:
+            message = Message(
+                sender_id=None,  # 系统消息
+                receiver_id=user_id,
+                message_type=3,  # 拍卖通知
+                title="拍卖结束",
+                content=f"很遗憾，您参与的商品 '{product_title}' 拍卖已结束，其他用户出价更高。感谢您的参与！",
+                related_id=None
+            )
+            db.add(message)
+            db.commit()
+        except Exception as e:
+            print(f"发送失败通知失败: {e}")
+    
+    async def send_auction_failed_notification(
+        self,
+        db: Session,
+        user_id: int,
+        product_title: str
+    ):
+        """发送流拍通知给卖家"""
+        try:
+            message = Message(
+                sender_id=None,  # 系统消息
+                receiver_id=user_id,
+                message_type=3,  # 拍卖通知
+                title="拍卖流拍",
+                content=f"很遗憾，您的商品 '{product_title}' 拍卖已结束，但没有收到任何有效出价。您可以重新发布或调整起拍价格。",
+                related_id=None
+            )
+            db.add(message)
+            db.commit()
+        except Exception as e:
+            print(f"发送流拍通知失败: {e}")
 
     async def send_order_notification(
         self,

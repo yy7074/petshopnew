@@ -12,8 +12,10 @@ class AppColors {
   
   // 背景色
   static const Color background = Color(0xFFF5F5F5);
+  static const Color backgroundGrey = Color(0xFFF5F5F5);
   static const Color surface = Color(0xFFFFFFFF);
   static const Color cardBackground = Color(0xFFFFFFFF);
+  static const Color lightGrey = Color(0xFFE0E0E0);
   
   // 文字颜色
   static const Color textPrimary = Color(0xFF212121);

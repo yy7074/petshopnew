@@ -9,6 +9,8 @@ import '../pages/profile/profile_page.dart';
 import '../pages/product/product_detail_page.dart';
 import '../pages/search/search_page.dart';
 import '../pages/test_payment_page.dart';
+import '../pages/auction/auction_winner_order_page.dart';
+import '../pages/auction/auction_test_page.dart';
 
 class AppRoutes {
   static const String splash = '/splash';
@@ -21,6 +23,8 @@ class AppRoutes {
   static const String productDetail = '/product-detail';
   static const String search = '/search';
   static const String testPayment = '/test-payment';
+  static const String auctionWinnerOrder = '/auction-winner-order';
+  static const String auctionTest = '/auction-test';
 
   static List<GetPage> routes = [
     GetPage(
@@ -62,6 +66,14 @@ class AppRoutes {
     GetPage(
       name: testPayment,
       page: () => const TestPaymentPage(),
+    ),
+    GetPage(
+      name: auctionWinnerOrder,
+      page: () => const AuctionWinnerOrderPage(),
+    ),
+    GetPage(
+      name: auctionTest,
+      page: () => const AuctionTestPage(),
     ),
   ];
 }

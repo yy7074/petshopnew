@@ -3,7 +3,10 @@ import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:card_swiper/card_swiper.dart';
 import '../../constants/app_colors.dart';
 import '../../services/bid_service.dart';
+import '../../services/auction_service.dart';
 import '../../models/bid.dart';
+import '../../utils/app_routes.dart';
+import 'package:get/get.dart';
 
 class ProductDetailPage extends StatefulWidget {
   final Map<String, dynamic>? productData;
@@ -19,8 +22,14 @@ class _ProductDetailPageState extends State<ProductDetailPage> {
   final TextEditingController _bidController = TextEditingController();
   final TextEditingController _messageController = TextEditingController();
   final BidService _bidService = BidService();
+  final AuctionService _auctionService = AuctionService();
   List<Bid> _bidHistory = [];
   bool _isLoadingBids = false;
+  
+  // 拍卖相关状态
+  Map<String, dynamic>? _auctionStatus;
+  bool _isLoadingAuctionStatus = false;
+  bool _isWinner = false;
 
   final List<String> productImages = [
     'assets/images/aquarium1.jpg',
@@ -33,6 +42,46 @@ class _ProductDetailPageState extends State<ProductDetailPage> {
     {'user': '用户B', 'price': 440, 'time': '23:40'},
     {'user': '用户C', 'price': 435, 'time': '23:35'},
   ];
+
+  @override
+  void initState() {
+    super.initState();
+    _loadAuctionStatus();
+  }
+
+  Future<void> _loadAuctionStatus() async {
+    // 这里应该从路由参数或widget.productData中获取productId
+    final productId = widget.productData?['id'] ?? 1; // 示例ID
+    
+    setState(() => _isLoadingAuctionStatus = true);
+    
+    try {
+      final status = await _auctionService.getAuctionStatus(productId);
+      setState(() {
+        _auctionStatus = status;
+        // 检查是否已结束且用户是否中标
+        _checkIfWinner(productId);
+      });
+    } catch (e) {
+      print('加载拍卖状态失败: $e');
+    } finally {
+      setState(() => _isLoadingAuctionStatus = false);
+    }
+  }
+
+  Future<void> _checkIfWinner(int productId) async {
+    try {
+      final winningAuctions = await _auctionService.getMyWinningAuctions();
+      final items = winningAuctions['items'] as List?;
+      
+      if (items != null) {
+        final hasWon = items.any((item) => item['product_id'] == productId);
+        setState(() => _isWinner = hasWon);
+      }
+    } catch (e) {
+      print('检查中标状态失败: $e');
+    }
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -205,7 +254,7 @@ class _ProductDetailPageState extends State<ProductDetailPage> {
                             ),
                             SizedBox(width: 8.w),
                             Text(
-                              '¥432',
+                              '¥${_auctionStatus?['current_price'] ?? '432'}',
                               style: TextStyle(
                                 fontSize: 24.sp,
                                 color: Colors.red,
@@ -234,23 +283,7 @@ class _ProductDetailPageState extends State<ProductDetailPage> {
                           ),
                         ),
                         SizedBox(height: 16.h),
-                        Row(
-                          children: [
-                            Icon(
-                              Icons.star,
-                              color: Colors.orange,
-                              size: 16.w,
-                            ),
-                            SizedBox(width: 4.w),
-                            Text(
-                              '竞拍火热，加价确底不慎',
-                              style: TextStyle(
-                                fontSize: 12.sp,
-                                color: Colors.grey[600],
-                              ),
-                            ),
-                          ],
-                        ),
+                        _buildAuctionStatusRow(),
                       ],
                     ),
                   ),
@@ -360,26 +393,7 @@ class _ProductDetailPageState extends State<ProductDetailPage> {
                   ),
                   SizedBox(width: 12.w),
                   Expanded(
-                    child: GestureDetector(
-                      onTap: () => _showBiddingDialog(),
-                      child: Container(
-                        padding: EdgeInsets.symmetric(vertical: 16.h),
-                        decoration: BoxDecoration(
-                          color: Colors.purple,
-                          borderRadius: BorderRadius.circular(25.w),
-                        ),
-                        child: Center(
-                          child: Text(
-                            '我要出价',
-                            style: TextStyle(
-                              color: Colors.white,
-                              fontSize: 16.sp,
-                              fontWeight: FontWeight.w600,
-                            ),
-                          ),
-                        ),
-                      ),
-                    ),
+                    child: _buildActionButton(),
                   ),
                 ],
               ),
@@ -387,6 +401,252 @@ class _ProductDetailPageState extends State<ProductDetailPage> {
           ),
         ],
       ),
+    );
+  }
+
+  Widget _buildActionButton() {
+    if (_isLoadingAuctionStatus) {
+      return Container(
+        padding: EdgeInsets.symmetric(vertical: 16.h),
+        decoration: BoxDecoration(
+          color: Colors.grey,
+          borderRadius: BorderRadius.circular(25.w),
+        ),
+        child: Center(
+          child: SizedBox(
+            width: 20.w,
+            height: 20.h,
+            child: const CircularProgressIndicator(
+              valueColor: AlwaysStoppedAnimation<Color>(Colors.white),
+              strokeWidth: 2,
+            ),
+          ),
+        ),
+      );
+    }
+
+    // 检查拍卖状态
+    final isEnded = _auctionStatus?['is_ended'] ?? false;
+    final status = _auctionStatus?['status'] ?? 2;
+
+    if (isEnded && _isWinner) {
+      // 拍卖已结束且用户中标，显示创建订单按钮
+      return GestureDetector(
+        onTap: _goToWinnerOrder,
+        child: Container(
+          padding: EdgeInsets.symmetric(vertical: 16.h),
+          decoration: BoxDecoration(
+            color: AppColors.success,
+            borderRadius: BorderRadius.circular(25.w),
+          ),
+          child: Center(
+            child: Text(
+              '恭喜中标！立即下单',
+              style: TextStyle(
+                color: Colors.white,
+                fontSize: 16.sp,
+                fontWeight: FontWeight.w600,
+              ),
+            ),
+          ),
+        ),
+      );
+    } else if (isEnded) {
+      // 拍卖已结束但用户未中标
+      return Container(
+        padding: EdgeInsets.symmetric(vertical: 16.h),
+        decoration: BoxDecoration(
+          color: Colors.grey,
+          borderRadius: BorderRadius.circular(25.w),
+        ),
+        child: Center(
+          child: Text(
+            '拍卖已结束',
+            style: TextStyle(
+              color: Colors.white,
+              fontSize: 16.sp,
+              fontWeight: FontWeight.w600,
+            ),
+          ),
+        ),
+      );
+    } else if (status == 2) {
+      // 拍卖进行中，显示出价按钮
+      return GestureDetector(
+        onTap: () => _showBiddingDialog(),
+        child: Container(
+          padding: EdgeInsets.symmetric(vertical: 16.h),
+          decoration: BoxDecoration(
+            color: Colors.purple,
+            borderRadius: BorderRadius.circular(25.w),
+          ),
+          child: Center(
+            child: Text(
+              '我要出价',
+              style: TextStyle(
+                color: Colors.white,
+                fontSize: 16.sp,
+                fontWeight: FontWeight.w600,
+              ),
+            ),
+          ),
+        ),
+      );
+    } else {
+      // 其他状态（待审核、已下架等）
+      return Container(
+        padding: EdgeInsets.symmetric(vertical: 16.h),
+        decoration: BoxDecoration(
+          color: Colors.grey,
+          borderRadius: BorderRadius.circular(25.w),
+        ),
+        child: Center(
+          child: Text(
+            '暂不可出价',
+            style: TextStyle(
+              color: Colors.white,
+              fontSize: 16.sp,
+              fontWeight: FontWeight.w600,
+            ),
+          ),
+        ),
+      );
+    }
+  }
+
+  Widget _buildAuctionStatusRow() {
+    if (_auctionStatus == null) {
+      return Row(
+        children: [
+          const Icon(
+            Icons.star,
+            color: Colors.orange,
+            size: 16,
+          ),
+          SizedBox(width: 4.w),
+          Text(
+            '竞拍火热，加价谨慎',
+            style: TextStyle(
+              fontSize: 12.sp,
+              color: Colors.grey[600],
+            ),
+          ),
+        ],
+      );
+    }
+
+    final isEnded = _auctionStatus!['is_ended'] ?? false;
+    final endTime = _auctionStatus!['end_time'] as String?;
+    final bidCount = _auctionStatus!['bid_count'] ?? 0;
+
+    if (isEnded) {
+      return Row(
+        children: [
+          const Icon(
+            Icons.gavel,
+            color: Colors.red,
+            size: 16,
+          ),
+          SizedBox(width: 4.w),
+          Text(
+            _isWinner ? '恭喜中标！' : '拍卖已结束',
+            style: TextStyle(
+              fontSize: 12.sp,
+              color: _isWinner ? AppColors.success : Colors.grey[600],
+              fontWeight: _isWinner ? FontWeight.bold : FontWeight.normal,
+            ),
+          ),
+          SizedBox(width: 8.w),
+          Text(
+            '共 $bidCount 次出价',
+            style: TextStyle(
+              fontSize: 12.sp,
+              color: Colors.grey[500],
+            ),
+          ),
+        ],
+      );
+    } else if (endTime != null) {
+      final timeRemaining = _auctionService.calculateTimeRemaining(endTime);
+      final timeText = _auctionService.formatTimeRemaining(timeRemaining);
+      
+      return Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Row(
+            children: [
+              const Icon(
+                Icons.access_time,
+                color: Colors.orange,
+                size: 16,
+              ),
+              SizedBox(width: 4.w),
+              Text(
+                '剩余时间: $timeText',
+                style: TextStyle(
+                  fontSize: 12.sp,
+                  color: Colors.orange,
+                  fontWeight: FontWeight.w500,
+                ),
+              ),
+              SizedBox(width: 8.w),
+              Text(
+                '共 $bidCount 次出价',
+                style: TextStyle(
+                  fontSize: 12.sp,
+                  color: Colors.grey[500],
+                ),
+              ),
+            ],
+          ),
+          if (_isWinner) ...[
+            SizedBox(height: 4.h),
+            Text(
+              '您当前领先',
+              style: TextStyle(
+                fontSize: 12.sp,
+                color: AppColors.success,
+                fontWeight: FontWeight.bold,
+              ),
+            ),
+          ],
+        ],
+      );
+    } else {
+      return Row(
+        children: [
+          const Icon(
+            Icons.star,
+            color: Colors.orange,
+            size: 16,
+          ),
+          SizedBox(width: 4.w),
+          Text(
+            '竞拍火热，加价谨慎',
+            style: TextStyle(
+              fontSize: 12.sp,
+              color: Colors.grey[600],
+            ),
+          ),
+        ],
+      );
+    }
+  }
+
+  void _goToWinnerOrder() {
+    final productId = widget.productData?['id'] ?? 1;
+    final productTitle = widget.productData?['title'] ?? '商品';
+    final winningAmount = _auctionStatus?['current_price'] ?? '0';
+    final productImages = widget.productData?['images'] as List?;
+    
+    Get.toNamed(
+      AppRoutes.auctionWinnerOrder,
+      arguments: {
+        'product_id': productId,
+        'product_title': productTitle,
+        'winning_amount': winningAmount,
+        'product_image': productImages?.isNotEmpty == true ? productImages![0] : null,
+      },
     );
   }
 
