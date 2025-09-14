@@ -1,5 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
+import 'package:pull_to_refresh/pull_to_refresh.dart';
+import '../../services/message_service.dart';
+import 'chat_page.dart';
 
 class MessagePage extends StatefulWidget {
   const MessagePage({super.key});
@@ -9,53 +12,181 @@ class MessagePage extends StatefulWidget {
 }
 
 class _MessagePageState extends State<MessagePage>
-    with AutomaticKeepAliveClientMixin {
+    with AutomaticKeepAliveClientMixin, TickerProviderStateMixin {
   bool showNotificationBanner = true;
+  late TabController _tabController;
+
+  // 对话列表数据
+  List<Map<String, dynamic>> _conversations = [];
+  bool _isConversationsLoading = true;
+  int _conversationsPage = 1;
+  bool _hasMoreConversations = true;
+
+  // 通知列表数据
+  List<Map<String, dynamic>> _notifications = [];
+  bool _isNotificationsLoading = true;
+  int _notificationsPage = 1;
+  bool _hasMoreNotifications = true;
+
+  // 消息统计
+  Map<String, dynamic>? _messageStats;
+
+  // 刷新控制器
+  final RefreshController _conversationsRefreshController = RefreshController();
+  final RefreshController _notificationsRefreshController = RefreshController();
 
   @override
   bool get wantKeepAlive => true;
 
-  // 模拟消息数据
-  final List<Map<String, dynamic>> messages = [
-    {
-      'type': 'platform',
-      'title': '平台通知',
-      'tag': '系统',
-      'content': '[标题标题标题标题标题标题标...]您围观的拍品...',
-      'time': '星期三 21:25',
-      'icon': Icons.notifications,
-      'iconColor': const Color(0xFF9C4DFF),
-      'unreadCount': 0,
-    },
-    {
-      'type': 'auction',
-      'title': '新品开拍',
-      'tag': '系统',
-      'content': '为你推荐新品好物',
-      'time': '星期二 14:30',
-      'icon': Icons.gavel,
-      'iconColor': Colors.red,
-      'unreadCount': 0,
-    },
-    {
-      'type': 'chat',
-      'title': '水族馆',
-      'content': '这个是性价比最高的款式了',
-      'time': '星期一 16:45',
-      'avatar': 'https://picsum.photos/50/50?random=1',
-      'unreadCount': 3,
-      'thumbnail': 'https://picsum.photos/60/60?random=2',
-    },
-    {
-      'type': 'chat',
-      'title': '水族馆',
-      'content': '好的，我考虑一下',
-      'time': '星期一 15:20',
-      'avatar': 'https://picsum.photos/50/50?random=3',
-      'unreadCount': 0,
-      'thumbnail': 'https://picsum.photos/60/60?random=4',
-    },
-  ];
+  @override
+  void initState() {
+    super.initState();
+    _tabController = TabController(length: 2, vsync: this);
+    _loadInitialData();
+  }
+
+  @override
+  void dispose() {
+    _tabController.dispose();
+    _conversationsRefreshController.dispose();
+    _notificationsRefreshController.dispose();
+    super.dispose();
+  }
+
+  // 加载初始数据
+  Future<void> _loadInitialData() async {
+    await Future.wait([
+      _loadConversations(refresh: true),
+      _loadNotifications(refresh: true),
+      _loadMessageStats(),
+    ]);
+  }
+
+  // 加载对话列表
+  Future<void> _loadConversations({bool refresh = false}) async {
+    if (refresh) {
+      _conversationsPage = 1;
+      _hasMoreConversations = true;
+    }
+
+    if (!_hasMoreConversations) return;
+
+    try {
+      setState(() {
+        if (refresh) {
+          _isConversationsLoading = true;
+          _conversations.clear();
+        }
+      });
+
+      final result = await MessageService.getConversations(
+        page: _conversationsPage,
+        pageSize: 20,
+      );
+
+      final List<dynamic> items = result['items'] ?? [];
+      final List<Map<String, dynamic>> newConversations = items
+          .map((item) => MessageService.formatConversationForUI(item))
+          .toList();
+
+      setState(() {
+        if (refresh) {
+          _conversations = newConversations;
+        } else {
+          _conversations.addAll(newConversations);
+        }
+        _hasMoreConversations = newConversations.length >= 20;
+        _conversationsPage++;
+        _isConversationsLoading = false;
+      });
+
+      if (refresh) {
+        _conversationsRefreshController.refreshCompleted();
+      } else {
+        _conversationsRefreshController.loadComplete();
+      }
+    } catch (e) {
+      print('加载对话列表失败: $e');
+      setState(() {
+        _isConversationsLoading = false;
+      });
+
+      if (refresh) {
+        _conversationsRefreshController.refreshFailed();
+      } else {
+        _conversationsRefreshController.loadFailed();
+      }
+    }
+  }
+
+  // 加载通知列表
+  Future<void> _loadNotifications({bool refresh = false}) async {
+    if (refresh) {
+      _notificationsPage = 1;
+      _hasMoreNotifications = true;
+    }
+
+    if (!_hasMoreNotifications) return;
+
+    try {
+      setState(() {
+        if (refresh) {
+          _isNotificationsLoading = true;
+          _notifications.clear();
+        }
+      });
+
+      final result = await MessageService.getNotifications(
+        page: _notificationsPage,
+        pageSize: 20,
+      );
+
+      final List<dynamic> items = result['items'] ?? [];
+      final List<Map<String, dynamic>> newNotifications = items
+          .map((item) => MessageService.formatNotificationForUI(item))
+          .toList();
+
+      setState(() {
+        if (refresh) {
+          _notifications = newNotifications;
+        } else {
+          _notifications.addAll(newNotifications);
+        }
+        _hasMoreNotifications = newNotifications.length >= 20;
+        _notificationsPage++;
+        _isNotificationsLoading = false;
+      });
+
+      if (refresh) {
+        _notificationsRefreshController.refreshCompleted();
+      } else {
+        _notificationsRefreshController.loadComplete();
+      }
+    } catch (e) {
+      print('加载通知列表失败: $e');
+      setState(() {
+        _isNotificationsLoading = false;
+      });
+
+      if (refresh) {
+        _notificationsRefreshController.refreshFailed();
+      } else {
+        _notificationsRefreshController.loadFailed();
+      }
+    }
+  }
+
+  // 加载消息统计
+  Future<void> _loadMessageStats() async {
+    try {
+      final stats = await MessageService.getMessageStats();
+      setState(() {
+        _messageStats = stats;
+      });
+    } catch (e) {
+      print('加载消息统计失败: $e');
+    }
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -75,21 +206,93 @@ class _MessagePageState extends State<MessagePage>
         elevation: 0,
         centerTitle: true,
         automaticallyImplyLeading: false,
+        bottom: TabBar(
+          controller: _tabController,
+          labelColor: const Color(0xFF9C4DFF),
+          unselectedLabelColor: const Color(0xFF666666),
+          indicatorColor: const Color(0xFF9C4DFF),
+          indicatorWeight: 3,
+          labelStyle: TextStyle(
+            fontSize: 16.sp,
+            fontWeight: FontWeight.w600,
+          ),
+          unselectedLabelStyle: TextStyle(
+            fontSize: 16.sp,
+            fontWeight: FontWeight.w400,
+          ),
+          tabs: [
+            Tab(
+              child: Row(
+                mainAxisAlignment: MainAxisAlignment.center,
+                children: [
+                  const Text('聊天'),
+                  if (_messageStats != null &&
+                      _messageStats!['total_unread_messages'] > 0) ...[
+                    SizedBox(width: 8.w),
+                    Container(
+                      padding:
+                          EdgeInsets.symmetric(horizontal: 6.w, vertical: 2.h),
+                      decoration: const BoxDecoration(
+                        color: Colors.red,
+                        shape: BoxShape.circle,
+                      ),
+                      child: Text(
+                        _messageStats!['total_unread_messages'].toString(),
+                        style: TextStyle(
+                          fontSize: 10.sp,
+                          color: Colors.white,
+                          fontWeight: FontWeight.w600,
+                        ),
+                      ),
+                    ),
+                  ],
+                ],
+              ),
+            ),
+            Tab(
+              child: Row(
+                mainAxisAlignment: MainAxisAlignment.center,
+                children: [
+                  const Text('通知'),
+                  if (_messageStats != null &&
+                      _messageStats!['unread_notifications'] > 0) ...[
+                    SizedBox(width: 8.w),
+                    Container(
+                      padding:
+                          EdgeInsets.symmetric(horizontal: 6.w, vertical: 2.h),
+                      decoration: const BoxDecoration(
+                        color: Colors.red,
+                        shape: BoxShape.circle,
+                      ),
+                      child: Text(
+                        _messageStats!['unread_notifications'].toString(),
+                        style: TextStyle(
+                          fontSize: 10.sp,
+                          color: Colors.white,
+                          fontWeight: FontWeight.w600,
+                        ),
+                      ),
+                    ),
+                  ],
+                ],
+              ),
+            ),
+          ],
+        ),
       ),
       body: Column(
         children: [
           // 通知横幅
           if (showNotificationBanner) _buildNotificationBanner(),
 
-          // 消息列表
+          // Tab内容
           Expanded(
-            child: ListView.builder(
-              padding: EdgeInsets.zero,
-              itemCount: messages.length,
-              itemBuilder: (context, index) {
-                final message = messages[index];
-                return _buildMessageItem(message);
-              },
+            child: TabBarView(
+              controller: _tabController,
+              children: [
+                _buildConversationsList(),
+                _buildNotificationsList(),
+              ],
             ),
           ),
         ],
@@ -159,42 +362,278 @@ class _MessagePageState extends State<MessagePage>
     );
   }
 
-  // 构建消息项
-  Widget _buildMessageItem(Map<String, dynamic> message) {
-    return Container(
-      padding: EdgeInsets.symmetric(horizontal: 16.w, vertical: 12.h),
-      decoration: const BoxDecoration(
-        border: Border(
-          bottom: BorderSide(
-            color: Color(0xFFF0F0F0),
-            width: 1,
+  // 构建对话列表
+  Widget _buildConversationsList() {
+    if (_isConversationsLoading && _conversations.isEmpty) {
+      return const Center(child: CircularProgressIndicator());
+    }
+
+    if (_conversations.isEmpty) {
+      return _buildEmptyState('暂无聊天记录', Icons.chat_bubble_outline);
+    }
+
+    return SmartRefresher(
+      controller: _conversationsRefreshController,
+      enablePullDown: true,
+      enablePullUp: _hasMoreConversations,
+      onRefresh: () => _loadConversations(refresh: true),
+      onLoading: () => _loadConversations(refresh: false),
+      child: ListView.builder(
+        padding: EdgeInsets.zero,
+        itemCount: _conversations.length,
+        itemBuilder: (context, index) {
+          final conversation = _conversations[index];
+          return _buildConversationItem(conversation);
+        },
+      ),
+    );
+  }
+
+  // 构建通知列表
+  Widget _buildNotificationsList() {
+    if (_isNotificationsLoading && _notifications.isEmpty) {
+      return const Center(child: CircularProgressIndicator());
+    }
+
+    if (_notifications.isEmpty) {
+      return _buildEmptyState('暂无系统通知', Icons.notifications_outlined);
+    }
+
+    return SmartRefresher(
+      controller: _notificationsRefreshController,
+      enablePullDown: true,
+      enablePullUp: _hasMoreNotifications,
+      onRefresh: () => _loadNotifications(refresh: true),
+      onLoading: () => _loadNotifications(refresh: false),
+      child: ListView.builder(
+        padding: EdgeInsets.zero,
+        itemCount: _notifications.length,
+        itemBuilder: (context, index) {
+          final notification = _notifications[index];
+          return _buildNotificationItem(notification);
+        },
+      ),
+    );
+  }
+
+  // 构建空状态
+  Widget _buildEmptyState(String message, IconData icon) {
+    return Center(
+      child: Column(
+        mainAxisAlignment: MainAxisAlignment.center,
+        children: [
+          Icon(
+            icon,
+            size: 64.w,
+            color: const Color(0xFFCCCCCC),
+          ),
+          SizedBox(height: 16.h),
+          Text(
+            message,
+            style: TextStyle(
+              fontSize: 16.sp,
+              color: const Color(0xFF999999),
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
+  // 构建对话项
+  Widget _buildConversationItem(Map<String, dynamic> conversation) {
+    final otherUserInfo = conversation['other_user_info'] ?? {};
+    final String nickname = otherUserInfo['nickname'] ?? '未知用户';
+    final String? avatar = otherUserInfo['avatar'];
+    final String lastMessage = conversation['last_message_content'] ?? '';
+    final String? lastMessageTime = conversation['last_message_time'];
+    final int unreadCount = conversation['unread_count'] ?? 0;
+
+    return GestureDetector(
+      onTap: () {
+        // 导航到聊天页面
+        _openChatPage(conversation);
+      },
+      child: Container(
+        padding: EdgeInsets.symmetric(horizontal: 16.w, vertical: 12.h),
+        decoration: const BoxDecoration(
+          border: Border(
+            bottom: BorderSide(
+              color: Color(0xFFF0F0F0),
+              width: 1,
+            ),
           ),
         ),
-      ),
-      child: Row(
-        children: [
-          // 左侧图标或头像
-          _buildMessageIcon(message),
-          SizedBox(width: 12.w),
-
-          // 中间内容
-          Expanded(
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
+        child: Row(
+          children: [
+            // 用户头像
+            Stack(
               children: [
-                // 标题和标签
-                Row(
-                  children: [
-                    Text(
-                      message['title'],
-                      style: TextStyle(
-                        fontSize: 16.sp,
-                        fontWeight: FontWeight.w600,
-                        color: const Color(0xFF333333),
+                Container(
+                  width: 50.w,
+                  height: 50.w,
+                  decoration: BoxDecoration(
+                    shape: BoxShape.circle,
+                    color: const Color(0xFFF0F0F0),
+                    image: avatar != null && avatar.isNotEmpty
+                        ? DecorationImage(
+                            image: NetworkImage(avatar.startsWith('http')
+                                ? avatar
+                                : 'https://catdog.dachaonet.com$avatar'),
+                            fit: BoxFit.cover,
+                          )
+                        : null,
+                  ),
+                  child: avatar == null || avatar.isEmpty
+                      ? Icon(
+                          Icons.person,
+                          size: 30.w,
+                          color: const Color(0xFF999999),
+                        )
+                      : null,
+                ),
+                if (unreadCount > 0)
+                  Positioned(
+                    top: 0,
+                    right: 0,
+                    child: Container(
+                      width: 16.w,
+                      height: 16.w,
+                      padding: EdgeInsets.symmetric(horizontal: 4.w),
+                      decoration: const BoxDecoration(
+                        color: Colors.red,
+                        shape: BoxShape.circle,
+                      ),
+                      child: Center(
+                        child: Text(
+                          unreadCount > 99 ? '99+' : unreadCount.toString(),
+                          style: TextStyle(
+                            fontSize: 8.sp,
+                            color: Colors.white,
+                            fontWeight: FontWeight.w600,
+                          ),
+                        ),
                       ),
                     ),
-                    if (message['tag'] != null) ...[
-                      SizedBox(width: 8.w),
+                  ),
+              ],
+            ),
+            SizedBox(width: 12.w),
+
+            // 中间内容
+            Expanded(
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  // 用户名
+                  Text(
+                    nickname,
+                    style: TextStyle(
+                      fontSize: 16.sp,
+                      fontWeight: FontWeight.w600,
+                      color: const Color(0xFF333333),
+                    ),
+                    maxLines: 1,
+                    overflow: TextOverflow.ellipsis,
+                  ),
+                  SizedBox(height: 4.h),
+
+                  // 最后一条消息
+                  Text(
+                    lastMessage.isEmpty ? '暂无消息' : lastMessage,
+                    style: TextStyle(
+                      fontSize: 14.sp,
+                      color: const Color(0xFF666666),
+                    ),
+                    maxLines: 1,
+                    overflow: TextOverflow.ellipsis,
+                  ),
+                ],
+              ),
+            ),
+
+            // 时间
+            Column(
+              crossAxisAlignment: CrossAxisAlignment.end,
+              children: [
+                Text(
+                  MessageService.formatMessageTime(lastMessageTime),
+                  style: TextStyle(
+                    fontSize: 12.sp,
+                    color: const Color(0xFF999999),
+                  ),
+                ),
+              ],
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+
+  // 构建通知项
+  Widget _buildNotificationItem(Map<String, dynamic> notification) {
+    final String title = notification['title'] ?? '';
+    final String content = notification['content'] ?? '';
+    final String notificationType =
+        notification['notification_type'] ?? 'system';
+    final String? createdAt = notification['created_at'];
+    final bool isRead = notification['is_read'] ?? false;
+
+    return GestureDetector(
+      onTap: () {
+        _handleNotificationTap(notification);
+      },
+      child: Container(
+        padding: EdgeInsets.symmetric(horizontal: 16.w, vertical: 12.h),
+        decoration: BoxDecoration(
+          color: isRead ? Colors.white : const Color(0xFFF8F8F8),
+          border: const Border(
+            bottom: BorderSide(
+              color: Color(0xFFF0F0F0),
+              width: 1,
+            ),
+          ),
+        ),
+        child: Row(
+          children: [
+            // 通知图标
+            Container(
+              width: 50.w,
+              height: 50.w,
+              decoration: BoxDecoration(
+                color: _getNotificationIconColor(notificationType),
+                shape: BoxShape.circle,
+              ),
+              child: Icon(
+                _getNotificationIcon(notificationType),
+                size: 24.w,
+                color: Colors.white,
+              ),
+            ),
+            SizedBox(width: 12.w),
+
+            // 中间内容
+            Expanded(
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  // 标题和标签
+                  Row(
+                    children: [
+                      Expanded(
+                        child: Text(
+                          title,
+                          style: TextStyle(
+                            fontSize: 16.sp,
+                            fontWeight:
+                                isRead ? FontWeight.w400 : FontWeight.w600,
+                            color: const Color(0xFF333333),
+                          ),
+                          maxLines: 1,
+                          overflow: TextOverflow.ellipsis,
+                        ),
+                      ),
                       Container(
                         padding: EdgeInsets.symmetric(
                             horizontal: 6.w, vertical: 2.h),
@@ -203,7 +642,7 @@ class _MessagePageState extends State<MessagePage>
                           borderRadius: BorderRadius.circular(4.r),
                         ),
                         child: Text(
-                          message['tag'],
+                          _getNotificationTypeText(notificationType),
                           style: TextStyle(
                             fontSize: 10.sp,
                             color: const Color(0xFF9C4DFF),
@@ -212,137 +651,149 @@ class _MessagePageState extends State<MessagePage>
                         ),
                       ),
                     ],
-                  ],
-                ),
-                SizedBox(height: 4.h),
-
-                // 内容
-                Text(
-                  message['content'],
-                  style: TextStyle(
-                    fontSize: 14.sp,
-                    color: const Color(0xFF666666),
                   ),
-                  maxLines: 1,
-                  overflow: TextOverflow.ellipsis,
-                ),
-                SizedBox(height: 4.h),
+                  SizedBox(height: 4.h),
 
-                // 时间
-                Text(
-                  message['time'],
-                  style: TextStyle(
-                    fontSize: 12.sp,
-                    color: const Color(0xFF999999),
+                  // 内容
+                  Text(
+                    content,
+                    style: TextStyle(
+                      fontSize: 14.sp,
+                      color: const Color(0xFF666666),
+                    ),
+                    maxLines: 2,
+                    overflow: TextOverflow.ellipsis,
                   ),
-                ),
-              ],
-            ),
-          ),
+                  SizedBox(height: 4.h),
 
-          // 右侧内容
-          Row(
-            children: [
-              // 缩略图
-              if (message['thumbnail'] != null) ...[
-                Container(
-                  width: 40.w,
-                  height: 40.w,
-                  decoration: BoxDecoration(
-                    borderRadius: BorderRadius.circular(4.r),
-                    image: DecorationImage(
-                      image: NetworkImage(message['thumbnail']),
-                      fit: BoxFit.cover,
+                  // 时间
+                  Text(
+                    MessageService.formatMessageTime(createdAt),
+                    style: TextStyle(
+                      fontSize: 12.sp,
+                      color: const Color(0xFF999999),
                     ),
                   ),
-                ),
-                SizedBox(width: 8.w),
-              ],
-
-              // 未读数量
-              if (message['unreadCount'] > 0)
-                Container(
-                  width: 18.w,
-                  height: 18.w,
-                  decoration: const BoxDecoration(
-                    color: Colors.red,
-                    shape: BoxShape.circle,
-                  ),
-                  child: Center(
-                    child: Text(
-                      message['unreadCount'].toString(),
-                      style: TextStyle(
-                        fontSize: 10.sp,
-                        color: Colors.white,
-                        fontWeight: FontWeight.w600,
-                      ),
-                    ),
-                  ),
-                ),
-            ],
-          ),
-        ],
-      ),
-    );
-  }
-
-  // 构建消息图标
-  Widget _buildMessageIcon(Map<String, dynamic> message) {
-    if (message['avatar'] != null) {
-      // 聊天消息使用头像
-      return Stack(
-        children: [
-          Container(
-            width: 50.w,
-            height: 50.w,
-            decoration: BoxDecoration(
-              shape: BoxShape.circle,
-              image: DecorationImage(
-                image: NetworkImage(message['avatar']),
-                fit: BoxFit.cover,
+                ],
               ),
             ),
-          ),
-          if (message['unreadCount'] > 0)
-            Positioned(
-              top: 0,
-              right: 0,
-              child: Container(
-                width: 16.w,
-                height: 16.w,
+
+            // 未读标识
+            if (!isRead)
+              Container(
+                width: 8.w,
+                height: 8.w,
                 decoration: const BoxDecoration(
                   color: Colors.red,
                   shape: BoxShape.circle,
                 ),
-                child: Center(
-                  child: Text(
-                    message['unreadCount'].toString(),
-                    style: TextStyle(
-                      fontSize: 8.sp,
-                      color: Colors.white,
-                      fontWeight: FontWeight.w600,
-                    ),
-                  ),
-                ),
               ),
-            ),
-        ],
-      );
-    } else {
-      // 系统消息使用图标
-      return Container(
-        width: 50.w,
-        height: 50.w,
-        decoration: BoxDecoration(
-          color: message['iconColor'],
-          shape: BoxShape.circle,
+          ],
         ),
-        child: Icon(
-          message['icon'],
-          size: 24.w,
-          color: Colors.white,
-        ),
+      ),
+    );
+  }
+
+  // 打开聊天页面
+  void _openChatPage(Map<String, dynamic> conversation) {
+    final otherUserInfo = conversation['other_user_info'] ?? {};
+    final int? otherUserId = otherUserInfo['id'];
+    final int conversationId = conversation['id'];
+
+    if (otherUserId == null) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text('用户信息错误')),
       );
+      return;
+    }
+
+    Navigator.push(
+      context,
+      MaterialPageRoute(
+        builder: (context) => ChatPage(
+          conversationId: conversationId,
+          otherUserInfo: otherUserInfo,
+        ),
+      ),
+    ).then((_) {
+      // 返回后刷新对话列表和统计
+      _loadConversations(refresh: true);
+      _loadMessageStats();
+    });
+  }
+
+  // 处理通知点击
+  void _handleNotificationTap(Map<String, dynamic> notification) async {
+    final int notificationId = notification['id'];
+    final bool isRead = notification['is_read'] ?? false;
+
+    // 如果未读，标记为已读
+    if (!isRead) {
+      try {
+        await MessageService.markNotificationRead(notificationId);
+
+        // 更新本地状态
+        setState(() {
+          final index =
+              _notifications.indexWhere((n) => n['id'] == notificationId);
+          if (index != -1) {
+            _notifications[index]['is_read'] = true;
+          }
+        });
+
+        // 刷新统计
+        _loadMessageStats();
+      } catch (e) {
+        print('标记通知已读失败: $e');
+      }
+    }
+
+    // TODO: 根据通知类型处理跳转
+    final String? relatedType = notification['related_type'];
+    final int? relatedId = notification['related_id'];
+
+    print('处理通知: type=$relatedType, id=$relatedId');
+  }
+
+  // 获取通知图标
+  IconData _getNotificationIcon(String notificationType) {
+    switch (notificationType) {
+      case 'auction':
+        return Icons.gavel;
+      case 'order':
+        return Icons.shopping_bag;
+      case 'payment':
+        return Icons.payment;
+      default:
+        return Icons.notifications;
+    }
+  }
+
+  // 获取通知图标颜色
+  Color _getNotificationIconColor(String notificationType) {
+    switch (notificationType) {
+      case 'auction':
+        return Colors.red;
+      case 'order':
+        return Colors.green;
+      case 'payment':
+        return Colors.orange;
+      default:
+        return const Color(0xFF9C4DFF);
+    }
+  }
+
+  // 获取通知类型文本
+  String _getNotificationTypeText(String notificationType) {
+    switch (notificationType) {
+      case 'auction':
+        return '拍卖';
+      case 'order':
+        return '订单';
+      case 'payment':
+        return '支付';
+      default:
+        return '系统';
     }
   }
 
