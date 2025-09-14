@@ -1944,39 +1944,83 @@ class _HomePageState extends State<HomePage> {
   Widget _buildPetCategoryGrid() {
     // 第一行：宠物分期 - 单独背景卡
     final topRowCategories = [
-      {'name': '宠物分期', 'icon': Icons.percent, 'color': const Color(0xFFFFB74D)},
-      {'name': '宠粮', 'icon': Icons.food_bank, 'color': const Color(0xFF9C77FF)},
+      {
+        'name': '宠物分期',
+        'icon': 'assets/icons/pet/宠物分期.png',
+        'color': const Color(0xFFFFB74D)
+      },
+      {
+        'name': '宠粮',
+        'icon': 'assets/icons/pet/宠粮.png',
+        'color': const Color(0xFF9C77FF)
+      },
       {
         'name': '宠药',
-        'icon': Icons.medical_services,
+        'icon': 'assets/icons/pet/宠药.png',
         'color': const Color(0xFFFF6B6B)
       },
-      {'name': '宠物店', 'icon': Icons.store, 'color': const Color(0xFFFFEB3B)},
+      {
+        'name': '宠物店',
+        'icon': 'assets/icons/pet/宠物店.png',
+        'color': const Color(0xFFFFEB3B)
+      },
       {
         'name': '店铺排行',
-        'icon': Icons.emoji_events,
+        'icon': 'assets/icons/pet/宠店排行.png',
         'color': const Color(0xFF4ECDC4)
       },
     ];
 
     // 下面10个分类
     final bottomCategories = [
-      {'name': '猫咪', 'icon': Icons.pets, 'color': const Color(0xFF6FA8DC)},
-      {'name': '狗狗', 'icon': Icons.pets, 'color': const Color(0xFFFFB347)},
-      {'name': '爬宠', 'icon': Icons.pets, 'color': const Color(0xFF90EE90)},
-      {'name': '小宠', 'icon': Icons.pets, 'color': const Color(0xFFDDA0DD)},
-      {'name': '鹦鹉', 'icon': Icons.pets, 'color': const Color(0xFFFF6347)},
-      {'name': '鸟类', 'icon': Icons.pets, 'color': const Color(0xFF87CEEB)},
+      {
+        'name': '猫咪',
+        'icon': 'assets/icons/pet/猫咪.png',
+        'color': const Color(0xFF6FA8DC)
+      },
+      {
+        'name': '狗狗',
+        'icon': 'assets/icons/pet/狗狗.png',
+        'color': const Color(0xFFFFB347)
+      },
+      {
+        'name': '爬宠',
+        'icon': 'assets/icons/pet/爬宠.png',
+        'color': const Color(0xFF90EE90)
+      },
+      {
+        'name': '小宠',
+        'icon': 'assets/icons/pet/小宠.png',
+        'color': const Color(0xFFDDA0DD)
+      },
+      {
+        'name': '鹦鹉',
+        'icon': 'assets/icons/pet/鹦鹉.png',
+        'color': const Color(0xFFFF6347)
+      },
+      {
+        'name': '鸟类',
+        'icon': 'assets/icons/pet/鸟类.png',
+        'color': const Color(0xFF87CEEB)
+      },
       {
         'name': '昆虫',
-        'icon': Icons.bug_report,
+        'icon': 'assets/icons/pet/昆虫.png',
         'color': const Color(0xFF8FBC8F)
       },
-      {'name': '大型宠物', 'icon': Icons.pets, 'color': const Color(0xFFFFB6C1)},
-      {'name': '变异宠物', 'icon': Icons.star, 'color': const Color(0xFFFFE5B4)},
+      {
+        'name': '大型宠物',
+        'icon': 'assets/icons/pet/大型宠物.png',
+        'color': const Color(0xFFFFB6C1)
+      },
+      {
+        'name': '变异宠物',
+        'icon': 'assets/icons/pet/变异宠物.png',
+        'color': const Color(0xFFFFE5B4)
+      },
       {
         'name': '宠物批发',
-        'icon': Icons.business,
+        'icon': 'assets/icons/pet/宠物批发.png',
         'color': const Color(0xFF87CEFA)
       },
     ];
@@ -2063,25 +2107,30 @@ class _HomePageState extends State<HomePage> {
           mainAxisSize: MainAxisSize.min,
           mainAxisAlignment: MainAxisAlignment.center,
           children: [
-            Container(
-              width: 34.w, // 减小图标容器
+            SizedBox(
+              width: 34.w, // 保持容器大小但移除背景
               height: 34.w,
-              decoration: BoxDecoration(
-                color: category['color'] as Color,
-                shape: BoxShape.circle,
-                boxShadow: [
-                  BoxShadow(
-                    color: (category['color'] as Color).withOpacity(0.2),
-                    blurRadius: 2,
-                    offset: const Offset(0, 1),
-                  ),
-                ],
-              ),
-              child: Icon(
-                category['icon'] as IconData,
-                size: 18.w, // 减小图标大小
-                color: Colors.white,
-              ),
+              child: category['icon'] is String
+                  ? Image.asset(
+                      category['icon'] as String,
+                      width: 28.w, // 增大图标尺寸以填充空间
+                      height: 28.w,
+                      fit: BoxFit.contain,
+                      // 移除color属性，保持PNG图标的原始颜色
+                      errorBuilder: (context, error, stackTrace) {
+                        // 如果PNG加载失败，显示默认图标
+                        return Icon(
+                          Icons.pets,
+                          size: 28.w,
+                          color: Colors.grey,
+                        );
+                      },
+                    )
+                  : Icon(
+                      category['icon'] as IconData,
+                      size: 28.w,
+                      color: Colors.grey,
+                    ),
             ),
             SizedBox(height: 3.h), // 减小间距
             Flexible(
@@ -2357,19 +2406,19 @@ class _HomePageState extends State<HomePage> {
     final topCards = [
       {
         'name': '粮类',
-        'icon': Icons.pets,
+        'icon': 'assets/icons/aquatic/粮类.png',
         'color': const Color(0xFFFF8A65),
         'hasRedDot': true
       },
       {
         'name': '药品',
-        'icon': Icons.medical_services,
+        'icon': 'assets/icons/aquatic/药品.png',
         'color': const Color(0xFFFFD54F),
         'hasRedDot': false
       },
       {
         'name': '鱼缸',
-        'icon': Icons.water,
+        'icon': 'assets/icons/aquatic/鱼缸.png',
         'color': const Color(0xFF81C784),
         'hasRedDot': true
       },
@@ -2423,25 +2472,28 @@ class _HomePageState extends State<HomePage> {
             Stack(
               clipBehavior: Clip.none,
               children: [
-                Container(
-                  width: 34.w,
-                  height: 34.w,
-                  decoration: BoxDecoration(
-                    color: card['color'] as Color,
-                    shape: BoxShape.circle,
-                    boxShadow: [
-                      BoxShadow(
-                        color: (card['color'] as Color).withOpacity(0.2),
-                        blurRadius: 2,
-                        offset: const Offset(0, 1),
-                      ),
-                    ],
-                  ),
-                  child: Icon(
-                    card['icon'] as IconData,
-                    size: 18.w,
-                    color: Colors.white,
-                  ),
+                SizedBox(
+                  width: 40.w, // 增大容器尺寸
+                  height: 40.w,
+                  child: card['icon'] is String
+                      ? Image.asset(
+                          card['icon'] as String,
+                          width: 36.w, // 增大图标尺寸
+                          height: 36.w,
+                          fit: BoxFit.contain,
+                          errorBuilder: (context, error, stackTrace) {
+                            return Icon(
+                              Icons.pets,
+                              size: 36.w,
+                              color: Colors.grey,
+                            );
+                          },
+                        )
+                      : Icon(
+                          card['icon'] as IconData,
+                          size: 36.w,
+                          color: Colors.grey,
+                        ),
                 ),
                 // 红点提示 - 相对于圆形图标定位
                 if (card['hasRedDot'] == true)
@@ -2480,18 +2532,46 @@ class _HomePageState extends State<HomePage> {
   // 构建水族分类网格
   Widget _buildAquaticCategoryGrid() {
     final categories = [
-      {'name': '鱼类', 'icon': Icons.pets, 'color': const Color(0xFFFF8A65)},
-      {'name': '两栖类', 'icon': Icons.pets, 'color': const Color(0xFF81C784)},
-      {'name': '哺乳类', 'icon': Icons.pets, 'color': const Color(0xFF4FC3F7)},
-      {'name': '两栖爬行', 'icon': Icons.pets, 'color': const Color(0xFFFFD54F)},
-      {'name': '海洋生物', 'icon': Icons.waves, 'color': const Color(0xFFFF7043)},
-      {'name': '水族用品', 'icon': Icons.build, 'color': const Color(0xFF9575CD)},
+      {
+        'name': '鱼类',
+        'icon': 'assets/icons/aquatic/鱼类.png',
+        'color': const Color(0xFFFF8A65)
+      },
+      {
+        'name': '两栖类',
+        'icon': 'assets/icons/aquatic/两栖类.png',
+        'color': const Color(0xFF81C784)
+      },
+      {
+        'name': '哺乳类',
+        'icon': 'assets/icons/aquatic/哺乳类.png',
+        'color': const Color(0xFF4FC3F7)
+      },
+      {
+        'name': '两栖爬行',
+        'icon': 'assets/icons/aquatic/两栖爬行.png',
+        'color': const Color(0xFFFFD54F)
+      },
+      {
+        'name': '海洋生物',
+        'icon': 'assets/icons/aquatic/海洋生物.png',
+        'color': const Color(0xFFFF7043)
+      },
+      {
+        'name': '水族用品',
+        'icon': 'assets/icons/aquatic/水族用品.png',
+        'color': const Color(0xFF9575CD)
+      },
       {
         'name': '鱼缸造景',
-        'icon': Icons.landscape,
+        'icon': 'assets/icons/aquatic/鱼缸造景.png',
         'color': const Color(0xFF64B5F6)
       },
-      {'name': '水草', 'icon': Icons.grass, 'color': const Color(0xFF81C784)},
+      {
+        'name': '水草',
+        'icon': 'assets/icons/aquatic/水草.png',
+        'color': const Color(0xFF81C784)
+      },
     ];
 
     return Container(
@@ -2541,25 +2621,28 @@ class _HomePageState extends State<HomePage> {
           mainAxisSize: MainAxisSize.min,
           mainAxisAlignment: MainAxisAlignment.start, // 改为顶部对齐
           children: [
-            Container(
-              width: 28.w, // 继续减小图标尺寸
-              height: 28.w,
-              decoration: BoxDecoration(
-                color: category['color'] as Color,
-                shape: BoxShape.circle,
-                boxShadow: [
-                  BoxShadow(
-                    color: (category['color'] as Color).withOpacity(0.2),
-                    blurRadius: 2,
-                    offset: const Offset(0, 1),
-                  ),
-                ],
-              ),
-              child: Icon(
-                category['icon'] as IconData,
-                size: 14.w, // 继续减小图标大小
-                color: Colors.white,
-              ),
+            SizedBox(
+              width: 36.w, // 增大容器尺寸
+              height: 36.w,
+              child: category['icon'] is String
+                  ? Image.asset(
+                      category['icon'] as String,
+                      width: 32.w, // 增大图标尺寸
+                      height: 32.w,
+                      fit: BoxFit.contain,
+                      errorBuilder: (context, error, stackTrace) {
+                        return Icon(
+                          Icons.pets,
+                          size: 32.w,
+                          color: Colors.grey,
+                        );
+                      },
+                    )
+                  : Icon(
+                      category['icon'] as IconData,
+                      size: 32.w,
+                      color: Colors.grey,
+                    ),
             ),
             SizedBox(height: 6.h), // 增加间距
             Expanded(
@@ -2927,7 +3010,7 @@ class _HomePageState extends State<HomePage> {
         );
       },
       child: Container(
-        height: 180.h,
+        height: 200.h, // 增加卡片高度给文字更多空间
         decoration: BoxDecoration(
           color: Colors.white,
           borderRadius: BorderRadius.circular(8.r),
@@ -2943,8 +3026,8 @@ class _HomePageState extends State<HomePage> {
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
             // 商品图片
-            Expanded(
-              flex: 3,
+            Container(
+              height: 120.h, // 固定图片高度
               child: Stack(
                 children: [
                   ClipRRect(
@@ -2996,34 +3079,36 @@ class _HomePageState extends State<HomePage> {
               ),
             ),
             // 商品信息
-            Expanded(
-              flex: 2,
-              child: Padding(
-                padding: EdgeInsets.all(8.w),
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                  children: [
-                    Text(
-                      product['name'],
+            Container(
+              height: 80.h, // 固定信息区域高度
+              padding: EdgeInsets.all(8.w),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                children: [
+                  Flexible(
+                    child: Text(
+                      product['name'] ?? '',
                       style: TextStyle(
                         fontSize: 12.sp,
                         color: const Color(0xFF333333),
                         fontWeight: FontWeight.w500,
+                        height: 1.2, // 设置行高
                       ),
                       maxLines: 2,
                       overflow: TextOverflow.ellipsis,
                     ),
-                    Text(
-                      '¥${product['price']}',
-                      style: TextStyle(
-                        fontSize: 16.sp,
-                        color: const Color(0xFFFF5722),
-                        fontWeight: FontWeight.w600,
-                      ),
+                  ),
+                  SizedBox(height: 4.h), // 添加间距
+                  Text(
+                    '¥${product['price'] ?? 0}',
+                    style: TextStyle(
+                      fontSize: 16.sp,
+                      color: const Color(0xFFFF5722),
+                      fontWeight: FontWeight.w600,
                     ),
-                  ],
-                ),
+                  ),
+                ],
               ),
             ),
           ],
@@ -3304,49 +3389,49 @@ class _HomePageState extends State<HomePage> {
       {
         'title': '宠物交流',
         'subtitle': '分享宠物心得',
-        'icon': Icons.chat,
+        'icon': 'assets/icons/local/宠物交流.png',
         'color': const Color(0xFFFFF59D), // 黄色
       },
       {
         'title': '宠物配种',
         'subtitle': '寻找理想伴侣',
-        'icon': Icons.favorite,
+        'icon': 'assets/icons/local/宠物配种.png',
         'color': const Color(0xFFD1C4E9), // 紫色
       },
       {
         'title': '本地宠店',
         'subtitle': '发现附近好店',
-        'icon': Icons.store,
+        'icon': 'assets/icons/local/本地宠店.png',
         'color': const Color(0xFFFFCDD2), // 粉色
       },
       {
         'title': '鱼缸造景',
         'subtitle': '定制水族景观',
-        'icon': Icons.water,
+        'icon': 'assets/icons/local/鱼缸造景.png',
         'color': const Color(0xFFFFF59D), // 黄色
       },
       {
         'title': '同城快取',
         'subtitle': '快速自取服务',
-        'icon': Icons.local_shipping,
+        'icon': 'assets/icons/local/同城快取.png',
         'color': const Color(0xFFD1C4E9), // 紫色
       },
       {
         'title': '上门服务',
         'subtitle': '专业到家服务',
-        'icon': Icons.home,
+        'icon': 'assets/icons/local/上门服务.png',
         'color': const Color(0xFFFFCDD2), // 粉色
       },
       {
         'title': '宠物估价',
         'subtitle': '专业估价服务',
-        'icon': Icons.assessment,
+        'icon': 'assets/icons/local/宠物估价.png',
         'color': const Color(0xFFFFF59D), // 黄色
       },
       {
         'title': '附近',
         'subtitle': '发现身边好物',
-        'icon': Icons.location_on,
+        'icon': 'assets/icons/local/附近.png',
         'color': const Color(0xFFD1C4E9), // 紫色
       },
     ];
@@ -3357,7 +3442,7 @@ class _HomePageState extends State<HomePage> {
       gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
         crossAxisCount: 2,
         crossAxisSpacing: 16.w,
-        mainAxisSpacing: 16.h,
+        mainAxisSpacing: 8.h, // 减少上下间距
         childAspectRatio: 1.0,
       ),
       itemCount: services.length,
@@ -3398,94 +3483,35 @@ class _HomePageState extends State<HomePage> {
       },
       child: Container(
         decoration: BoxDecoration(
-          color: service['color'] as Color,
           borderRadius: BorderRadius.circular(16.r),
-          boxShadow: [
-            BoxShadow(
-              color: Colors.black.withOpacity(0.05),
-              blurRadius: 8,
-              offset: const Offset(0, 4),
-            ),
-          ],
         ),
-        child: Stack(
-          children: [
-            // 背景装饰图案
-            Positioned(
-              top: -20.h,
-              right: -20.w,
-              child: Container(
-                width: 80.w,
-                height: 80.w,
-                decoration: BoxDecoration(
-                  color: Colors.white.withOpacity(0.1),
-                  shape: BoxShape.circle,
+        child: ClipRRect(
+          borderRadius: BorderRadius.circular(16.r),
+          child: service['icon'] is String
+              ? Image.asset(
+                  service['icon'] as String,
+                  width: double.infinity,
+                  height: double.infinity,
+                  fit: BoxFit.contain, // 图标完整显示，适应按钮大小
+                  errorBuilder: (context, error, stackTrace) {
+                    return Container(
+                      color: Colors.grey[300],
+                      child: Icon(
+                        Icons.error,
+                        size: 40.w,
+                        color: Colors.grey,
+                      ),
+                    );
+                  },
+                )
+              : Container(
+                  color: Colors.grey[300],
+                  child: Icon(
+                    service['icon'] as IconData,
+                    size: 40.w,
+                    color: Colors.grey,
+                  ),
                 ),
-              ),
-            ),
-            Positioned(
-              bottom: -30.h,
-              left: -30.w,
-              child: Container(
-                width: 100.w,
-                height: 100.w,
-                decoration: BoxDecoration(
-                  color: Colors.white.withOpacity(0.05),
-                  shape: BoxShape.circle,
-                ),
-              ),
-            ),
-            // 内容
-            Padding(
-              padding: EdgeInsets.all(20.w),
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  // 图标
-                  Container(
-                    width: 48.w,
-                    height: 48.w,
-                    decoration: BoxDecoration(
-                      color: Colors.white.withOpacity(0.9),
-                      borderRadius: BorderRadius.circular(12.r),
-                      boxShadow: [
-                        BoxShadow(
-                          color: Colors.black.withOpacity(0.1),
-                          blurRadius: 4,
-                          offset: const Offset(0, 2),
-                        ),
-                      ],
-                    ),
-                    child: Icon(
-                      service['icon'] as IconData,
-                      size: 24.w,
-                      color: service['color'] as Color,
-                    ),
-                  ),
-                  const Spacer(),
-                  // 标题
-                  Text(
-                    service['title'] as String,
-                    style: TextStyle(
-                      fontSize: 16.sp,
-                      fontWeight: FontWeight.bold,
-                      color: Colors.red,
-                    ),
-                  ),
-                  SizedBox(height: 4.h),
-                  // 副标题
-                  Text(
-                    service['subtitle'] as String,
-                    style: TextStyle(
-                      fontSize: 12.sp,
-                      color: Colors.black87,
-                      fontWeight: FontWeight.w500,
-                    ),
-                  ),
-                ],
-              ),
-            ),
-          ],
         ),
       ),
     );

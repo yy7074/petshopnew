@@ -6,6 +6,8 @@ class User {
   final String? realName;
   final String? idCard;
   final String status;
+  final bool isSeller;
+  final bool isVerified;
   final DateTime createdAt;
 
   User({

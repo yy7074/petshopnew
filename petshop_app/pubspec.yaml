@@ -79,5 +79,8 @@ flutter:
   assets:
     - assets/images/
     - assets/icons/
+    - assets/icons/pet/
+    - assets/icons/aquatic/
+    - assets/icons/local/
     - assets/animations/
   
