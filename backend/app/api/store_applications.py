@@ -184,10 +184,27 @@ async def upload_image(
     try:
         print(f"上传文件: {file.filename}, 类型: {file.content_type}, 用户: {current_user.id}")
         
-        # 检查文件类型
-        allowed_types = ['image/jpeg', 'image/jpg', 'image/png']
-        if file.content_type not in allowed_types:
-            print(f"不支持的文件类型: {file.content_type}")
+        # 检查文件类型 - 更宽松的检测
+        print(f"文件类型: {file.content_type}, 文件名: {file.filename}")
+        
+        # 从文件名获取扩展名
+        file_ext = ''
+        if file.filename:
+            file_ext = file.filename.lower().split('.')[-1] if '.' in file.filename else ''
+        
+        # 支持的文件类型
+        allowed_types = ['image/jpeg', 'image/jpg', 'image/png', 'image/webp']
+        allowed_extensions = ['jpg', 'jpeg', 'png', 'webp']
+        
+        # 检查content_type或文件扩展名
+        is_valid_type = (
+            file.content_type in allowed_types or 
+            file_ext in allowed_extensions or
+            (file.content_type and file.content_type.startswith('image/'))
+        )
+        
+        if not is_valid_type:
+            print(f"不支持的文件类型: content_type={file.content_type}, extension={file_ext}")
             raise HTTPException(status_code=400, detail="只支持JPG、PNG格式的图片")
         
         # 检查文件大小（5MB）

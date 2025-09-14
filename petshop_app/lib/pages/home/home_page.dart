@@ -15,6 +15,7 @@ import '../product/product_detail_page.dart';
 import '../../services/product_service.dart' as product_service;
 import '../../services/event_service.dart';
 import '../../services/home_service.dart' as home_service;
+import '../../services/category_product_service.dart';
 import '../../models/product.dart' as product_models;
 import '../../models/category.dart';
 
@@ -42,7 +43,16 @@ class _HomePageState extends State<HomePage> {
   List<Category> _categories = [];
   List<home_service.Banner> _banners = [];
   home_service.HomeStats? _homeStats;
+
+  // 分类商品数据
+  List<Map<String, dynamic>> _petProducts = [];
+  List<Map<String, dynamic>> _aquaticProducts = [];
+  List<Map<String, dynamic>> _fixedPriceProducts = [];
+
   bool _isLoading = false;
+  bool _isPetLoading = false;
+  bool _isAquaticLoading = false;
+  bool _isFixedPriceLoading = false;
   String? _errorMessage;
 
   final List<String> tabs = [
@@ -157,6 +167,221 @@ class _HomePageState extends State<HomePage> {
     super.initState();
     _pageController = PageController(initialPage: 0);
     _loadHomeData();
+    _loadCategoryData();
+  }
+
+  // 加载分类数据
+  void _loadCategoryData() {
+    _loadPetProducts();
+    _loadAquaticProducts();
+    _loadFixedPriceProducts();
+  }
+
+  // 加载宠物商品
+  Future<void> _loadPetProducts() async {
+    setState(() {
+      _isPetLoading = true;
+    });
+
+    try {
+      final result = await CategoryProductService.getPetProducts(pageSize: 10);
+      final products = List<Map<String, dynamic>>.from(result['items'] ?? []);
+
+      setState(() {
+        _petProducts = products
+            .map(
+                (product) => CategoryProductService.formatProductForUI(product))
+            .toList();
+        _isPetLoading = false;
+      });
+    } catch (e) {
+      setState(() {
+        _isPetLoading = false;
+        // 如果加载失败，使用默认数据
+        _petProducts = _getDefaultPetProducts();
+      });
+      print('加载宠物商品失败: $e');
+    }
+  }
+
+  // 加载水族商品
+  Future<void> _loadAquaticProducts() async {
+    setState(() {
+      _isAquaticLoading = true;
+    });
+
+    try {
+      final result =
+          await CategoryProductService.getAquaticProducts(pageSize: 10);
+      final products = List<Map<String, dynamic>>.from(result['items'] ?? []);
+
+      setState(() {
+        _aquaticProducts = products
+            .map(
+                (product) => CategoryProductService.formatProductForUI(product))
+            .toList();
+        _isAquaticLoading = false;
+      });
+    } catch (e) {
+      setState(() {
+        _isAquaticLoading = false;
+        // 如果加载失败，使用默认数据
+        _aquaticProducts = _getDefaultAquaticProducts();
+      });
+      print('加载水族商品失败: $e');
+    }
+  }
+
+  // 加载一口价商品
+  Future<void> _loadFixedPriceProducts() async {
+    setState(() {
+      _isFixedPriceLoading = true;
+    });
+
+    try {
+      final result =
+          await CategoryProductService.getFixedPriceProducts(pageSize: 10);
+      final products = List<Map<String, dynamic>>.from(result['items'] ?? []);
+
+      setState(() {
+        _fixedPriceProducts = products
+            .map(
+                (product) => CategoryProductService.formatProductForUI(product))
+            .toList();
+        _isFixedPriceLoading = false;
+      });
+    } catch (e) {
+      setState(() {
+        _isFixedPriceLoading = false;
+        // 如果加载失败，使用默认数据
+        _fixedPriceProducts = _getDefaultFixedPriceProducts();
+      });
+      print('加载一口价商品失败: $e');
+    }
+  }
+
+  // 获取默认宠物商品数据
+  List<Map<String, dynamic>> _getDefaultPetProducts() {
+    return [
+      {
+        'id': 1001,
+        'title': '纯种金毛幼犬 - 疫苗齐全 包健康',
+        'name': '纯种金毛幼犬 - 疫苗齐全 包健康',
+        'price': 1200,
+        'starting_price': 800,
+        'current_price': 1200,
+        'image': 'https://picsum.photos/200/200?random=101',
+        'images': ['https://picsum.photos/200/200?random=101'],
+        'isFavorite': false,
+        'isBoutique': true,
+        'timeLeft': '2天8小时',
+        'bidCount': 15,
+        'location': '北京朝阳',
+        'seller_name': '宠物之家',
+        'category': '狗狗',
+      },
+      {
+        'id': 1002,
+        'title': '英短蓝猫 - 品相优良 性格温顺',
+        'name': '英短蓝猫 - 品相优良 性格温顺',
+        'price': 800,
+        'starting_price': 500,
+        'current_price': 800,
+        'image': 'https://picsum.photos/200/200?random=102',
+        'images': ['https://picsum.photos/200/200?random=102'],
+        'isFavorite': true,
+        'isBoutique': false,
+        'timeLeft': '1天12小时',
+        'bidCount': 8,
+        'location': '上海浦东',
+        'seller_name': '喵星人',
+        'category': '猫咪',
+      },
+    ];
+  }
+
+  // 获取默认水族商品数据
+  List<Map<String, dynamic>> _getDefaultAquaticProducts() {
+    return [
+      {
+        'id': 2001,
+        'title': '精品锦鲤 - 红白相间 游姿优美',
+        'name': '精品锦鲤 - 红白相间 游姿优美',
+        'price': 500,
+        'starting_price': 300,
+        'current_price': 500,
+        'image': 'https://picsum.photos/200/200?random=201',
+        'images': ['https://picsum.photos/200/200?random=201'],
+        'isFavorite': false,
+        'isBoutique': true,
+        'timeLeft': '3天6小时',
+        'bidCount': 12,
+        'location': '广州天河',
+        'seller_name': '水族世界',
+        'category': '观赏鱼',
+      },
+      {
+        'id': 2002,
+        'title': '海水珊瑚缸套装 - 完整生态系统',
+        'name': '海水珊瑚缸套装 - 完整生态系统',
+        'price': 2800,
+        'starting_price': 2000,
+        'current_price': 2800,
+        'image': 'https://picsum.photos/200/200?random=202',
+        'images': ['https://picsum.photos/200/200?random=202'],
+        'isFavorite': false,
+        'isBoutique': false,
+        'timeLeft': '5天2小时',
+        'bidCount': 6,
+        'location': '深圳南山',
+        'seller_name': '海洋之星',
+        'category': '水族器材',
+      },
+    ];
+  }
+
+  // 获取默认一口价商品数据
+  List<Map<String, dynamic>> _getDefaultFixedPriceProducts() {
+    return [
+      {
+        'id': 3001,
+        'title': '猫砂盆全自动清洁 - 智能感应',
+        'name': '猫砂盆全自动清洁 - 智能感应',
+        'price': 299,
+        'starting_price': 299,
+        'current_price': 299,
+        'buy_now_price': 299,
+        'image': 'https://picsum.photos/200/200?random=301',
+        'images': ['https://picsum.photos/200/200?random=301'],
+        'isFavorite': false,
+        'isBoutique': false,
+        'timeLeft': '一口价',
+        'bidCount': 0,
+        'location': '杭州西湖',
+        'seller_name': '智能宠物',
+        'category': '宠物用品',
+        'auction_type': 2,
+      },
+      {
+        'id': 3002,
+        'title': '狗狗训练零食大礼包 - 营养健康',
+        'name': '狗狗训练零食大礼包 - 营养健康',
+        'price': 89,
+        'starting_price': 89,
+        'current_price': 89,
+        'buy_now_price': 89,
+        'image': 'https://picsum.photos/200/200?random=302',
+        'images': ['https://picsum.photos/200/200?random=302'],
+        'isFavorite': true,
+        'isBoutique': false,
+        'timeLeft': '一口价',
+        'bidCount': 0,
+        'location': '成都武侯',
+        'seller_name': '宠物食品',
+        'category': '宠物食品',
+        'auction_type': 2,
+      },
+    ];
   }
 
   /// 加载首页数据
@@ -198,7 +423,7 @@ class _HomePageState extends State<HomePage> {
             _recommendedProducts = homeData.recommendedProducts;
             _specialEvents = homeData.specialEvents;
             _categories = homeData.categories;
-            
+
             print('===== API返回的商品数据检查 =====');
             if (_hotProducts.isNotEmpty) {
               print('第一个热门商品: ${_hotProducts.first.toJson()}');
@@ -296,16 +521,18 @@ class _HomePageState extends State<HomePage> {
     print('Product ID: ${product.id}');
     print('Product sellerId: ${product.sellerId}');
     print('Product title: ${product.title}');
-    
+
     return {
       'id': product.id,
       'seller_id': product.sellerId, // 添加seller_id字段
       'name': product.title,
       'title': product.title, // 添加title字段（ProductDetailPage可能需要）
       'currentPrice': product.auctionInfo?.currentPrice ?? 0.0,
-      'current_price': product.auctionInfo?.currentPrice ?? 0.0, // 添加current_price字段
+      'current_price':
+          product.auctionInfo?.currentPrice ?? 0.0, // 添加current_price字段
       'startPrice': product.auctionInfo?.startPrice ?? 0.0,
-      'starting_price': product.auctionInfo?.startPrice ?? 0.0, // 添加starting_price字段
+      'starting_price':
+          product.auctionInfo?.startPrice ?? 0.0, // 添加starting_price字段
       'images': product.images, // 添加images字段
       'image': product.images.isNotEmpty
           ? product.images.first
@@ -317,7 +544,8 @@ class _HomePageState extends State<HomePage> {
       'bid_count': product.auctionInfo?.bidCount ?? 0, // 添加bid_count字段
       'description': product.description,
       'location': product.location ?? '未知',
-      'auction_type': product.type == product_models.ProductType.auction ? 1 : 2,
+      'auction_type':
+          product.type == product_models.ProductType.auction ? 1 : 2,
       'auction_end_time': product.auctionInfo?.endTime.toIso8601String(),
       'created_at': product.createdAt.toIso8601String(),
       'updated_at': product.updatedAt.toIso8601String(),
@@ -1317,12 +1545,12 @@ class _HomePageState extends State<HomePage> {
                           print('Product数据: $product');
                           print('转换后的productData: $productData');
                           print('转换后的seller_id: ${productData['seller_id']}');
-                          
+
                           Navigator.push(
                             context,
                             MaterialPageRoute(
-                              builder: (context) => ProductDetailPage(
-                                  productData: productData),
+                              builder: (context) =>
+                                  ProductDetailPage(productData: productData),
                             ),
                           );
                         },
@@ -1411,7 +1639,7 @@ class _HomePageState extends State<HomePage> {
                         print('===== 从热门拍卖导航到商品详情 =====');
                         print('Product数据: $product');
                         print('Product的seller_id: ${product['seller_id']}');
-                        
+
                         Navigator.push(
                           context,
                           MaterialPageRoute(
@@ -1558,7 +1786,7 @@ class _HomePageState extends State<HomePage> {
                         print('===== 从推荐商品导航到商品详情 =====');
                         print('Product数据: $product');
                         print('Product的seller_id: ${product['seller_id']}');
-                        
+
                         Navigator.push(
                           context,
                           MaterialPageRoute(
@@ -1910,44 +2138,33 @@ class _HomePageState extends State<HomePage> {
 
   // 构建宠物商品列表
   Widget _buildPetProductList() {
-    final products = [
-      {
-        'id': 1, // 添加真实ID
-        'title': '宠物标题宠物标题宠物标题宠物标题宠物标题',
-        'name': '宠物标题宠物标题宠物标题宠物标题宠物标题',
-        'price': 432,
-        'starting_price': 432,
-        'image': 'https://picsum.photos/200/200?random=40',
-        'images': ['https://picsum.photos/200/200?random=40'],
-        'isFavorite': false,
-        'isBoutique': true,
-        'timeLeft': '今天20:05截拍',
-      },
-      {
-        'id': 2, // 添加真实ID
-        'title': '宠物标题宠物标题宠物标题宠物标题宠物',
-        'name': '宠物标题宠物标题宠物标题宠物标题宠物',
-        'price': 432,
-        'starting_price': 432,
-        'image': 'https://picsum.photos/200/200?random=41',
-        'images': ['https://picsum.photos/200/200?random=41'],
-        'isFavorite': true,
-        'isBoutique': true,
-        'timeLeft': '今天20:05截拍',
-      },
-    ];
+    if (_isPetLoading) {
+      return Container(
+        height: 200.h,
+        margin: EdgeInsets.symmetric(horizontal: 16.w),
+        child: const Center(child: CircularProgressIndicator()),
+      );
+    }
+
+    final products =
+        _petProducts.isNotEmpty ? _petProducts : _getDefaultPetProducts();
+    final displayProducts = products.take(2).toList();
 
     return Container(
       margin: EdgeInsets.symmetric(horizontal: 16.w),
       child: Row(
         children: [
-          Expanded(
-            child: _buildPetProductCard(products[0]),
-          ),
-          SizedBox(width: 12.w),
-          Expanded(
-            child: _buildPetProductCard(products[1]),
-          ),
+          if (displayProducts.isNotEmpty) ...[
+            Expanded(
+              child: _buildPetProductCard(displayProducts[0]),
+            ),
+            if (displayProducts.length > 1) ...[
+              SizedBox(width: 12.w),
+              Expanded(
+                child: _buildPetProductCard(displayProducts[1]),
+              ),
+            ],
+          ],
         ],
       ),
     );
@@ -1957,7 +2174,14 @@ class _HomePageState extends State<HomePage> {
   Widget _buildPetProductCard(Map<String, dynamic> product) {
     return GestureDetector(
       onTap: () {
-        print('点击了商品: ${product['name']}');
+        Navigator.push(
+          context,
+          MaterialPageRoute(
+            builder: (context) => ProductDetailPage(
+              productData: product,
+            ),
+          ),
+        );
       },
       child: Container(
         height: 200.h, // 减少总高度
@@ -2395,36 +2619,34 @@ class _HomePageState extends State<HomePage> {
 
   // 构建水族商品列表
   Widget _buildAquaticProductList() {
-    final products = [
-      {
-        'name': '宠物标题宠物标题宠物标题宠物标题宠物标题',
-        'price': 432,
-        'image': 'https://picsum.photos/200/200?random=50',
-        'isFavorite': false,
-        'isBoutique': true,
-        'timeLeft': '今天20:05截拍',
-      },
-      {
-        'name': '宠物标题宠物标题宠物标题宠物标题宠物',
-        'price': 432,
-        'image': 'https://picsum.photos/200/200?random=51',
-        'isFavorite': true,
-        'isBoutique': true,
-        'timeLeft': '今天20:05截拍',
-      },
-    ];
+    if (_isAquaticLoading) {
+      return Container(
+        height: 200.h,
+        margin: EdgeInsets.symmetric(horizontal: 16.w),
+        child: const Center(child: CircularProgressIndicator()),
+      );
+    }
+
+    final products = _aquaticProducts.isNotEmpty
+        ? _aquaticProducts
+        : _getDefaultAquaticProducts();
+    final displayProducts = products.take(2).toList();
 
     return Container(
       margin: EdgeInsets.symmetric(horizontal: 16.w),
       child: Row(
         children: [
-          Expanded(
-            child: _buildAquaticProductCard(products[0]),
-          ),
-          SizedBox(width: 12.w),
-          Expanded(
-            child: _buildAquaticProductCard(products[1]),
-          ),
+          if (displayProducts.isNotEmpty) ...[
+            Expanded(
+              child: _buildAquaticProductCard(displayProducts[0]),
+            ),
+            if (displayProducts.length > 1) ...[
+              SizedBox(width: 12.w),
+              Expanded(
+                child: _buildAquaticProductCard(displayProducts[1]),
+              ),
+            ],
+          ],
         ],
       ),
     );
@@ -2434,7 +2656,14 @@ class _HomePageState extends State<HomePage> {
   Widget _buildAquaticProductCard(Map<String, dynamic> product) {
     return GestureDetector(
       onTap: () {
-        print('点击了商品: ${product['name']}');
+        Navigator.push(
+          context,
+          MaterialPageRoute(
+            builder: (context) => ProductDetailPage(
+              productData: product,
+            ),
+          ),
+        );
       },
       child: Container(
         height: 200.h,
@@ -2602,39 +2831,34 @@ class _HomePageState extends State<HomePage> {
 
   // 构建一口价页面顶部上新和热门商品行
   Widget _buildFixedPriceTopSections() {
+    if (_isFixedPriceLoading) {
+      return Container(
+        height: 200.h,
+        child: const Center(child: CircularProgressIndicator()),
+      );
+    }
+
+    final products = _fixedPriceProducts.isNotEmpty
+        ? _fixedPriceProducts
+        : _getDefaultFixedPriceProducts();
+    final newProducts = products.take(2).toList();
+    final hotProducts = products.skip(2).take(2).toList();
+
     return Column(
       children: [
         // 上新商品行
-        _buildFixedPriceProductRow('上新', [
-          {
-            'name': '刚刚上新',
-            'price': 432,
-            'image': 'https://picsum.photos/200/200?random=60',
-            'tag': '刚刚上新',
-          },
-          {
-            'name': '刚刚上新',
-            'price': 432,
-            'image': 'https://picsum.photos/200/200?random=61',
-            'tag': '刚刚上新',
-          },
-        ]),
+        _buildFixedPriceProductRow(
+            '上新',
+            newProducts
+                .map((product) => {
+                      ...product,
+                      'tag': '刚刚上新',
+                    })
+                .toList()),
         SizedBox(height: 16.h),
         // 热门商品行
-        _buildFixedPriceProductRow('热门', [
-          {
-            'name': '标题标题标...',
-            'price': 432,
-            'image': 'https://picsum.photos/200/200?random=62',
-            'tag': '',
-          },
-          {
-            'name': '标题标题标...',
-            'price': 432,
-            'image': 'https://picsum.photos/200/200?random=63',
-            'tag': '',
-          },
-        ]),
+        _buildFixedPriceProductRow(
+            '热门', hotProducts.isNotEmpty ? hotProducts : newProducts),
       ],
     );
   }
@@ -2688,7 +2912,14 @@ class _HomePageState extends State<HomePage> {
   Widget _buildFixedPriceProductCard(Map<String, dynamic> product) {
     return GestureDetector(
       onTap: () {
-        print('点击了商品: ${product['name']}');
+        Navigator.push(
+          context,
+          MaterialPageRoute(
+            builder: (context) => ProductDetailPage(
+              productData: product,
+            ),
+          ),
+        );
       },
       child: Container(
         height: 180.h,
@@ -2898,32 +3129,9 @@ class _HomePageState extends State<HomePage> {
 
   // 构建底部商品网格列表
   Widget _buildFixedPriceProductGrid() {
-    final products = [
-      {
-        'name': '宠物标题宠物标题宠物',
-        'price': 432,
-        'image': 'https://picsum.photos/200/200?random=70',
-        'shop': '水族馆',
-      },
-      {
-        'name': '宠物标题宠物标题宠物',
-        'price': 432,
-        'image': 'https://picsum.photos/200/200?random=71',
-        'shop': '水族馆',
-      },
-      {
-        'name': '宠物标题宠物标题宠物',
-        'price': 432,
-        'image': 'https://picsum.photos/200/200?random=72',
-        'shop': '水族馆',
-      },
-      {
-        'name': '宠物标题宠物标题宠物',
-        'price': 432,
-        'image': 'https://picsum.photos/200/200?random=73',
-        'shop': '水族馆',
-      },
-    ];
+    final products = _fixedPriceProducts.isNotEmpty
+        ? _fixedPriceProducts
+        : _getDefaultFixedPriceProducts();
 
     return Container(
       margin: EdgeInsets.symmetric(horizontal: 16.w),
@@ -2949,7 +3157,14 @@ class _HomePageState extends State<HomePage> {
   Widget _buildFixedPriceGridCard(Map<String, dynamic> product) {
     return GestureDetector(
       onTap: () {
-        print('点击了商品: ${product['name']}');
+        Navigator.push(
+          context,
+          MaterialPageRoute(
+            builder: (context) => ProductDetailPage(
+              productData: product,
+            ),
+          ),
+        );
       },
       child: Container(
         decoration: BoxDecoration(
