@@ -34,8 +34,14 @@ os.makedirs(settings.UPLOAD_DIR, exist_ok=True)
 # 静态文件服务
 app.mount("/static", StaticFiles(directory="static"), name="static")
 
+# 后台管理静态文件服务
+import os
+admin_path = os.path.join(os.path.dirname(os.path.dirname(__file__)), "admin")
+if os.path.exists(admin_path):
+    app.mount("/admin", StaticFiles(directory=admin_path, html=True), name="admin")
+
 # 注册路由
-from app.api import auth, products, bids, orders, auctions, events, home, wallet, deposit, stores, store_applications, chat, messages, users  # search
+from app.api import auth, products, bids, orders, auctions, events, home, wallet, deposit, stores, store_applications, chat, messages, users, admin  # search
 
 app.include_router(auth.router, prefix="/api/v1/auth", tags=["认证"])
 app.include_router(products.router, prefix="/api/v1/products", tags=["商品"])
@@ -51,6 +57,7 @@ app.include_router(store_applications.router, prefix="/api/v1/store-applications
 app.include_router(chat.router, prefix="/api/v1/chat", tags=["聊天"])
 app.include_router(messages.router, prefix="/api/v1/messages", tags=["消息"])
 app.include_router(users.router, prefix="/api/v1/users", tags=["用户"])
+app.include_router(admin.router, prefix="/api/v1/admin", tags=["后台管理"])
 # app.include_router(search.router, prefix="/api/v1/search", tags=["搜索"])
 
 # 根路径

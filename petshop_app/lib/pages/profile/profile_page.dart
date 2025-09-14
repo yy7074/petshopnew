@@ -7,7 +7,6 @@ import '../orders/order_list_page.dart';
 import '../seller/seller_center_page.dart';
 import '../shop/shop_entry_page.dart';
 import '../shop/shop_application_status_page.dart';
-import '../test_api_page.dart';
 import '../../services/store_application_service.dart';
 import '../../services/storage_service.dart';
 import '../../services/user_role_service.dart';
@@ -285,45 +284,6 @@ class _ProfilePageState extends State<ProfilePage>
                 child: Row(
                   mainAxisAlignment: MainAxisAlignment.end,
                   children: [
-                    // API测试按钮
-                    GestureDetector(
-                      onTap: () {
-                        Navigator.push(
-                          context,
-                          MaterialPageRoute(
-                            builder: (context) => const TestApiPage(),
-                          ),
-                        );
-                      },
-                      child: Container(
-                        padding: EdgeInsets.symmetric(
-                            horizontal: 8.w, vertical: 4.h),
-                        margin: EdgeInsets.only(right: 12.w),
-                        decoration: BoxDecoration(
-                          color: Colors.white.withOpacity(0.2),
-                          borderRadius: BorderRadius.circular(12.r),
-                        ),
-                        child: Row(
-                          mainAxisSize: MainAxisSize.min,
-                          children: [
-                            Icon(
-                              Icons.api,
-                              size: 16.w,
-                              color: Colors.white,
-                            ),
-                            SizedBox(width: 4.w),
-                            Text(
-                              'API测试',
-                              style: TextStyle(
-                                fontSize: 12.sp,
-                                color: Colors.white,
-                                fontWeight: FontWeight.w500,
-                              ),
-                            ),
-                          ],
-                        ),
-                      ),
-                    ),
                     // 退出登录按钮（如果已登录）
                     if (_isLoggedIn)
                       GestureDetector(
