@@ -34,25 +34,28 @@ class Product {
   factory Product.fromJson(Map<String, dynamic> json) {
     // 基于实际API响应格式解析
     final int auctionType = json['auction_type'] ?? 1;
-    final ProductType productType = auctionType == 1 ? ProductType.auction : ProductType.fixed;
-    
+    final ProductType productType =
+        auctionType == 1 ? ProductType.auction : ProductType.fixed;
+
     // 构建AuctionInfo（如果是拍卖类型）
     AuctionInfo? auctionInfo;
     if (productType == ProductType.auction) {
       auctionInfo = AuctionInfo(
-        startPrice: double.tryParse(json['starting_price']?.toString() ?? '0') ?? 0.0,
-        currentPrice: double.tryParse(json['current_price']?.toString() ?? '0') ?? 0.0,
+        startPrice:
+            double.tryParse(json['starting_price']?.toString() ?? '0') ?? 0.0,
+        currentPrice:
+            double.tryParse(json['current_price']?.toString() ?? '0') ?? 0.0,
         bidIncrement: 10.0, // 默认值，API中没有这个字段
-        startTime: json['auction_start_time'] != null 
-            ? DateTime.parse(json['auction_start_time']) 
+        startTime: json['auction_start_time'] != null
+            ? DateTime.parse(json['auction_start_time'])
             : DateTime.now(),
-        endTime: json['auction_end_time'] != null 
-            ? DateTime.parse(json['auction_end_time']) 
+        endTime: json['auction_end_time'] != null
+            ? DateTime.parse(json['auction_end_time'])
             : DateTime.now().add(Duration(days: 7)),
         bidCount: json['bid_count'] ?? 0,
       );
     }
-    
+
     // 构建FixedInfo（如果是一口价类型）
     FixedInfo? fixedInfo;
     if (productType == ProductType.fixed) {
@@ -62,10 +65,12 @@ class Product {
         salesCount: 0, // API中没有这个字段
       );
     }
-    
+
     return Product(
       id: json['id'] ?? 0,
-      sellerId: json['seller_id'] ?? 0,
+      sellerId: json['seller_id'] is int
+          ? json['seller_id']
+          : (int.tryParse(json['seller_id']?.toString() ?? '0') ?? 0),
       title: json['title'] ?? '',
       description: json['description'] ?? '',
       categoryId: json['category_id'] ?? 0,
@@ -76,11 +81,11 @@ class Product {
       fixedInfo: fixedInfo,
       location: json['location'],
       seller: null, // seller信息需要单独接口获取
-      createdAt: json['created_at'] != null 
-          ? DateTime.parse(json['created_at']) 
+      createdAt: json['created_at'] != null
+          ? DateTime.parse(json['created_at'])
           : DateTime.now(),
-      updatedAt: json['updated_at'] != null 
-          ? DateTime.parse(json['updated_at']) 
+      updatedAt: json['updated_at'] != null
+          ? DateTime.parse(json['updated_at'])
           : DateTime.now(),
     );
   }
@@ -122,8 +127,8 @@ class Product {
   bool get isAuctionActive {
     if (type != ProductType.auction || auctionInfo == null) return false;
     final now = DateTime.now();
-    return now.isAfter(auctionInfo!.startTime) && 
-           now.isBefore(auctionInfo!.endTime);
+    return now.isAfter(auctionInfo!.startTime) &&
+        now.isBefore(auctionInfo!.endTime);
   }
 
   // 获取剩余时间
@@ -183,8 +188,10 @@ class AuctionInfo {
       startPrice: (json['start_price'] ?? 0).toDouble(),
       currentPrice: (json['current_price'] ?? 0).toDouble(),
       bidIncrement: (json['bid_increment'] ?? 0).toDouble(),
-      startTime: DateTime.parse(json['start_time'] ?? DateTime.now().toIso8601String()),
-      endTime: DateTime.parse(json['end_time'] ?? DateTime.now().toIso8601String()),
+      startTime: DateTime.parse(
+          json['start_time'] ?? DateTime.now().toIso8601String()),
+      endTime:
+          DateTime.parse(json['end_time'] ?? DateTime.now().toIso8601String()),
       bidCount: json['bid_count'] ?? 0,
     );
   }

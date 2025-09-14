@@ -9,7 +9,8 @@ from ..core.security import get_current_user, get_current_user_optional
 from ..models.user import User
 from ..schemas.chat import (
     MessageCreate, MessageResponse, ConversationResponse, 
-    ConversationListResponse, MessageListResponse
+    ConversationListResponse, MessageListResponse, ProductConsultRequest,
+    ConsultationResponse
 )
 from ..services.chat_service import ChatService
 from ..services.websocket_service import WebSocketManager
@@ -295,3 +296,50 @@ async def search_messages(
     return await chat_service.search_messages(
         db, current_user.id, keyword, conversation_id, page, page_size
     )
+
+@router.post("/consult", response_model=ConsultationResponse)
+async def send_product_consultation(
+    request: ProductConsultRequest,
+    db: Session = Depends(get_db),
+    current_user: User = Depends(get_current_user)
+):
+    """发送商品咨询"""
+    try:
+        # 验证不能向自己咨询
+        if request.seller_id == current_user.id:
+            raise HTTPException(status_code=400, detail="不能向自己发送咨询")
+        
+        # 发送咨询消息
+        message = await chat_service.send_product_consultation(db, current_user.id, request)
+        
+        # 通过WebSocket通知卖家
+        await websocket_manager.send_personal_message(
+            request.seller_id,
+            {
+                "type": "new_consultation",
+                "message": message.dict(),
+                "product_id": request.product_id
+            }
+        )
+        
+        return ConsultationResponse(
+            conversation_id=message.conversation_id,
+            message_id=message.id,
+            message="咨询消息发送成功"
+        )
+    except ValueError as e:
+        raise HTTPException(status_code=400, detail=str(e))
+
+@router.get("/online-status/{user_id}")
+async def get_user_online_status(
+    user_id: int,
+    current_user: User = Depends(get_current_user)
+):
+    """获取用户在线状态"""
+    is_online = websocket_manager.is_user_online(user_id)
+    status = websocket_manager.get_user_status(user_id)
+    return {
+        "user_id": user_id,
+        "is_online": is_online,
+        "status": status
+    }

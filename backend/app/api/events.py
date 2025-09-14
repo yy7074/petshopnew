@@ -113,8 +113,10 @@ async def get_event_products(
         for product in products:
             product_dict = {
                 "id": product.id,
+                "seller_id": product.seller_id,  # 添加缺失的seller_id字段
                 "title": product.title,
                 "description": product.description,
+                "category_id": product.category_id,  # 添加缺失的category_id字段
                 "images": product.images or [],
                 "starting_price": str(product.starting_price) if product.starting_price else "0",
                 "current_price": str(product.current_price) if product.current_price else "0", 
@@ -133,6 +135,7 @@ async def get_event_products(
                 "status": product.status,
                 "is_featured": product.is_featured,
                 "created_at": product.created_at.isoformat() if product.created_at else None,
+                "updated_at": product.updated_at.isoformat() if product.updated_at else None,  # 添加updated_at字段
             }
             product_list.append(product_dict)
         
