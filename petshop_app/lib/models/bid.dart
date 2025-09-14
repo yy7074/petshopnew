@@ -24,10 +24,11 @@ class Bid {
       id: json['id'] ?? 0,
       productId: json['product_id'] ?? 0,
       userId: json['user_id'] ?? 0,
-      bidAmount: (json['bid_amount'] ?? 0).toDouble(),
-      bidTime: DateTime.parse(json['bid_time'] ?? DateTime.now().toIso8601String()),
-      status: json['status'] ?? 'active',
-      user: json['user'] != null ? User.fromJson(json['user']) : null,
+      bidAmount: double.tryParse(json['amount']?.toString() ?? json['bid_amount']?.toString() ?? '0') ?? 0,
+      bidTime: DateTime.parse(json['created_at'] ?? json['bid_time'] ?? DateTime.now().toIso8601String()),
+      status: json['status']?.toString() ?? 'active',
+      user: json['user_info'] != null ? User.fromJson(json['user_info']) : 
+           (json['user'] != null ? User.fromJson(json['user']) : null),
     );
   }
 

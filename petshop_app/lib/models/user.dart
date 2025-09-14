@@ -22,9 +22,9 @@ class User {
   factory User.fromJson(Map<String, dynamic> json) {
     return User(
       id: json['id'] ?? 0,
-      phone: json['phone'] ?? '',
-      nickname: json['nickname'] ?? '',
-      avatar: json['avatar_url'], // 后台返回的是avatar_url
+      phone: json['phone'] ?? json['username'] ?? '', // 支持username和phone字段
+      nickname: json['nickname'] ?? json['username'] ?? '',
+      avatar: json['avatar'] ?? json['avatar_url'], // 支持avatar和avatar_url字段
       realName: json['real_name'],
       idCard: json['id_card'],
       status: (json['status'] ?? 1).toString(), // 后台返回的是数字，需要转换为字符串

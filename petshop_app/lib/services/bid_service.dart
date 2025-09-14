@@ -210,6 +210,23 @@ class BidService {
 
   // 错误处理
   String _handleError(DioException error) {
+    // 先尝试从响应中获取具体错误信息
+    if (error.response?.data != null) {
+      final data = error.response!.data;
+      if (data is Map<String, dynamic>) {
+        // 检查详细错误信息字段
+        final detail = data['detail']?.toString();
+        if (detail != null && detail.isNotEmpty) {
+          return detail;
+        }
+        final message = data['message']?.toString();
+        if (message != null && message.isNotEmpty) {
+          return message;
+        }
+      }
+    }
+
+    // 根据状态码返回默认错误信息
     if (error.response?.statusCode == 400) {
       return '竞拍金额不符合要求';
     } else if (error.response?.statusCode == 403) {
@@ -222,7 +239,7 @@ class BidService {
     } else if (error.type == DioExceptionType.unknown) {
       return '网络连接失败，请检查网络';
     } else {
-      return error.response?.data?['message'] ?? '未知错误';
+      return '出价失败，请稍后重试';
     }
   }
 }
