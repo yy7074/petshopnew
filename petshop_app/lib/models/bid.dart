@@ -26,10 +26,31 @@ class Bid {
       userId: json['user_id'] ?? 0,
       bidAmount: double.tryParse(json['amount']?.toString() ?? json['bid_amount']?.toString() ?? '0') ?? 0,
       bidTime: DateTime.parse(json['created_at'] ?? json['bid_time'] ?? DateTime.now().toIso8601String()),
-      status: json['status']?.toString() ?? 'active',
+      status: _convertStatus(json['status']),
       user: json['user_info'] != null ? User.fromJson(json['user_info']) : 
            (json['user'] != null ? User.fromJson(json['user']) : null),
     );
+  }
+
+  static String _convertStatus(dynamic status) {
+    if (status == null) return 'active';
+    
+    // 如果已经是字符串，直接返回
+    if (status is String) return status;
+    
+    // 如果是数字，转换为对应的字符串状态
+    switch (status) {
+      case 1:
+        return 'active';   // 进行中
+      case 2:
+        return 'won';      // 已中标
+      case 3:
+        return 'lost';     // 已失标
+      case 4:
+        return 'cancelled'; // 已取消
+      default:
+        return 'active';
+    }
   }
 
   Map<String, dynamic> toJson() {

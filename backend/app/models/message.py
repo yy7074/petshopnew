@@ -24,7 +24,8 @@ class Conversation(Base):
     user1 = relationship("User", foreign_keys=[user1_id])
     user2 = relationship("User", foreign_keys=[user2_id])
     last_message = relationship("Message", foreign_keys=[last_message_id], post_update=True)
-    messages = relationship("Message", back_populates="conversation", cascade="all, delete-orphan")
+    messages = relationship("Message", back_populates="conversation", cascade="all, delete-orphan", 
+                          foreign_keys="Message.conversation_id")
     
     # 索引
     __table_args__ = (
@@ -50,7 +51,7 @@ class Message(Base):
     updated_at = Column(DateTime, server_default=func.now(), onupdate=func.now())
     
     # 关系
-    conversation = relationship("Conversation", back_populates="messages")
+    conversation = relationship("Conversation", back_populates="messages", foreign_keys=[conversation_id])
     sender = relationship("User", foreign_keys=[sender_id])
     receiver = relationship("User", foreign_keys=[receiver_id])
     

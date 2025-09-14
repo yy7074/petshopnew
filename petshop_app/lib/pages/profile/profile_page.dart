@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
+import 'package:get/get.dart';
 import '../checkin/checkin_page.dart';
 import '../settings/settings_page.dart';
 import '../orders/order_list_page.dart';
@@ -11,6 +12,7 @@ import '../../models/user.dart';
 import '../auth/login_page.dart';
 import '../wallet/wallet_page.dart';
 import '../deposit/deposit_page.dart';
+import '../../utils/app_routes.dart';
 
 class ProfilePage extends StatefulWidget {
   const ProfilePage({super.key});
@@ -779,6 +781,8 @@ class _ProfilePageState extends State<ProfilePage>
               builder: (context) => const DepositPage(),
             ),
           );
+        } else if (title == '出价/围观') {
+          Get.toNamed(AppRoutes.bidRecords);
         }
       },
       child: Container(

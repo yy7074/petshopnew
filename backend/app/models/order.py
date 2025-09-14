@@ -62,8 +62,8 @@ class Logistics(Base):
     created_at = Column(DateTime, server_default=func.now())
     updated_at = Column(DateTime, server_default=func.now(), onupdate=func.now())
 
-class Message(Base):
-    __tablename__ = "messages"
+class SystemMessage(Base):
+    __tablename__ = "system_messages"
 
     id = Column(Integer, primary_key=True, index=True, autoincrement=True)
     sender_id = Column(Integer, index=True)

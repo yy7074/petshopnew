@@ -54,6 +54,34 @@ class BidService {
     }
   }
 
+  // 获取我的竞拍记录
+  Future<ApiResult<List<Bid>>> getMyBids({
+    int page = 1,
+    int pageSize = 20,
+    String? status,
+  }) async {
+    try {
+      final queryParams = <String, dynamic>{
+        'page': page,
+        'page_size': pageSize,
+      };
+
+      if (status != null) queryParams['status'] = status;
+
+      final response = await _apiService.get('/bids/my', queryParameters: queryParams);
+
+      if (response.statusCode == 200) {
+        final List<dynamic> bidsJson = response.data['items'] ?? [];
+        final bids = bidsJson.map((json) => Bid.fromJson(json)).toList();
+        return ApiResult.success(bids);
+      } else {
+        return ApiResult.error(response.data['detail'] ?? '获取我的竞拍记录失败');
+      }
+    } on DioException catch (e) {
+      return ApiResult.error(_handleError(e));
+    }
+  }
+
   // 获取用户竞拍记录
   Future<ApiResult<List<Bid>>> getUserBids({
     int page = 1,
@@ -76,6 +104,99 @@ class BidService {
         return ApiResult.success(bids);
       } else {
         return ApiResult.error(response.data['detail'] ?? '获取竞拍记录失败');
+      }
+    } on DioException catch (e) {
+      return ApiResult.error(_handleError(e));
+    }
+  }
+
+  // 获取正在领先的竞拍
+  Future<ApiResult<List<Bid>>> getWinningBids({
+    int page = 1,
+    int pageSize = 20,
+  }) async {
+    try {
+      final response = await _apiService.get('/bids/winning', queryParameters: {
+        'page': page,
+        'page_size': pageSize,
+      });
+
+      if (response.statusCode == 200) {
+        final List<dynamic> bidsJson = response.data['items'] ?? [];
+        final bids = bidsJson.map((json) => Bid.fromJson(json)).toList();
+        return ApiResult.success(bids);
+      } else {
+        return ApiResult.error(response.data['detail'] ?? '获取领先竞拍失败');
+      }
+    } on DioException catch (e) {
+      return ApiResult.error(_handleError(e));
+    }
+  }
+
+  // 获取我的自动出价设置
+  Future<ApiResult<List<AutoBid>>> getMyAutoBids({
+    int page = 1,
+    int pageSize = 20,
+    String status = 'active',
+  }) async {
+    try {
+      final response = await _apiService.get('/bids/auto/my', queryParameters: {
+        'page': page,
+        'page_size': pageSize,
+        'status': status,
+      });
+
+      if (response.statusCode == 200) {
+        final List<dynamic> autoBidsJson = response.data['items'] ?? [];
+        final autoBids = autoBidsJson.map((json) => AutoBid.fromJson(json)).toList();
+        return ApiResult.success(autoBids);
+      } else {
+        return ApiResult.error(response.data['detail'] ?? '获取自动出价失败');
+      }
+    } on DioException catch (e) {
+      return ApiResult.error(_handleError(e));
+    }
+  }
+
+  // 暂停自动出价
+  Future<ApiResult<void>> pauseAutoBid(int autoBidId) async {
+    try {
+      final response = await _apiService.put('/bids/auto/$autoBidId/pause');
+
+      if (response.statusCode == 200) {
+        return ApiResult.success(null);
+      } else {
+        return ApiResult.error(response.data['detail'] ?? '暂停自动出价失败');
+      }
+    } on DioException catch (e) {
+      return ApiResult.error(_handleError(e));
+    }
+  }
+
+  // 恢复自动出价
+  Future<ApiResult<void>> resumeAutoBid(int autoBidId) async {
+    try {
+      final response = await _apiService.put('/bids/auto/$autoBidId/resume');
+
+      if (response.statusCode == 200) {
+        return ApiResult.success(null);
+      } else {
+        return ApiResult.error(response.data['detail'] ?? '恢复自动出价失败');
+      }
+    } on DioException catch (e) {
+      return ApiResult.error(_handleError(e));
+    }
+  }
+
+  // 取消自动出价
+  Future<ApiResult<void>> cancelAutoBid(int autoBidId) async {
+    try {
+      final response = await _apiService.delete('/bids/auto/$autoBidId');
+
+      if (response.statusCode == 200) {
+        return ApiResult.success(null);
+      } else {
+        return ApiResult.error(response.data['detail'] ?? '取消自动出价失败');
       }
     } on DioException catch (e) {
       return ApiResult.error(_handleError(e));
@@ -187,21 +308,6 @@ class BidService {
         return ApiResult.success(autoBid);
       } else {
         return ApiResult.error(response.data['message'] ?? '设置自动竞拍失败');
-      }
-    } on DioException catch (e) {
-      return ApiResult.error(_handleError(e));
-    }
-  }
-
-  // 取消自动竞拍
-  Future<ApiResult<void>> cancelAutoBid(int autoBidId) async {
-    try {
-      final response = await _apiService.delete('/auctions/auto-bid/$autoBidId');
-
-      if (response.statusCode == 200) {
-        return ApiResult.success(null);
-      } else {
-        return ApiResult.error(response.data['message'] ?? '取消自动竞拍失败');
       }
     } on DioException catch (e) {
       return ApiResult.error(_handleError(e));

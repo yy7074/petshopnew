@@ -109,11 +109,10 @@ class BidService:
                 # 创建自动出价记录
                 bid = Bid(
                     product_id=product_id,
-                    user_id=auto_bid.user_id,
-                    amount=next_amount,
+                    bidder_id=auto_bid.user_id,
+                    bid_amount=next_amount,
                     is_auto_bid=True,
-                    auto_bid_id=auto_bid.id,
-                    status="winning"
+                    status=1  # 1表示有效
                 )
                 db.add(bid)
                 
@@ -165,7 +164,7 @@ class BidService:
         status: Optional[str] = None
     ) -> BidListResponse:
         """获取用户出价记录"""
-        query = db.query(Bid).filter(Bid.user_id == user_id)
+        query = db.query(Bid).filter(Bid.bidder_id == user_id)
         
         if status:
             query = query.filter(Bid.status == status)
@@ -222,7 +221,7 @@ class BidService:
         end_date: Optional[str] = None
     ) -> BidListResponse:
         """获取竞拍历史"""
-        query = db.query(Bid).filter(Bid.user_id == user_id)
+        query = db.query(Bid).filter(Bid.bidder_id == user_id)
         
         if product_id:
             query = query.filter(Bid.product_id == product_id)
@@ -372,20 +371,20 @@ class BidService:
     async def get_user_bid_statistics(self, db: Session, user_id: int) -> Dict[str, Any]:
         """获取用户出价统计"""
         # 总出价次数
-        total_bids = db.query(func.count(Bid.id)).filter(Bid.user_id == user_id).scalar()
+        total_bids = db.query(func.count(Bid.id)).filter(Bid.bidder_id == user_id).scalar()
         
         # 赢得的拍卖数
         won_auctions = db.query(func.count(Bid.id)).filter(
-            and_(Bid.user_id == user_id, Bid.status == "won")
+            and_(Bid.bidder_id == user_id, Bid.status == 2)  # 2表示获胜
         ).scalar()
         
         # 正在领先的拍卖数
         winning_auctions = db.query(func.count(Bid.id)).filter(
-            and_(Bid.user_id == user_id, Bid.status == "winning")
+            and_(Bid.bidder_id == user_id, Bid.status == 1)  # 1表示有效/领先
         ).scalar()
         
         # 总出价金额
-        total_amount = db.query(func.sum(Bid.amount)).filter(Bid.user_id == user_id).scalar() or 0
+        total_amount = db.query(func.sum(Bid.bid_amount)).filter(Bid.bidder_id == user_id).scalar() or 0
         
         # 平均出价
         avg_amount = total_amount / total_bids if total_bids > 0 else 0
@@ -407,7 +406,7 @@ class BidService:
     ) -> Optional[BidResponse]:
         """获取出价详情"""
         bid = db.query(Bid).filter(
-            and_(Bid.id == bid_id, Bid.user_id == user_id)
+            and_(Bid.id == bid_id, Bid.bidder_id == user_id)
         ).first()
         
         if not bid:
@@ -418,7 +417,7 @@ class BidService:
     async def cancel_bid(self, db: Session, bid_id: int, user_id: int) -> bool:
         """取消出价（仅在特定条件下允许）"""
         bid = db.query(Bid).filter(
-            and_(Bid.id == bid_id, Bid.user_id == user_id)
+            and_(Bid.id == bid_id, Bid.bidder_id == user_id)
         ).first()
         
         if not bid:

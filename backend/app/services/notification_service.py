@@ -3,7 +3,7 @@ from typing import List, Optional
 from datetime import datetime
 
 from ..models.user import User
-from ..models.order import Message
+from ..models.order import SystemMessage
 from ..core.config import settings
 
 class NotificationService:
@@ -30,7 +30,7 @@ class NotificationService:
             seller = db.query(User).filter(User.id == product.seller_id).first()
             if seller:
                 # 创建消息通知
-                message = Message(
+                message = SystemMessage(
                     sender_id=None,  # 系统消息
                     receiver_id=seller.id,
                     message_type=3,  # 拍卖通知
@@ -58,7 +58,7 @@ class NotificationService:
     ):
         """发送拍卖获胜通知"""
         try:
-            message = Message(
+            message = SystemMessage(
                 sender_id=None,  # 系统消息
                 receiver_id=user_id,
                 message_type=3,  # 拍卖通知
@@ -79,7 +79,7 @@ class NotificationService:
     ):
         """发送拍卖失败通知"""
         try:
-            message = Message(
+            message = SystemMessage(
                 sender_id=None,  # 系统消息
                 receiver_id=user_id,
                 message_type=3,  # 拍卖通知
@@ -100,7 +100,7 @@ class NotificationService:
     ):
         """发送流拍通知给卖家"""
         try:
-            message = Message(
+            message = SystemMessage(
                 sender_id=None,  # 系统消息
                 receiver_id=user_id,
                 message_type=3,  # 拍卖通知
@@ -135,7 +135,7 @@ class NotificationService:
             if notification_type == "created":
                 # 订单创建通知 - 发给买家
                 if buyer:
-                    message = Message(
+                    message = SystemMessage(
                         sender_id=None,
                         receiver_id=buyer.id,
                         message_type=4,  # 订单通知
@@ -149,7 +149,7 @@ class NotificationService:
             elif notification_type == "paid":
                 # 付款成功通知 - 发给卖家
                 if seller:
-                    message = Message(
+                    message = SystemMessage(
                         sender_id=None,
                         receiver_id=seller.id,
                         message_type=4,
@@ -163,7 +163,7 @@ class NotificationService:
             elif notification_type == "shipped":
                 # 发货通知 - 发给买家
                 if buyer:
-                    message = Message(
+                    message = SystemMessage(
                         sender_id=None,
                         receiver_id=buyer.id,
                         message_type=4,
@@ -177,7 +177,7 @@ class NotificationService:
             elif notification_type == "completed":
                 # 订单完成通知 - 发给买家
                 if buyer:
-                    message = Message(
+                    message = SystemMessage(
                         sender_id=None,
                         receiver_id=buyer.id,
                         message_type=4,
@@ -192,7 +192,7 @@ class NotificationService:
                 # 订单取消通知 - 发给买家和卖家
                 for user in [buyer, seller]:
                     if user:
-                        message = Message(
+                        message = SystemMessage(
                             sender_id=None,
                             receiver_id=user.id,
                             message_type=4,
@@ -218,7 +218,7 @@ class NotificationService:
         """发送系统通知"""
         try:
             for user_id in user_ids:
-                message = Message(
+                message = SystemMessage(
                     sender_id=None,
                     receiver_id=user_id,
                     message_type=1,  # 系统消息

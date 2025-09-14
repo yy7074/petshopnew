@@ -5,7 +5,7 @@ from datetime import datetime
 
 class MessageCreate(BaseModel):
     content: str = Field(..., min_length=1, max_length=1000)
-    message_type: str = Field(default="text", regex="^(text|image|product|system)$")
+    message_type: str = Field(default="text", pattern="^(text|image|product|system)$")
     related_id: Optional[int] = None
 
 

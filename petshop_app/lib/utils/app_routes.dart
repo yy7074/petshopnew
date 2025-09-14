@@ -13,6 +13,7 @@ import '../pages/auction/auction_winner_order_page.dart';
 import '../pages/auction/auction_test_page.dart';
 import '../pages/wallet/wallet_page.dart';
 import '../pages/store/store_page.dart';
+import '../pages/bids/bid_records_page.dart';
 
 class AppRoutes {
   static const String splash = '/splash';
@@ -29,6 +30,7 @@ class AppRoutes {
   static const String auctionTest = '/auction-test';
   static const String wallet = '/wallet';
   static const String store = '/store';
+  static const String bidRecords = '/bid-records';
 
   static List<GetPage> routes = [
     GetPage(
@@ -93,6 +95,10 @@ class AppRoutes {
         storeId: Get.arguments?['store_id'],
         sellerId: Get.arguments?['seller_id'],
       ),
+    ),
+    GetPage(
+      name: bidRecords,
+      page: () => const BidRecordsPage(),
     ),
   ];
 }

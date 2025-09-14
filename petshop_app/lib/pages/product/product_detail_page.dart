@@ -7,6 +7,7 @@ import '../../services/auction_service.dart';
 import '../../models/bid.dart';
 import '../../utils/app_routes.dart';
 import 'package:get/get.dart';
+import '../../widgets/product_consultation_dialog.dart';
 
 class ProductDetailPage extends StatefulWidget {
   final Map<String, dynamic>? productData;
@@ -1447,11 +1448,27 @@ class _ProductDetailPageState extends State<ProductDetailPage> {
   }
 
   void _showChatDialog() {
-    Navigator.push(
-      context,
-      MaterialPageRoute(
-        builder: (context) => ChatPage(),
-      ),
+    // 获取商品信息
+    final productId = widget.productData?['id'] ?? 0;
+    final sellerId = widget.productData?['seller_id'] ?? 0;
+    final productTitle = widget.productData?['title'] ?? '商品';
+    final productImages = widget.productData?['images'] as List?;
+    final productImage =
+        productImages?.isNotEmpty == true ? productImages!.first : null;
+
+    // 验证必要信息
+    if (productId <= 0 || sellerId <= 0) {
+      Get.snackbar('错误', '商品信息不完整，无法发起咨询');
+      return;
+    }
+
+    // 显示咨询对话框
+    showProductConsultationDialog(
+      context: context,
+      productId: productId,
+      sellerId: sellerId,
+      productTitle: productTitle,
+      productImage: productImage,
     );
   }
 
