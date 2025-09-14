@@ -30,9 +30,7 @@ class CustomBottomNav extends StatelessWidget {
         clipBehavior: Clip.none, // 允许子组件超出边界
         children: [
           // 底部导航栏主体
-          Positioned(
-            left: 0,
-            right: 0,
+          Positioned.fill(
             bottom: 0,
             child: Container(
               height: 45.h + MediaQuery.of(context).padding.bottom, // 进一步降低主体高度

@@ -925,15 +925,19 @@ class _HomePageState extends State<HomePage> {
                   ),
                 ),
               )
-            : BannerSwiper(
-                images: _banners.map((banner) => banner.image).toList(),
-                onTap: (index) {
-                  if (index < _banners.length) {
-                    final banner = _banners[index];
-                    // 处理轮播图点击事件
-                    _handleBannerTap(banner);
-                  }
-                },
+            : Container(
+                key: ValueKey('banner_container_${_banners.length}'),
+                child: BannerSwiper(
+                  key: ValueKey('banner_swiper_${_banners.length}'),
+                  images: _banners.map((banner) => banner.image).toList(),
+                  onTap: (index) {
+                    if (index < _banners.length) {
+                      final banner = _banners[index];
+                      // 处理轮播图点击事件
+                      _handleBannerTap(banner);
+                    }
+                  },
+                ),
               ),
       ),
     );
@@ -978,6 +982,7 @@ class _HomePageState extends State<HomePage> {
       height: 120.h,
       margin: EdgeInsets.symmetric(horizontal: 16.w),
       child: ListView.builder(
+        key: ValueKey('special_events_${_specialEvents.length}'),
         scrollDirection: Axis.horizontal,
         itemCount: _specialEvents.length,
         itemBuilder: (context, index) {
