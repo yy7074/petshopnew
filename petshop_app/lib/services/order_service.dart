@@ -40,8 +40,8 @@ class OrderService {
         queryParams['end_date'] = endDate;
       }
 
-      final uri =
-          Uri.parse('$baseUrl/orders').replace(queryParameters: queryParams);
+      final uri = Uri.parse('$baseUrl${ApiConstants.orders}')
+          .replace(queryParameters: queryParams);
 
       final response = await http.get(
         uri,
@@ -71,7 +71,7 @@ class OrderService {
       }
 
       final response = await http.get(
-        Uri.parse('$baseUrl/orders/$orderId'),
+        Uri.parse('$baseUrl${ApiConstants.orders}/$orderId'),
         headers: {
           'Content-Type': 'application/json',
           'Authorization': 'Bearer $token',
@@ -99,7 +99,7 @@ class OrderService {
       }
 
       final response = await http.post(
-        Uri.parse('$baseUrl/orders/$orderId/cancel'),
+        Uri.parse('$baseUrl${ApiConstants.orders}/$orderId/cancel'),
         headers: {
           'Content-Type': 'application/json',
           'Authorization': 'Bearer $token',
@@ -129,7 +129,7 @@ class OrderService {
       }
 
       final response = await http.post(
-        Uri.parse('$baseUrl/orders/$orderId/confirm-received'),
+        Uri.parse('$baseUrl${ApiConstants.orders}/$orderId/confirm-received'),
         headers: {
           'Content-Type': 'application/json',
           'Authorization': 'Bearer $token',
@@ -157,7 +157,7 @@ class OrderService {
       }
 
       final response = await http.post(
-        Uri.parse('$baseUrl/orders/$orderId/apply-refund'),
+        Uri.parse('$baseUrl${ApiConstants.orders}/$orderId/apply-refund'),
         headers: {
           'Content-Type': 'application/json',
           'Authorization': 'Bearer $token',
@@ -187,7 +187,7 @@ class OrderService {
       }
 
       final response = await http.get(
-        Uri.parse('$baseUrl/orders/$orderId/logistics'),
+        Uri.parse('$baseUrl${ApiConstants.orders}/$orderId/logistics'),
         headers: {
           'Content-Type': 'application/json',
           'Authorization': 'Bearer $token',
@@ -215,7 +215,7 @@ class OrderService {
       }
 
       final response = await http.post(
-        Uri.parse('$baseUrl/orders/$orderId/pay'),
+        Uri.parse('$baseUrl${ApiConstants.orders}/$orderId/pay'),
         headers: {
           'Content-Type': 'application/json',
           'Authorization': 'Bearer $token',
