@@ -448,7 +448,7 @@ class _ShopEntryPageState extends State<ShopEntryPage> {
           Navigator.push(
             context,
             MaterialPageRoute(
-              builder: (context) => const ShopInfoPage(),
+              builder: (context) => ShopInfoPage(storeType: _selectedShopType),
             ),
           );
         },

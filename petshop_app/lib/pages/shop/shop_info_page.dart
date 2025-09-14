@@ -1,15 +1,24 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
+import 'package:image_picker/image_picker.dart';
+import '../../services/store_application_service.dart';
+import '../../services/storage_service.dart';
+import '../../models/user.dart';
 
 class ShopInfoPage extends StatefulWidget {
-  const ShopInfoPage({super.key});
+  final String storeType;
+
+  const ShopInfoPage({
+    super.key,
+    required this.storeType,
+  });
 
   @override
   State<ShopInfoPage> createState() => _ShopInfoPageState();
 }
 
 class _ShopInfoPageState extends State<ShopInfoPage> {
-  // final _formKey = GlobalKey<FormState>();
+  final _formKey = GlobalKey<FormState>();
   final _shopNameController = TextEditingController();
   final _shopIntroController = TextEditingController();
   final _consigneeNameController = TextEditingController();
@@ -23,6 +32,27 @@ class _ShopInfoPageState extends State<ShopInfoPage> {
   String _idEndDate = '';
   bool _isLongTerm = false;
   bool _agreeTerms = false;
+  bool _isSubmitting = false;
+
+  // 图片相关
+  String? _idFrontImageUrl;
+  String? _idBackImageUrl;
+  String? _businessLicenseImageUrl;
+
+  User? _currentUser;
+
+  @override
+  void initState() {
+    super.initState();
+    _loadUserInfo();
+  }
+
+  void _loadUserInfo() {
+    final user = StorageService.getUser();
+    setState(() {
+      _currentUser = user;
+    });
+  }
 
   @override
   void dispose() {
@@ -41,37 +71,40 @@ class _ShopInfoPageState extends State<ShopInfoPage> {
     return Scaffold(
       backgroundColor: const Color(0xFFF5F5F5),
       body: SafeArea(
-        child: Column(
-          children: [
-            SizedBox(height: 16.h),
-            _buildHeader(),
-            SizedBox(height: 16.h),
-            _buildProgressIndicator(),
-            SizedBox(height: 24.h),
-            Expanded(
-              child: SingleChildScrollView(
-                physics: const BouncingScrollPhysics(),
-                child: Column(
-                  children: [
-                    _buildImportantReminder(),
-                    SizedBox(height: 24.h),
-                    _buildShopInfo(),
-                    SizedBox(height: 24.h),
-                    _buildReturnAddress(),
-                    SizedBox(height: 24.h),
-                    _buildRealNameInfo(),
-                    SizedBox(height: 24.h),
-                    _buildIdPhotos(),
-                    SizedBox(height: 24.h),
-                    _buildBusinessLicense(),
-                    SizedBox(height: 24.h),
-                    _buildTermsAndActions(),
-                    SizedBox(height: 100.h),
-                  ],
+        child: Form(
+          key: _formKey,
+          child: Column(
+            children: [
+              SizedBox(height: 16.h),
+              _buildHeader(),
+              SizedBox(height: 16.h),
+              _buildProgressIndicator(),
+              SizedBox(height: 24.h),
+              Expanded(
+                child: SingleChildScrollView(
+                  physics: const BouncingScrollPhysics(),
+                  child: Column(
+                    children: [
+                      _buildImportantReminder(),
+                      SizedBox(height: 24.h),
+                      _buildShopInfo(),
+                      SizedBox(height: 24.h),
+                      _buildReturnAddress(),
+                      SizedBox(height: 24.h),
+                      _buildRealNameInfo(),
+                      SizedBox(height: 24.h),
+                      _buildIdPhotos(),
+                      SizedBox(height: 24.h),
+                      _buildBusinessLicense(),
+                      SizedBox(height: 24.h),
+                      _buildTermsAndActions(),
+                      SizedBox(height: 100.h),
+                    ],
+                  ),
                 ),
               ),
-            ),
-          ],
+            ],
+          ),
         ),
       ),
     );
@@ -303,6 +336,15 @@ class _ShopInfoPageState extends State<ShopInfoPage> {
               '店铺名称',
               _shopNameController,
               '不包含他人注册商标或联系方式',
+              validator: (value) {
+                if (value == null || value.trim().isEmpty) {
+                  return '请输入店铺名称';
+                }
+                if (value.trim().length < 2) {
+                  return '店铺名称至少2个字符';
+                }
+                return null;
+              },
             ),
             SizedBox(height: 16.h),
             _buildInputField(
@@ -310,6 +352,12 @@ class _ShopInfoPageState extends State<ShopInfoPage> {
               _shopIntroController,
               '填写店铺介绍,不包含联系方式',
               maxLines: 3,
+              validator: (value) {
+                if (value == null || value.trim().isEmpty) {
+                  return '请输入店铺介绍';
+                }
+                return null;
+              },
             ),
           ],
         ),
@@ -350,6 +398,12 @@ class _ShopInfoPageState extends State<ShopInfoPage> {
               '收货人姓名',
               _consigneeNameController,
               '请填写收货人姓名',
+              validator: (value) {
+                if (value == null || value.trim().isEmpty) {
+                  return '请输入收货人姓名';
+                }
+                return null;
+              },
             ),
             SizedBox(height: 16.h),
             _buildInputField(
@@ -357,6 +411,15 @@ class _ShopInfoPageState extends State<ShopInfoPage> {
               _phoneController,
               '请填写收货人联系方式',
               keyboardType: TextInputType.phone,
+              validator: (value) {
+                if (value == null || value.trim().isEmpty) {
+                  return '请输入手机号码';
+                }
+                if (!RegExp(r'^1[3-9]\d{9}$').hasMatch(value.trim())) {
+                  return '请输入正确的手机号码';
+                }
+                return null;
+              },
             ),
             SizedBox(height: 16.h),
             _buildRegionField(),
@@ -366,6 +429,12 @@ class _ShopInfoPageState extends State<ShopInfoPage> {
               _addressController,
               '如街道、门牌号、小区、单元等',
               maxLines: 2,
+              validator: (value) {
+                if (value == null || value.trim().isEmpty) {
+                  return '请输入详细地址';
+                }
+                return null;
+              },
             ),
             SizedBox(height: 8.h),
             Text(
@@ -414,12 +483,29 @@ class _ShopInfoPageState extends State<ShopInfoPage> {
               '实名信息',
               _realNameController,
               '请填写真实姓名',
+              validator: (value) {
+                if (value == null || value.trim().isEmpty) {
+                  return '请输入真实姓名';
+                }
+                return null;
+              },
             ),
             SizedBox(height: 16.h),
             _buildInputField(
               '身份证号',
               _idNumberController,
               '请填写身份证号码',
+              validator: (value) {
+                if (value == null || value.trim().isEmpty) {
+                  return '请输入身份证号码';
+                }
+                if (!RegExp(
+                        r'^[1-9]\d{5}(18|19|20)\d{2}(0[1-9]|1[0-2])(0[1-9]|[12]\d|3[01])\d{3}[0-9Xx]$')
+                    .hasMatch(value.trim())) {
+                  return '请输入正确的身份证号码';
+                }
+                return null;
+              },
             ),
             SizedBox(height: 16.h),
             _buildDateField('证件开始日', _idStartDate, '选择证件开始日期'),
@@ -578,24 +664,50 @@ class _ShopInfoPageState extends State<ShopInfoPage> {
               SizedBox(width: 12.w),
               Expanded(
                 child: GestureDetector(
-                  onTap: () {
-                    _submitInfo();
-                  },
+                  onTap: _isSubmitting
+                      ? null
+                      : () {
+                          _submitInfo();
+                        },
                   child: Container(
                     padding: EdgeInsets.symmetric(vertical: 14.h),
                     decoration: BoxDecoration(
-                      color: const Color(0xFF9C4DFF),
+                      color:
+                          _isSubmitting ? Colors.grey : const Color(0xFF9C4DFF),
                       borderRadius: BorderRadius.circular(8.r),
                     ),
-                    child: Text(
-                      '提交信息并开户验证',
-                      style: TextStyle(
-                        fontSize: 14.sp,
-                        color: Colors.white,
-                        fontWeight: FontWeight.w600,
-                      ),
-                      textAlign: TextAlign.center,
-                    ),
+                    child: _isSubmitting
+                        ? Row(
+                            mainAxisAlignment: MainAxisAlignment.center,
+                            children: [
+                              SizedBox(
+                                width: 16.w,
+                                height: 16.w,
+                                child: const CircularProgressIndicator(
+                                  color: Colors.white,
+                                  strokeWidth: 2,
+                                ),
+                              ),
+                              SizedBox(width: 8.w),
+                              Text(
+                                '提交中...',
+                                style: TextStyle(
+                                  fontSize: 14.sp,
+                                  color: Colors.white,
+                                  fontWeight: FontWeight.w600,
+                                ),
+                              ),
+                            ],
+                          )
+                        : Text(
+                            '提交信息并开户验证',
+                            style: TextStyle(
+                              fontSize: 14.sp,
+                              color: Colors.white,
+                              fontWeight: FontWeight.w600,
+                            ),
+                            textAlign: TextAlign.center,
+                          ),
                   ),
                 ),
               ),
@@ -674,7 +786,9 @@ class _ShopInfoPageState extends State<ShopInfoPage> {
   // 构建输入字段
   Widget _buildInputField(
       String label, TextEditingController controller, String hintText,
-      {TextInputType? keyboardType, int maxLines = 1}) {
+      {TextInputType? keyboardType,
+      int maxLines = 1,
+      String? Function(String?)? validator}) {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
@@ -691,6 +805,7 @@ class _ShopInfoPageState extends State<ShopInfoPage> {
           controller: controller,
           keyboardType: keyboardType,
           maxLines: maxLines,
+          validator: validator,
           decoration: InputDecoration(
             hintText: hintText,
             hintStyle: TextStyle(
@@ -715,6 +830,20 @@ class _ShopInfoPageState extends State<ShopInfoPage> {
               borderRadius: BorderRadius.circular(8.r),
               borderSide: const BorderSide(
                 color: Color(0xFF9C4DFF),
+                width: 2,
+              ),
+            ),
+            errorBorder: OutlineInputBorder(
+              borderRadius: BorderRadius.circular(8.r),
+              borderSide: const BorderSide(
+                color: Colors.red,
+                width: 1,
+              ),
+            ),
+            focusedErrorBorder: OutlineInputBorder(
+              borderRadius: BorderRadius.circular(8.r),
+              borderSide: const BorderSide(
+                color: Colors.red,
                 width: 2,
               ),
             ),
@@ -886,6 +1015,19 @@ class _ShopInfoPageState extends State<ShopInfoPage> {
 
   // 构建照片上传
   Widget _buildPhotoUpload(String label, IconData icon) {
+    String? imageUrl;
+    switch (label) {
+      case '人像面':
+        imageUrl = _idFrontImageUrl;
+        break;
+      case '国徽面':
+        imageUrl = _idBackImageUrl;
+        break;
+      case '文物经营许可证':
+        imageUrl = _businessLicenseImageUrl;
+        break;
+    }
+
     return GestureDetector(
       onTap: () {
         _uploadPhoto(label);
@@ -901,33 +1043,88 @@ class _ShopInfoPageState extends State<ShopInfoPage> {
           ),
           borderRadius: BorderRadius.circular(8.r),
         ),
-        child: Column(
-          mainAxisAlignment: MainAxisAlignment.center,
-          children: [
-            Icon(
-              icon,
-              size: 24.w,
-              color: const Color(0xFF999999),
-            ),
-            SizedBox(height: 8.h),
-            Container(
-              padding: EdgeInsets.symmetric(horizontal: 8.w, vertical: 4.h),
-              decoration: BoxDecoration(
-                color: const Color(0xFF9C4DFF),
-                borderRadius: BorderRadius.circular(4.r),
-              ),
-              child: Text(
-                '+上传$label',
-                style: TextStyle(
-                  fontSize: 10.sp,
-                  color: Colors.white,
-                  fontWeight: FontWeight.w500,
-                ),
-              ),
-            ),
-          ],
-        ),
+        child: imageUrl != null && imageUrl.isNotEmpty
+            ? Stack(
+                children: [
+                  ClipRRect(
+                    borderRadius: BorderRadius.circular(8.r),
+                    child: Image.network(
+                      'https://catdog.dachaonet.com$imageUrl',
+                      width: double.infinity,
+                      height: double.infinity,
+                      fit: BoxFit.cover,
+                      errorBuilder: (context, error, stackTrace) {
+                        return _buildUploadPlaceholder(label, icon);
+                      },
+                    ),
+                  ),
+                  Positioned(
+                    top: 4.h,
+                    right: 4.w,
+                    child: GestureDetector(
+                      onTap: () {
+                        setState(() {
+                          switch (label) {
+                            case '人像面':
+                              _idFrontImageUrl = null;
+                              break;
+                            case '国徽面':
+                              _idBackImageUrl = null;
+                              break;
+                            case '文物经营许可证':
+                              _businessLicenseImageUrl = null;
+                              break;
+                          }
+                        });
+                      },
+                      child: Container(
+                        width: 20.w,
+                        height: 20.w,
+                        decoration: const BoxDecoration(
+                          color: Colors.red,
+                          shape: BoxShape.circle,
+                        ),
+                        child: Icon(
+                          Icons.close,
+                          size: 12.w,
+                          color: Colors.white,
+                        ),
+                      ),
+                    ),
+                  ),
+                ],
+              )
+            : _buildUploadPlaceholder(label, icon),
       ),
+    );
+  }
+
+  Widget _buildUploadPlaceholder(String label, IconData icon) {
+    return Column(
+      mainAxisAlignment: MainAxisAlignment.center,
+      children: [
+        Icon(
+          icon,
+          size: 24.w,
+          color: const Color(0xFF999999),
+        ),
+        SizedBox(height: 8.h),
+        Container(
+          padding: EdgeInsets.symmetric(horizontal: 8.w, vertical: 4.h),
+          decoration: BoxDecoration(
+            color: const Color(0xFF9C4DFF),
+            borderRadius: BorderRadius.circular(4.r),
+          ),
+          child: Text(
+            '+上传$label',
+            style: TextStyle(
+              fontSize: 10.sp,
+              color: Colors.white,
+              fontWeight: FontWeight.w500,
+            ),
+          ),
+        ),
+      ],
     );
   }
 
@@ -1026,13 +1223,162 @@ class _ShopInfoPageState extends State<ShopInfoPage> {
 
   // 上传照片
   void _uploadPhoto(String label) {
-    ScaffoldMessenger.of(context).showSnackBar(
-      SnackBar(content: Text('上传$label')),
+    showModalBottomSheet(
+      context: context,
+      shape: RoundedRectangleBorder(
+        borderRadius: BorderRadius.only(
+          topLeft: Radius.circular(20.r),
+          topRight: Radius.circular(20.r),
+        ),
+      ),
+      builder: (context) => Container(
+        padding: EdgeInsets.all(20.w),
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            Text(
+              '选择上传方式',
+              style: TextStyle(
+                fontSize: 18.sp,
+                color: const Color(0xFF333333),
+                fontWeight: FontWeight.w600,
+              ),
+            ),
+            SizedBox(height: 20.h),
+            Row(
+              mainAxisAlignment: MainAxisAlignment.spaceAround,
+              children: [
+                GestureDetector(
+                  onTap: () async {
+                    Navigator.pop(context);
+                    await _pickAndUploadImage(label, ImageSource.camera);
+                  },
+                  child: Column(
+                    children: [
+                      Container(
+                        width: 60.w,
+                        height: 60.w,
+                        decoration: BoxDecoration(
+                          color: const Color(0xFF9C4DFF),
+                          borderRadius: BorderRadius.circular(12.r),
+                        ),
+                        child: Icon(
+                          Icons.camera_alt,
+                          size: 30.w,
+                          color: Colors.white,
+                        ),
+                      ),
+                      SizedBox(height: 8.h),
+                      Text(
+                        '拍照',
+                        style: TextStyle(
+                          fontSize: 14.sp,
+                          color: const Color(0xFF333333),
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+                GestureDetector(
+                  onTap: () async {
+                    Navigator.pop(context);
+                    await _pickAndUploadImage(label, ImageSource.gallery);
+                  },
+                  child: Column(
+                    children: [
+                      Container(
+                        width: 60.w,
+                        height: 60.w,
+                        decoration: BoxDecoration(
+                          color: const Color(0xFF9C4DFF),
+                          borderRadius: BorderRadius.circular(12.r),
+                        ),
+                        child: Icon(
+                          Icons.photo_library,
+                          size: 30.w,
+                          color: Colors.white,
+                        ),
+                      ),
+                      SizedBox(height: 8.h),
+                      Text(
+                        '相册',
+                        style: TextStyle(
+                          fontSize: 14.sp,
+                          color: const Color(0xFF333333),
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+              ],
+            ),
+            SizedBox(height: 20.h),
+          ],
+        ),
+      ),
     );
   }
 
+  // 选择并上传图片
+  Future<void> _pickAndUploadImage(String label, ImageSource source) async {
+    try {
+      XFile? image;
+      if (source == ImageSource.camera) {
+        image = await StoreApplicationService.pickImageFromCamera();
+      } else {
+        image = await StoreApplicationService.pickImageFromGallery();
+      }
+
+      if (image != null) {
+        // 显示上传进度
+        showDialog(
+          context: context,
+          barrierDismissible: false,
+          builder: (context) => const Center(
+            child: CircularProgressIndicator(),
+          ),
+        );
+
+        try {
+          // 先测试认证状态
+          await StoreApplicationService.testAuth();
+
+          final result = await StoreApplicationService.uploadImage(image);
+          Navigator.pop(context); // 关闭进度对话框
+
+          setState(() {
+            switch (label) {
+              case '人像面':
+                _idFrontImageUrl = result['url'];
+                break;
+              case '国徽面':
+                _idBackImageUrl = result['url'];
+                break;
+              case '文物经营许可证':
+                _businessLicenseImageUrl = result['url'];
+                break;
+            }
+          });
+
+          ScaffoldMessenger.of(context).showSnackBar(
+            SnackBar(content: Text('$label上传成功')),
+          );
+        } catch (e) {
+          Navigator.pop(context); // 关闭进度对话框
+          ScaffoldMessenger.of(context).showSnackBar(
+            SnackBar(content: Text('上传失败: $e')),
+          );
+        }
+      }
+    } catch (e) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text('选择图片失败: $e')),
+      );
+    }
+  }
+
   // 提交信息
-  void _submitInfo() {
+  void _submitInfo() async {
     if (!_agreeTerms) {
       ScaffoldMessenger.of(context).showSnackBar(
         const SnackBar(content: Text('请先同意相关条款')),
@@ -1040,9 +1386,93 @@ class _ShopInfoPageState extends State<ShopInfoPage> {
       return;
     }
 
-    ScaffoldMessenger.of(context).showSnackBar(
-      const SnackBar(content: Text('信息提交成功，等待审核')),
-    );
-    Navigator.pop(context);
+    if (!_formKey.currentState!.validate()) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text('请完善表单信息')),
+      );
+      return;
+    }
+
+    if (_selectedRegion.isEmpty) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text('请选择所在地区')),
+      );
+      return;
+    }
+
+    if (_idStartDate.isEmpty) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text('请选择证件开始日期')),
+      );
+      return;
+    }
+
+    if (_idEndDate.isEmpty) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text('请选择证件结束日期')),
+      );
+      return;
+    }
+
+    if (_idFrontImageUrl == null || _idFrontImageUrl!.isEmpty) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text('请上传身份证人像面照片')),
+      );
+      return;
+    }
+
+    if (_idBackImageUrl == null || _idBackImageUrl!.isEmpty) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text('请上传身份证国徽面照片')),
+      );
+      return;
+    }
+
+    setState(() {
+      _isSubmitting = true;
+    });
+
+    try {
+      // 构建申请数据
+      final applicationData = {
+        'store_name': _shopNameController.text.trim(),
+        'store_description': _shopIntroController.text.trim(),
+        'store_type': widget.storeType,
+        'consignee_name': _consigneeNameController.text.trim(),
+        'consignee_phone': _phoneController.text.trim(),
+        'return_region': _selectedRegion,
+        'return_address': _addressController.text.trim(),
+        'real_name': _realNameController.text.trim(),
+        'id_number': _idNumberController.text.trim(),
+        'id_start_date': _idStartDate,
+        'id_end_date': _idEndDate,
+        'id_front_image': _idFrontImageUrl,
+        'id_back_image': _idBackImageUrl,
+        'business_license_image': _businessLicenseImageUrl,
+      };
+
+      // 提交申请
+      await StoreApplicationService.createApplication(applicationData);
+
+      setState(() {
+        _isSubmitting = false;
+      });
+
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text('店铺申请提交成功，请等待审核')),
+      );
+
+      // 返回上一页
+      Navigator.of(context).pop();
+      Navigator.of(context).pop(); // 返回到个人中心页面
+    } catch (e) {
+      setState(() {
+        _isSubmitting = false;
+      });
+
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text('提交失败: $e')),
+      );
+    }
   }
 }

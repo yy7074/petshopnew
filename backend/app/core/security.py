@@ -81,4 +81,13 @@ def get_current_user_optional(token: Optional[str] = Depends(optional_auth)):
     except HTTPException:
         return None
 
+def get_admin_user(current_user = Depends(get_current_user)):
+    """获取管理员用户"""
+    if not hasattr(current_user, 'is_admin') or not current_user.is_admin:
+        raise HTTPException(
+            status_code=status.HTTP_403_FORBIDDEN,
+            detail="需要管理员权限"
+        )
+    return current_user
+
 

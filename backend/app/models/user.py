@@ -19,6 +19,7 @@ class User(Base):
     location = Column(String(100))
     is_seller = Column(Boolean, default=False)
     is_verified = Column(Boolean, default=False)
+    is_admin = Column(Boolean, default=False)
     balance = Column(DECIMAL(10, 2), default=0.00)
     credit_score = Column(Integer, default=100)
     status = Column(Integer, default=1, comment="1:正常,2:冻结,3:禁用")

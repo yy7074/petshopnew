@@ -1,180 +1,304 @@
-import 'package:dio/dio.dart';
-import '../models/order.dart';
-import 'api_service.dart';
-import 'auth_service.dart';
+import 'dart:convert';
+import 'package:http/http.dart' as http;
+import '../constants/api_constants.dart';
+import 'storage_service.dart';
 
 class OrderService {
-  final ApiService _apiService = ApiService();
-
-  // 创建订单
-  Future<ApiResult<Order>> createOrder({
-    required int productId,
-    required int quantity,
-    required String paymentMethod,
-  }) async {
-    try {
-      final response = await _apiService.post('/orders', data: {
-        'product_id': productId,
-        'quantity': quantity,
-        'payment_method': paymentMethod,
-      });
-
-      if (response.statusCode == 200) {
-        final order = Order.fromJson(response.data['data']);
-        return ApiResult.success(order);
-      } else {
-        return ApiResult.error(response.data['message'] ?? '创建订单失败');
-      }
-    } on DioException catch (e) {
-      return ApiResult.error(_handleError(e));
-    }
-  }
+  static const String baseUrl = ApiConstants.baseUrl;
 
   // 获取订单列表
-  Future<ApiResult<List<Order>>> getOrders({
+  static Future<Map<String, dynamic>> getOrders({
     int page = 1,
     int pageSize = 20,
     String? status,
+    String? orderType = 'buy', // buy: 我买进的, sell: 我卖出的
+    String? startDate,
+    String? endDate,
   }) async {
     try {
-      final queryParams = <String, dynamic>{
-        'page': page,
-        'page_size': pageSize,
+      final token = StorageService.getUserToken();
+      if (token == null || token.isEmpty) {
+        throw Exception('请先登录');
+      }
+
+      // 构建查询参数
+      final queryParams = <String, String>{
+        'page': page.toString(),
+        'page_size': pageSize.toString(),
       };
 
-      if (status != null) queryParams['status'] = status;
+      if (status != null && status.isNotEmpty) {
+        queryParams['status'] = status;
+      }
+      if (orderType != null && orderType.isNotEmpty) {
+        queryParams['order_type'] = orderType;
+      }
+      if (startDate != null && startDate.isNotEmpty) {
+        queryParams['start_date'] = startDate;
+      }
+      if (endDate != null && endDate.isNotEmpty) {
+        queryParams['end_date'] = endDate;
+      }
 
-      final response = await _apiService.get('/orders', queryParameters: queryParams);
+      final uri =
+          Uri.parse('$baseUrl/orders').replace(queryParameters: queryParams);
+
+      final response = await http.get(
+        uri,
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': 'Bearer $token',
+        },
+      );
 
       if (response.statusCode == 200) {
-        final List<dynamic> ordersJson = response.data['data']['items'] ?? [];
-        final orders = ordersJson.map((json) => Order.fromJson(json)).toList();
-        return ApiResult.success(orders);
+        return json.decode(response.body);
       } else {
-        return ApiResult.error(response.data['message'] ?? '获取订单列表失败');
+        final errorData = json.decode(response.body);
+        throw Exception(errorData['detail'] ?? '获取订单列表失败');
       }
-    } on DioException catch (e) {
-      return ApiResult.error(_handleError(e));
+    } catch (e) {
+      throw Exception('网络错误: $e');
     }
   }
 
   // 获取订单详情
-  Future<ApiResult<Order>> getOrderDetail(int orderId) async {
+  static Future<Map<String, dynamic>> getOrderDetail(int orderId) async {
     try {
-      final response = await _apiService.get('/orders/$orderId');
+      final token = StorageService.getUserToken();
+      if (token == null || token.isEmpty) {
+        throw Exception('请先登录');
+      }
+
+      final response = await http.get(
+        Uri.parse('$baseUrl/orders/$orderId'),
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': 'Bearer $token',
+        },
+      );
 
       if (response.statusCode == 200) {
-        final order = Order.fromJson(response.data['data']);
-        return ApiResult.success(order);
+        return json.decode(response.body);
       } else {
-        return ApiResult.error(response.data['message'] ?? '获取订单详情失败');
+        final errorData = json.decode(response.body);
+        throw Exception(errorData['detail'] ?? '获取订单详情失败');
       }
-    } on DioException catch (e) {
-      return ApiResult.error(_handleError(e));
+    } catch (e) {
+      throw Exception('网络错误: $e');
     }
   }
 
   // 取消订单
-  Future<ApiResult<void>> cancelOrder(int orderId) async {
+  static Future<Map<String, dynamic>> cancelOrder(
+      int orderId, String reason) async {
     try {
-      final response = await _apiService.put('/orders/$orderId/status', data: {
-        'status': 'cancelled',
-      });
+      final token = StorageService.getUserToken();
+      if (token == null || token.isEmpty) {
+        throw Exception('请先登录');
+      }
+
+      final response = await http.post(
+        Uri.parse('$baseUrl/orders/$orderId/cancel'),
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': 'Bearer $token',
+        },
+        body: json.encode({
+          'reason': reason,
+        }),
+      );
 
       if (response.statusCode == 200) {
-        return ApiResult.success(null);
+        return json.decode(response.body);
       } else {
-        return ApiResult.error(response.data['message'] ?? '取消订单失败');
+        final errorData = json.decode(response.body);
+        throw Exception(errorData['detail'] ?? '取消订单失败');
       }
-    } on DioException catch (e) {
-      return ApiResult.error(_handleError(e));
+    } catch (e) {
+      throw Exception('网络错误: $e');
     }
   }
 
   // 确认收货
-  Future<ApiResult<void>> confirmOrder(int orderId) async {
+  static Future<Map<String, dynamic>> confirmReceived(int orderId) async {
     try {
-      final response = await _apiService.put('/orders/$orderId/status', data: {
-        'status': 'completed',
-      });
+      final token = StorageService.getUserToken();
+      if (token == null || token.isEmpty) {
+        throw Exception('请先登录');
+      }
+
+      final response = await http.post(
+        Uri.parse('$baseUrl/orders/$orderId/confirm-received'),
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': 'Bearer $token',
+        },
+      );
 
       if (response.statusCode == 200) {
-        return ApiResult.success(null);
+        return json.decode(response.body);
       } else {
-        return ApiResult.error(response.data['message'] ?? '确认收货失败');
+        final errorData = json.decode(response.body);
+        throw Exception(errorData['detail'] ?? '确认收货失败');
       }
-    } on DioException catch (e) {
-      return ApiResult.error(_handleError(e));
+    } catch (e) {
+      throw Exception('网络错误: $e');
     }
   }
 
-  // 创建支付
-  Future<ApiResult<Payment>> createPayment({
-    required int orderId,
-    required String paymentMethod,
-  }) async {
+  // 申请退款
+  static Future<Map<String, dynamic>> applyRefund(
+      int orderId, String reason) async {
     try {
-      final response = await _apiService.post('/payments', data: {
-        'order_id': orderId,
-        'payment_method': paymentMethod,
-      });
+      final token = StorageService.getUserToken();
+      if (token == null || token.isEmpty) {
+        throw Exception('请先登录');
+      }
+
+      final response = await http.post(
+        Uri.parse('$baseUrl/orders/$orderId/apply-refund'),
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': 'Bearer $token',
+        },
+        body: json.encode({
+          'reason': reason,
+        }),
+      );
 
       if (response.statusCode == 200) {
-        final payment = Payment.fromJson(response.data['data']);
-        return ApiResult.success(payment);
+        return json.decode(response.body);
       } else {
-        return ApiResult.error(response.data['message'] ?? '创建支付失败');
+        final errorData = json.decode(response.body);
+        throw Exception(errorData['detail'] ?? '申请退款失败');
       }
-    } on DioException catch (e) {
-      return ApiResult.error(_handleError(e));
+    } catch (e) {
+      throw Exception('网络错误: $e');
     }
   }
 
-  // 查询支付状态
-  Future<ApiResult<Payment>> getPaymentStatus(int paymentId) async {
+  // 获取物流信息
+  static Future<Map<String, dynamic>> getLogistics(int orderId) async {
     try {
-      final response = await _apiService.get('/payments/$paymentId');
+      final token = StorageService.getUserToken();
+      if (token == null || token.isEmpty) {
+        throw Exception('请先登录');
+      }
+
+      final response = await http.get(
+        Uri.parse('$baseUrl/orders/$orderId/logistics'),
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': 'Bearer $token',
+        },
+      );
 
       if (response.statusCode == 200) {
-        final payment = Payment.fromJson(response.data['data']);
-        return ApiResult.success(payment);
+        return json.decode(response.body);
       } else {
-        return ApiResult.error(response.data['message'] ?? '查询支付状态失败');
+        final errorData = json.decode(response.body);
+        throw Exception(errorData['detail'] ?? '获取物流信息失败');
       }
-    } on DioException catch (e) {
-      return ApiResult.error(_handleError(e));
+    } catch (e) {
+      throw Exception('网络错误: $e');
     }
   }
 
-  // 查询物流信息
-  Future<ApiResult<Logistics>> getLogistics(int orderId) async {
+  // 支付订单
+  static Future<Map<String, dynamic>> payOrder(
+      int orderId, String paymentMethod) async {
     try {
-      final response = await _apiService.get('/logistics/$orderId');
+      final token = StorageService.getUserToken();
+      if (token == null || token.isEmpty) {
+        throw Exception('请先登录');
+      }
+
+      final response = await http.post(
+        Uri.parse('$baseUrl/orders/$orderId/pay'),
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': 'Bearer $token',
+        },
+        body: json.encode({
+          'payment_method': paymentMethod,
+        }),
+      );
 
       if (response.statusCode == 200) {
-        final logistics = Logistics.fromJson(response.data['data']);
-        return ApiResult.success(logistics);
+        return json.decode(response.body);
       } else {
-        return ApiResult.error(response.data['message'] ?? '查询物流信息失败');
+        final errorData = json.decode(response.body);
+        throw Exception(errorData['detail'] ?? '支付失败');
       }
-    } on DioException catch (e) {
-      return ApiResult.error(_handleError(e));
+    } catch (e) {
+      throw Exception('网络错误: $e');
     }
   }
 
-  // 错误处理
-  String _handleError(DioException error) {
-    if (error.response?.statusCode == 400) {
-      return '订单信息不正确';
-    } else if (error.response?.statusCode == 409) {
-      return '订单状态不允许此操作';
-    } else if (error.type == DioExceptionType.connectionTimeout ||
-               error.type == DioExceptionType.receiveTimeout) {
-      return '网络连接超时，请检查网络';
-    } else if (error.type == DioExceptionType.unknown) {
-      return '网络连接失败，请检查网络';
-    } else {
-      return error.response?.data?['message'] ?? '操作失败';
+  // 获取订单状态文本
+  static String getStatusText(String status) {
+    switch (status) {
+      case 'pending':
+        return '待付款';
+      case 'paid':
+        return '待发货';
+      case 'shipped':
+        return '待收货';
+      case 'delivered':
+        return '已送达';
+      case 'completed':
+        return '已完成';
+      case 'cancelled':
+        return '已取消';
+      case 'refunded':
+        return '已退款';
+      default:
+        return '未知状态';
+    }
+  }
+
+  // 获取订单状态颜色
+  static String getStatusColor(String status) {
+    switch (status) {
+      case 'pending':
+        return '#FFA500'; // 橙色
+      case 'paid':
+        return '#2196F3'; // 蓝色
+      case 'shipped':
+        return '#9C27B0'; // 紫色
+      case 'delivered':
+        return '#4CAF50'; // 绿色
+      case 'completed':
+        return '#4CAF50'; // 绿色
+      case 'cancelled':
+        return '#757575'; // 灰色
+      case 'refunded':
+        return '#F44336'; // 红色
+      default:
+        return '#999999'; // 默认灰色
+    }
+  }
+
+  // 获取订单可执行的操作
+  static List<String> getOrderActions(String status) {
+    switch (status) {
+      case 'pending':
+        return ['取消订单', '继续付款'];
+      case 'paid':
+        return ['联系卖家', '申请退款'];
+      case 'shipped':
+        return ['查看物流', '确认收货'];
+      case 'delivered':
+        return ['确认收货', '申请退款'];
+      case 'completed':
+        return ['再次购买', '评价'];
+      case 'cancelled':
+        return ['删除订单'];
+      case 'refunded':
+        return ['删除订单'];
+      default:
+        return [];
     }
   }
 }

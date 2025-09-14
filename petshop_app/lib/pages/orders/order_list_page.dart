@@ -1,7 +1,9 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:cached_network_image/cached_network_image.dart';
+import 'package:pull_to_refresh/pull_to_refresh.dart';
 import 'order_detail_page.dart';
+import '../../services/order_service.dart';
 
 class OrderListPage extends StatefulWidget {
   const OrderListPage({super.key});
@@ -14,10 +16,20 @@ class _OrderListPageState extends State<OrderListPage>
     with TickerProviderStateMixin {
   late TabController _tabController;
   final TextEditingController _searchController = TextEditingController();
+  final RefreshController _refreshController =
+      RefreshController(initialRefresh: false);
 
   List<String> _tabs = ['全部', '待付款', '待发货', '待收货', '退款/售后'];
+  List<String> _statusKeys = ['', 'pending', 'paid', 'shipped', 'refunded'];
 
-  List<Map<String, dynamic>> _orders = [
+  List<Map<String, dynamic>> _orders = [];
+  bool _isLoading = false;
+  bool _hasMore = true;
+  int _currentPage = 1;
+  String? _errorMessage;
+
+  // 原来的静态数据作为备用
+  List<Map<String, dynamic>> _fallbackOrders = [
     {
       'id': '20251178012308012',
       'status': '待付款',
@@ -63,17 +75,79 @@ class _OrderListPageState extends State<OrderListPage>
   void initState() {
     super.initState();
     _tabController = TabController(length: _tabs.length, vsync: this);
-    _tabController.addListener(() {
-      setState(() {
-        // Tab index changed
-      });
+    _tabController.addListener(_onTabChanged);
+    _loadOrders();
+  }
+
+  void _onTabChanged() {
+    if (!_tabController.indexIsChanging) {
+      _refreshOrders();
+    }
+  }
+
+  // 加载订单数据
+  Future<void> _loadOrders({bool isRefresh = false}) async {
+    if (_isLoading) return;
+
+    setState(() {
+      _isLoading = true;
+      if (isRefresh) {
+        _currentPage = 1;
+        _hasMore = true;
+        _errorMessage = null;
+      }
     });
+
+    try {
+      final currentStatus = _statusKeys[_tabController.index];
+      final result = await OrderService.getOrders(
+        page: _currentPage,
+        pageSize: 20,
+        status: currentStatus.isEmpty ? null : currentStatus,
+        orderType: 'buy', // 我买进的订单
+      );
+
+      final List<dynamic> newOrders = result['items'] ?? [];
+
+      setState(() {
+        if (isRefresh) {
+          _orders = newOrders.cast<Map<String, dynamic>>();
+        } else {
+          _orders.addAll(newOrders.cast<Map<String, dynamic>>());
+        }
+
+        _hasMore = newOrders.length >= 20;
+        _currentPage++;
+        _isLoading = false;
+      });
+    } catch (e) {
+      setState(() {
+        _isLoading = false;
+        _errorMessage = e.toString();
+        // 如果是首次加载失败，使用备用数据
+        if (_orders.isEmpty) {
+          _orders = _fallbackOrders;
+        }
+      });
+
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text('加载订单失败: $e')),
+        );
+      }
+    }
+  }
+
+  // 刷新订单列表
+  Future<void> _refreshOrders() async {
+    await _loadOrders(isRefresh: true);
   }
 
   @override
   void dispose() {
     _tabController.dispose();
     _searchController.dispose();
+    _refreshController.dispose();
     super.dispose();
   }
 
@@ -217,14 +291,54 @@ class _OrderListPageState extends State<OrderListPage>
   // 构建订单列表
   Widget _buildOrderList() {
     return Expanded(
-      child: ListView.builder(
-        physics: const BouncingScrollPhysics(),
-        padding: EdgeInsets.symmetric(horizontal: 16.w),
-        itemCount: _orders.length,
-        itemBuilder: (context, index) {
-          final order = _orders[index];
-          return _buildOrderCard(order, index);
+      child: SmartRefresher(
+        controller: _refreshController,
+        enablePullDown: true,
+        enablePullUp: _hasMore,
+        onRefresh: () async {
+          await _refreshOrders();
+          _refreshController.refreshCompleted();
         },
+        onLoading: () async {
+          await _loadOrders();
+          if (_hasMore) {
+            _refreshController.loadComplete();
+          } else {
+            _refreshController.loadNoData();
+          }
+        },
+        child: _isLoading && _orders.isEmpty
+            ? const Center(child: CircularProgressIndicator())
+            : _orders.isEmpty
+                ? Center(
+                    child: Column(
+                      mainAxisAlignment: MainAxisAlignment.center,
+                      children: [
+                        Icon(
+                          Icons.shopping_cart_outlined,
+                          size: 64.w,
+                          color: const Color(0xFF999999),
+                        ),
+                        SizedBox(height: 16.h),
+                        Text(
+                          '暂无订单',
+                          style: TextStyle(
+                            fontSize: 16.sp,
+                            color: const Color(0xFF999999),
+                          ),
+                        ),
+                      ],
+                    ),
+                  )
+                : ListView.builder(
+                    physics: const BouncingScrollPhysics(),
+                    padding: EdgeInsets.symmetric(horizontal: 16.w),
+                    itemCount: _orders.length,
+                    itemBuilder: (context, index) {
+                      final order = _orders[index];
+                      return _buildOrderCard(order, index);
+                    },
+                  ),
       ),
     );
   }
@@ -258,7 +372,9 @@ class _OrderListPageState extends State<OrderListPage>
                 ),
                 SizedBox(width: 6.w),
                 Text(
-                  order['storeName'],
+                  order['seller_info']?['nickname'] ??
+                      order['storeName'] ??
+                      '未知店铺',
                   style: TextStyle(
                     fontSize: 14.sp,
                     color: const Color(0xFF333333),
@@ -267,10 +383,16 @@ class _OrderListPageState extends State<OrderListPage>
                 ),
                 const Spacer(),
                 Text(
-                  order['statusText'],
+                  OrderService.getStatusText(
+                      order['order_status'] ?? order['statusText'] ?? ''),
                   style: TextStyle(
                     fontSize: 14.sp,
-                    color: const Color(0xFF9C4DFF),
+                    color: Color(int.parse(
+                            OrderService.getStatusColor(
+                                    order['order_status'] ?? '')
+                                .substring(1),
+                            radix: 16) +
+                        0xFF000000),
                     fontWeight: FontWeight.w600,
                   ),
                 ),
@@ -302,7 +424,9 @@ class _OrderListPageState extends State<OrderListPage>
                     child: ClipRRect(
                       borderRadius: BorderRadius.circular(8.r),
                       child: CachedNetworkImage(
-                        imageUrl: order['productImage'],
+                        imageUrl: order['product_info']?['images']?[0] ??
+                            order['productImage'] ??
+                            '',
                         fit: BoxFit.cover,
                         placeholder: (context, url) => Container(
                           color: const Color(0xFFF5F5F5),
@@ -325,7 +449,9 @@ class _OrderListPageState extends State<OrderListPage>
                       children: [
                         // 商品标题
                         Text(
-                          order['productTitle'],
+                          order['product_info']?['title'] ??
+                              order['productTitle'] ??
+                              '商品标题',
                           style: TextStyle(
                             fontSize: 14.sp,
                             color: const Color(0xFF333333),
@@ -340,7 +466,7 @@ class _OrderListPageState extends State<OrderListPage>
                         Row(
                           children: [
                             Text(
-                              '¥${order['price']}',
+                              '¥${order['final_price'] ?? order['price'] ?? '0.00'}',
                               style: TextStyle(
                                 fontSize: 16.sp,
                                 color: const Color(0xFF333333),
@@ -349,7 +475,7 @@ class _OrderListPageState extends State<OrderListPage>
                             ),
                             const Spacer(),
                             Text(
-                              'x${order['quantity']}',
+                              'x${order['items']?.length ?? order['quantity'] ?? 1}',
                               style: TextStyle(
                                 fontSize: 12.sp,
                                 color: const Color(0xFF999999),
@@ -379,7 +505,7 @@ class _OrderListPageState extends State<OrderListPage>
                 ),
                 SizedBox(width: 4.w),
                 Text(
-                  '¥${order['totalAmount']}',
+                  '¥${order['total_amount'] ?? order['totalAmount'] ?? '0.00'}',
                   style: TextStyle(
                     fontSize: 16.sp,
                     color: const Color(0xFFFF5722),
@@ -413,7 +539,8 @@ class _OrderListPageState extends State<OrderListPage>
   // 构建操作按钮
   List<Widget> _buildActionButtons(Map<String, dynamic> order) {
     List<Widget> buttons = [];
-    List<String> actions = order['actions'] as List<String>;
+    List<String> actions = OrderService.getOrderActions(
+        order['order_status'] ?? order['status'] ?? '');
 
     for (int i = 0; i < actions.length; i++) {
       String action = actions[i];
@@ -540,11 +667,33 @@ class _OrderListPageState extends State<OrderListPage>
     );
   }
 
+  // 取消订单
+  Future<void> _cancelOrder(Map<String, dynamic> order) async {
+    try {
+      await OrderService.cancelOrder(order['id'], '用户主动取消');
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text('订单已取消')),
+      );
+      _refreshOrders();
+    } catch (e) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text('取消订单失败: $e')),
+      );
+    }
+  }
+
   // 继续付款
-  void _continuePayment(Map<String, dynamic> order) {
-    ScaffoldMessenger.of(context).showSnackBar(
-      const SnackBar(content: Text('跳转到支付页面')),
-    );
+  void _continuePayment(Map<String, dynamic> order) async {
+    try {
+      final result = await OrderService.payOrder(order['id'], 'alipay');
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text('跳转到支付页面')),
+      );
+    } catch (e) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text('支付失败: $e')),
+      );
+    }
   }
 
   // 查看物流

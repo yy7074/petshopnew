@@ -6,7 +6,9 @@ import '../settings/settings_page.dart';
 import '../orders/order_list_page.dart';
 import '../seller/seller_center_page.dart';
 import '../shop/shop_entry_page.dart';
+import '../shop/shop_application_status_page.dart';
 import '../test_api_page.dart';
+import '../../services/store_application_service.dart';
 import '../../services/storage_service.dart';
 import '../../models/user.dart';
 import '../auth/login_page.dart';
@@ -78,6 +80,49 @@ class _ProfilePageState extends State<ProfilePage>
         );
       },
     );
+  }
+
+  void _handleShopEntry() async {
+    if (!_isLoggedIn) {
+      Navigator.push(
+        context,
+        MaterialPageRoute(
+          builder: (context) => const LoginPage(),
+        ),
+      );
+      return;
+    }
+
+    try {
+      // 检查是否已有申请
+      final application = await StoreApplicationService.getMyApplication();
+
+      if (application != null) {
+        // 已有申请，跳转到状态页面
+        Navigator.push(
+          context,
+          MaterialPageRoute(
+            builder: (context) => const ShopApplicationStatusPage(),
+          ),
+        );
+      } else {
+        // 没有申请，跳转到申请页面
+        Navigator.push(
+          context,
+          MaterialPageRoute(
+            builder: (context) => const ShopEntryPage(),
+          ),
+        );
+      }
+    } catch (e) {
+      // 出错时默认跳转到申请页面
+      Navigator.push(
+        context,
+        MaterialPageRoute(
+          builder: (context) => const ShopEntryPage(),
+        ),
+      );
+    }
   }
 
   @override
@@ -689,12 +734,7 @@ class _ProfilePageState extends State<ProfilePage>
           SizedBox(width: 12.w),
           GestureDetector(
             onTap: () {
-              Navigator.push(
-                context,
-                MaterialPageRoute(
-                  builder: (context) => const ShopEntryPage(),
-                ),
-              );
+              _handleShopEntry();
             },
             child: Container(
               padding: EdgeInsets.symmetric(horizontal: 20.w, vertical: 8.h),
