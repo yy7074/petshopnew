@@ -13,7 +13,7 @@ from ..schemas.home import HomeDataResponse, SpecialEventResponse, CategoryRespo
 
 router = APIRouter()
 
-@router.get("/", response_model=HomeDataResponse)
+@router.get("/")
 async def get_home_data(
     page: int = Query(1, ge=1),
     page_size: int = Query(20, ge=1, le=100),
@@ -60,10 +60,45 @@ async def get_home_data(
             Product.status == 2
         ).order_by(func.random()).limit(5).all()
         
-        # 转换为响应格式
-        hot_products_data = [ProductResponse.from_orm(product) for product in hot_products]
-        recent_products_data = [ProductResponse.from_orm(product) for product in recent_products]
-        recommended_products_data = [ProductResponse.from_orm(product) for product in recommended_products]
+        # 转换为响应格式，包含图片信息
+        def _product_to_response(product):
+            # 获取商品图片
+            from ..models.product import ProductImage
+            images = db.query(ProductImage).filter(
+                ProductImage.product_id == product.id
+            ).order_by(ProductImage.sort_order).all()
+
+            product_dict = {
+                "id": product.id,
+                "seller_id": product.seller_id,
+                "title": product.title,
+                "description": product.description,
+                "category_id": product.category_id,
+                "starting_price": product.starting_price,
+                "current_price": product.current_price,
+                "buy_now_price": product.buy_now_price,
+                "auction_type": product.auction_type,
+                "auction_start_time": product.auction_start_time.isoformat() if product.auction_start_time else None,
+                "auction_end_time": product.auction_end_time.isoformat() if product.auction_end_time else None,
+                "location": product.location,
+                "shipping_fee": product.shipping_fee,
+                "is_free_shipping": product.is_free_shipping,
+                "condition_type": product.condition_type,
+                "stock_quantity": product.stock_quantity,
+                "status": product.status,
+                "is_featured": product.is_featured,
+                "view_count": product.view_count,
+                "bid_count": product.bid_count,
+                "favorite_count": product.favorite_count,
+                "created_at": product.created_at.isoformat() if product.created_at else None,
+                "updated_at": product.updated_at.isoformat() if product.updated_at else None,
+                "images": [img.image_url for img in images]
+            }
+            return product_dict
+
+        hot_products_data = [_product_to_response(product) for product in hot_products]
+        recent_products_data = [_product_to_response(product) for product in recent_products]
+        recommended_products_data = [_product_to_response(product) for product in recommended_products]
         
         special_events_data = []
         for event in special_events:

@@ -23,6 +23,10 @@ async def get_store_by_seller(
 ):
     """通过卖家ID获取店铺信息"""
     try:
+        # 验证seller_id参数
+        if seller_id <= 0:
+            raise HTTPException(status_code=400, detail="无效的卖家ID")
+            
         user_id = current_user.id if current_user else None
         store = await store_service.get_store_by_owner(db, seller_id)
         if not store:
@@ -33,6 +37,8 @@ async def get_store_by_seller(
             store = await store_service.get_store_by_id(db, store.id, user_id)
         
         return store
+    except HTTPException:
+        raise
     except Exception as e:
         raise HTTPException(status_code=500, detail=str(e))
 
@@ -44,11 +50,17 @@ async def get_store(
 ):
     """获取店铺详情"""
     try:
+        # 验证store_id参数
+        if store_id <= 0:
+            raise HTTPException(status_code=400, detail="无效的店铺ID")
+            
         user_id = current_user.id if current_user else None
         store = await store_service.get_store_by_id(db, store_id, user_id)
         if not store:
             raise HTTPException(status_code=404, detail="店铺不存在")
         return store
+    except HTTPException:
+        raise
     except Exception as e:
         raise HTTPException(status_code=500, detail=str(e))
 
@@ -94,10 +106,16 @@ async def get_store_products(
 ):
     """获取店铺商品列表"""
     try:
+        # 验证store_id参数
+        if store_id <= 0:
+            raise HTTPException(status_code=400, detail="无效的店铺ID")
+            
         result = await store_service.get_store_products(
             db, store_id, page, page_size, category_id, status
         )
         return result
+    except HTTPException:
+        raise
     except ValueError as e:
         raise HTTPException(status_code=404, detail=str(e))
     except Exception as e:
@@ -111,11 +129,17 @@ async def follow_store(
 ):
     """关注店铺"""
     try:
+        # 验证store_id参数
+        if store_id <= 0:
+            raise HTTPException(status_code=400, detail="无效的店铺ID")
+            
         success = await store_service.follow_store(db, store_id, current_user.id)
         if success:
             return {"message": "关注成功"}
         else:
             return {"message": "已经关注过了"}
+    except HTTPException:
+        raise
     except ValueError as e:
         raise HTTPException(status_code=404, detail=str(e))
     except Exception as e:
@@ -129,11 +153,17 @@ async def unfollow_store(
 ):
     """取消关注店铺"""
     try:
+        # 验证store_id参数
+        if store_id <= 0:
+            raise HTTPException(status_code=400, detail="无效的店铺ID")
+            
         success = await store_service.unfollow_store(db, store_id, current_user.id)
         if success:
             return {"message": "取消关注成功"}
         else:
             return {"message": "未关注该店铺"}
+    except HTTPException:
+        raise
     except ValueError as e:
         raise HTTPException(status_code=404, detail=str(e))
     except Exception as e:
@@ -149,10 +179,16 @@ async def get_store_reviews(
 ):
     """获取店铺评价列表"""
     try:
+        # 验证store_id参数
+        if store_id <= 0:
+            raise HTTPException(status_code=400, detail="无效的店铺ID")
+            
         reviews = await store_service.get_store_reviews(
             db, store_id, page, page_size, rating_filter
         )
         return reviews
+    except HTTPException:
+        raise
     except Exception as e:
         raise HTTPException(status_code=500, detail=str(e))
 
@@ -164,8 +200,14 @@ async def get_store_stats(
 ):
     """获取店铺统计信息（仅店主）"""
     try:
+        # 验证store_id参数
+        if store_id <= 0:
+            raise HTTPException(status_code=400, detail="无效的店铺ID")
+            
         stats = await store_service.get_store_stats(db, store_id, current_user.id)
         return stats
+    except HTTPException:
+        raise
     except ValueError as e:
         raise HTTPException(status_code=403, detail=str(e))
     except Exception as e:

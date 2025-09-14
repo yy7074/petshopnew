@@ -61,7 +61,11 @@ class AppRoutes {
     ),
     GetPage(
       name: productDetail,
-      page: () => ProductDetailPage(productData: Get.arguments),
+      page: () => ProductDetailPage(
+        productData: Get.arguments is Map<String, dynamic>
+            ? Get.arguments as Map<String, dynamic>
+            : null,
+      ),
     ),
     GetPage(
       name: search,
@@ -92,6 +96,3 @@ class AppRoutes {
     ),
   ];
 }
-
-
-

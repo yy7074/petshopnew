@@ -96,7 +96,7 @@ class ProductService:
         products = query.offset(offset).limit(page_size).all()
         
         return ProductListResponse(
-            items=[self._to_product_response(product) for product in products],
+            items=[self._to_product_response(product, db) for product in products],
             total=total,
             page=page,
             page_size=page_size,
@@ -181,7 +181,7 @@ class ProductService:
                 db.add(image)
         
         db.commit()
-        return self._to_product_response(product)
+        return self._to_product_response(product, db)
     
     async def update_product(
         self, 
@@ -206,7 +206,7 @@ class ProductService:
         product.updated_at = datetime.now()
         db.commit()
         
-        return self._to_product_response(product)
+        return self._to_product_response(product, db)
     
     async def delete_product(self, db: Session, product_id: int, user_id: int) -> bool:
         """删除商品"""
@@ -355,7 +355,7 @@ class ProductService:
         products = query.offset(offset).limit(page_size).all()
         
         return ProductListResponse(
-            items=[self._to_product_response(product) for product in products],
+            items=[self._to_product_response(product, db) for product in products],
             total=total,
             page=page,
             page_size=page_size,
@@ -379,7 +379,7 @@ class ProductService:
         products = query.offset(offset).limit(page_size).all()
         
         return ProductListResponse(
-            items=[self._to_product_response(product) for product in products],
+            items=[self._to_product_response(product, db) for product in products],
             total=total,
             page=page,
             page_size=page_size,
@@ -405,7 +405,7 @@ class ProductService:
         products = query.offset(offset).limit(page_size).all()
         
         return ProductListResponse(
-            items=[self._to_product_response(product) for product in products],
+            items=[self._to_product_response(product, db) for product in products],
             total=total,
             page=page,
             page_size=page_size,
@@ -428,15 +428,20 @@ class ProductService:
         products = query.offset(offset).limit(page_size).all()
         
         return ProductListResponse(
-            items=[self._to_product_response(product) for product in products],
+            items=[self._to_product_response(product, db) for product in products],
             total=total,
             page=page,
             page_size=page_size,
             total_pages=(total + page_size - 1) // page_size
         )
     
-    def _to_product_response(self, product: Product) -> ProductResponse:
+    def _to_product_response(self, product: Product, db: Session) -> ProductResponse:
         """转换为响应格式"""
+        # 获取商品图片
+        images = db.query(ProductImage).filter(
+            ProductImage.product_id == product.id
+        ).order_by(ProductImage.sort_order).all()
+
         return ProductResponse(
             id=product.id,
             title=product.title,
@@ -449,7 +454,9 @@ class ProductService:
             status=product.status,
             seller_id=product.seller_id,
             view_count=product.view_count,
+            bid_count=product.bid_count,
             favorite_count=product.favorite_count,
             created_at=product.created_at,
-            updated_at=product.updated_at
+            updated_at=product.updated_at,
+            images=[img.image_url for img in images]
         )
