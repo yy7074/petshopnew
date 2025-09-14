@@ -4,7 +4,7 @@ import '../constants/api_constants.dart';
 import 'storage_service.dart';
 
 class OrderService {
-  static const String baseUrl = ApiConstants.baseUrl;
+  static String get baseUrl => ApiConstants.baseUrl;
 
   // 获取订单列表
   static Future<Map<String, dynamic>> getOrders({

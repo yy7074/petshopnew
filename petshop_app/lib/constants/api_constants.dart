@@ -11,9 +11,9 @@ class ApiConstants {
       return 'https://catdog.dachaonet.com/api/v1';
     }
   }
-  
+
   static const String version = '';
-  
+
   // 超时配置 - Release模式下更短的超时时间
   static int get connectTimeout => kDebugMode ? 30000 : 15000;
   static int get receiveTimeout => kDebugMode ? 30000 : 15000;

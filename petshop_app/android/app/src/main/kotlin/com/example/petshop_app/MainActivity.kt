@@ -37,12 +37,18 @@ class MainActivity : FlutterActivity() {
             }
             
             // Release模式下的额外配置
-            if (!BuildConfig.DEBUG) {
-                // 禁用调试相关功能
-                window.setFlags(
-                    WindowManager.LayoutParams.FLAG_SECURE,
-                    WindowManager.LayoutParams.FLAG_SECURE
-                )
+            // 在release模式下禁用调试相关功能
+            try {
+                val isDebug = (applicationInfo.flags and android.content.pm.ApplicationInfo.FLAG_DEBUGGABLE) != 0
+                if (!isDebug) {
+                    // 禁用调试相关功能
+                    window.setFlags(
+                        WindowManager.LayoutParams.FLAG_SECURE,
+                        WindowManager.LayoutParams.FLAG_SECURE
+                    )
+                }
+            } catch (e: Exception) {
+                // 忽略错误
             }
             
         } catch (e: Exception) {
