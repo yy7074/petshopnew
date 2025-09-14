@@ -236,20 +236,48 @@ class OrderService {
     }
   }
 
-  // 获取订单状态文本
-  static String getStatusText(String status) {
-    switch (status) {
+  // 获取订单状态文本 - 支持数字状态
+  static String getStatusText(dynamic status) {
+    // 处理数字状态
+    if (status is int) {
+      switch (status) {
+        case 1:
+          return '待付款';
+        case 2:
+          return '待发货';
+        case 3:
+          return '已发货';
+        case 4:
+          return '已收货';
+        case 5:
+          return '已完成';
+        case 6:
+          return '已取消';
+        default:
+          return '未知状态';
+      }
+    }
+
+    // 处理字符串状态
+    String statusStr = status.toString().toLowerCase();
+    switch (statusStr) {
       case 'pending':
+      case '1':
         return '待付款';
       case 'paid':
+      case '2':
         return '待发货';
       case 'shipped':
-        return '待收货';
+      case '3':
+        return '已发货';
       case 'delivered':
-        return '已送达';
+      case '4':
+        return '已收货';
       case 'completed':
+      case '5':
         return '已完成';
       case 'cancelled':
+      case '6':
         return '已取消';
       case 'refunded':
         return '已退款';
@@ -258,20 +286,48 @@ class OrderService {
     }
   }
 
-  // 获取订单状态颜色
-  static String getStatusColor(String status) {
-    switch (status) {
+  // 获取订单状态颜色 - 支持数字状态
+  static String getStatusColor(dynamic status) {
+    // 处理数字状态
+    if (status is int) {
+      switch (status) {
+        case 1:
+          return '#FFA500'; // 橙色 - 待付款
+        case 2:
+          return '#2196F3'; // 蓝色 - 待发货
+        case 3:
+          return '#9C27B0'; // 紫色 - 已发货
+        case 4:
+          return '#4CAF50'; // 绿色 - 已收货
+        case 5:
+          return '#4CAF50'; // 绿色 - 已完成
+        case 6:
+          return '#757575'; // 灰色 - 已取消
+        default:
+          return '#999999'; // 默认灰色
+      }
+    }
+
+    // 处理字符串状态
+    String statusStr = status.toString().toLowerCase();
+    switch (statusStr) {
       case 'pending':
+      case '1':
         return '#FFA500'; // 橙色
       case 'paid':
+      case '2':
         return '#2196F3'; // 蓝色
       case 'shipped':
+      case '3':
         return '#9C27B0'; // 紫色
       case 'delivered':
+      case '4':
         return '#4CAF50'; // 绿色
       case 'completed':
+      case '5':
         return '#4CAF50'; // 绿色
       case 'cancelled':
+      case '6':
         return '#757575'; // 灰色
       case 'refunded':
         return '#F44336'; // 红色
@@ -280,20 +336,48 @@ class OrderService {
     }
   }
 
-  // 获取订单可执行的操作
-  static List<String> getOrderActions(String status) {
-    switch (status) {
+  // 获取订单可执行的操作 - 支持数字状态
+  static List<String> getOrderActions(dynamic status) {
+    // 处理数字状态
+    if (status is int) {
+      switch (status) {
+        case 1: // 待付款
+          return ['取消订单', '继续付款'];
+        case 2: // 待发货
+          return ['联系卖家', '申请退款'];
+        case 3: // 已发货
+          return ['查看物流', '确认收货'];
+        case 4: // 已收货
+          return ['确认收货', '申请退款'];
+        case 5: // 已完成
+          return ['再次购买', '评价'];
+        case 6: // 已取消
+          return ['删除订单'];
+        default:
+          return [];
+      }
+    }
+
+    // 处理字符串状态
+    String statusStr = status.toString().toLowerCase();
+    switch (statusStr) {
       case 'pending':
+      case '1':
         return ['取消订单', '继续付款'];
       case 'paid':
+      case '2':
         return ['联系卖家', '申请退款'];
       case 'shipped':
+      case '3':
         return ['查看物流', '确认收货'];
       case 'delivered':
+      case '4':
         return ['确认收货', '申请退款'];
       case 'completed':
+      case '5':
         return ['再次购买', '评价'];
       case 'cancelled':
+      case '6':
         return ['删除订单'];
       case 'refunded':
         return ['删除订单'];

@@ -207,7 +207,9 @@ class _OrderDetailPageState extends State<OrderDetailPage> {
                   child: ClipRRect(
                     borderRadius: BorderRadius.circular(8.r),
                     child: CachedNetworkImage(
-                      imageUrl: widget.order['productImage'],
+                      imageUrl: widget.order['product_info']?['images']?[0] ??
+                          widget.order['productImage'] ??
+                          'https://picsum.photos/200/200?random=1',
                       fit: BoxFit.cover,
                       placeholder: (context, url) => Container(
                         color: const Color(0xFFF5F5F5),
@@ -229,7 +231,9 @@ class _OrderDetailPageState extends State<OrderDetailPage> {
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
                       Text(
-                        widget.order['productTitle'],
+                        widget.order['product_info']?['title'] ??
+                            widget.order['productTitle'] ??
+                            '商品标题',
                         style: TextStyle(
                           fontSize: 14.sp,
                           color: const Color(0xFF333333),
@@ -243,7 +247,7 @@ class _OrderDetailPageState extends State<OrderDetailPage> {
                       Row(
                         children: [
                           Text(
-                            '¥${widget.order['price']}',
+                            '¥${widget.order['final_price'] ?? widget.order['price'] ?? '0.00'}',
                             style: TextStyle(
                               fontSize: 16.sp,
                               color: const Color(0xFF333333),
@@ -252,7 +256,7 @@ class _OrderDetailPageState extends State<OrderDetailPage> {
                           ),
                           const Spacer(),
                           Text(
-                            'x${widget.order['quantity']}',
+                            'x${widget.order['items']?.length ?? widget.order['quantity'] ?? 1}',
                             style: TextStyle(
                               fontSize: 12.sp,
                               color: const Color(0xFF999999),
@@ -385,7 +389,8 @@ class _OrderDetailPageState extends State<OrderDetailPage> {
               value,
               style: TextStyle(
                 fontSize: isTotal ? 16.sp : 14.sp,
-                color: isTotal ? const Color(0xFFFF5722) : const Color(0xFF333333),
+                color:
+                    isTotal ? const Color(0xFFFF5722) : const Color(0xFF333333),
                 fontWeight: isTotal ? FontWeight.w700 : FontWeight.w500,
               ),
               textAlign: TextAlign.right,

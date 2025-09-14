@@ -21,21 +21,26 @@ class OrderUpdate(BaseModel):
 
 class OrderResponse(OrderBase):
     id: int
-    order_number: str
+    order_no: str
     buyer_id: int
     seller_id: int
-    unit_price: Decimal
+    final_price: Decimal
+    shipping_fee: Decimal = Decimal('0.00')
     total_amount: Decimal
-    status: str
+    payment_method: Optional[int] = None
+    payment_status: int = 1  # 1:待支付,2:已支付,3:已退款
+    order_status: int = 1    # 1:待支付,2:待发货,3:已发货,4:已收货,5:已完成,6:已取消
+    shipping_address: Optional[Dict[str, Any]] = None
+    tracking_number: Optional[str] = None
+    shipped_at: Optional[datetime] = None
+    received_at: Optional[datetime] = None
+    completed_at: Optional[datetime] = None
     created_at: datetime
     updated_at: datetime
-    paid_at: Optional[datetime] = None
-    shipped_at: Optional[datetime] = None
-    completed_at: Optional[datetime] = None
-    cancelled_at: Optional[datetime] = None
     items: List[Dict[str, Any]] = []
     buyer_info: Optional[Dict[str, Any]] = None
     seller_info: Optional[Dict[str, Any]] = None
+    product_info: Optional[Dict[str, Any]] = None
     payment_info: Optional[Dict[str, Any]] = None
     logistics_info: Optional[Dict[str, Any]] = None
 

@@ -127,9 +127,24 @@ class OrderService:
             # 默认查询买家订单
             query = db.query(Order).filter(Order.buyer_id == user_id)
         
-        # 状态筛选
+        # 状态筛选 - 将字符串状态转换为数字状态
         if status:
-            query = query.filter(Order.status == status)
+            status_mapping = {
+                'pending': 1,    # 待支付
+                'paid': 2,       # 待发货  
+                'shipped': 3,    # 已发货
+                'delivered': 4,  # 已收货
+                'completed': 5,  # 已完成
+                'cancelled': 6,  # 已取消
+                'refunded': 3    # 已退款 (使用payment_status=3)
+            }
+            
+            if status == 'refunded':
+                query = query.filter(Order.payment_status == 3)
+            else:
+                order_status = status_mapping.get(status)
+                if order_status:
+                    query = query.filter(Order.order_status == order_status)
         
         # 时间范围筛选
         if start_date:
@@ -493,6 +508,9 @@ class OrderService:
         buyer = db.query(User).filter(User.id == order.buyer_id).first()
         seller = db.query(User).filter(User.id == order.seller_id).first()
         
+        # 获取商品信息
+        product = db.query(Product).filter(Product.id == order.product_id).first()
+        
         # 获取支付信息
         payment = db.query(Payment).filter(Payment.order_id == order.id).first()
         
@@ -501,54 +519,67 @@ class OrderService:
         
         return OrderResponse(
             id=order.id,
-            order_number=order.order_number,
+            order_no=order.order_no,
             buyer_id=order.buyer_id,
             seller_id=order.seller_id,
             product_id=order.product_id,
-            quantity=order.quantity,
-            unit_price=order.unit_price,
+            quantity=1,  # 从订单项中获取或默认为1
+            order_type="auction",  # 从商品信息中获取
+            final_price=order.final_price,
+            shipping_fee=order.shipping_fee or Decimal('0.00'),
             total_amount=order.total_amount,
-            order_type=order.order_type,
             payment_method=order.payment_method,
-            status=order.status,
+            payment_status=order.payment_status,
+            order_status=order.order_status,
             shipping_address=order.shipping_address,
-            buyer_note=order.buyer_note,
-            seller_note=order.seller_note,
+            tracking_number=order.tracking_number,
+            shipped_at=order.shipped_at,
+            received_at=order.received_at,
+            completed_at=order.completed_at,
             created_at=order.created_at,
             updated_at=order.updated_at,
-            paid_at=order.paid_at,
-            shipped_at=order.shipped_at,
-            completed_at=order.completed_at,
-            cancelled_at=order.cancelled_at,
             items=[
                 {
+                    "id": item.id,
                     "product_id": item.product_id,
                     "product_title": item.product_title,
                     "product_image": item.product_image,
                     "quantity": item.quantity,
-                    "unit_price": item.unit_price,
-                    "total_price": item.total_price
+                    "unit_price": float(item.unit_price),
+                    "total_price": float(item.total_price)
                 }
                 for item in order_items
             ],
             buyer_info={
                 "id": buyer.id,
                 "username": buyer.username,
+                "nickname": getattr(buyer, 'nickname', buyer.username),
                 "avatar": buyer.avatar
             } if buyer else None,
             seller_info={
                 "id": seller.id,
                 "username": seller.username,
-                "avatar": seller.avatar
+                "nickname": getattr(seller, 'nickname', seller.username),
+                "avatar": getattr(seller, 'avatar', None)
             } if seller else None,
+            product_info={
+                "id": product.id,
+                "title": product.title,
+                "images": product.images or [],
+                "category": product.category,
+                "seller_id": product.seller_id
+            } if product else None,
             payment_info={
                 "payment_id": payment.id,
                 "status": payment.status,
-                "transaction_id": payment.transaction_id
+                "transaction_id": payment.transaction_id,
+                "payment_method": payment.payment_method,
+                "amount": float(payment.amount)
             } if payment else None,
             logistics_info={
                 "tracking_number": logistics.tracking_number,
                 "logistics_company": logistics.logistics_company,
-                "status": logistics.status
+                "status": logistics.status,
+                "updated_at": logistics.updated_at
             } if logistics else None
         )

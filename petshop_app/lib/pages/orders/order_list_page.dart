@@ -671,6 +671,11 @@ class _OrderListPageState extends State<OrderListPage>
   Future<void> _cancelOrder(Map<String, dynamic> order) async {
     try {
       await OrderService.cancelOrder(order['id'], '用户主动取消');
+      setState(() {
+        order['order_status'] = 6; // 已取消
+        order['status'] = '已取消';
+        order['statusText'] = '已取消';
+      });
       ScaffoldMessenger.of(context).showSnackBar(
         const SnackBar(content: Text('订单已取消')),
       );
@@ -704,22 +709,40 @@ class _OrderListPageState extends State<OrderListPage>
   }
 
   // 确认收货
-  void _confirmReceipt(Map<String, dynamic> order) {
-    setState(() {
-      order['status'] = '已完成';
-      order['statusText'] = '已完成';
-      order['actions'] = ['申请退款', '再次购买'];
-    });
-    ScaffoldMessenger.of(context).showSnackBar(
-      const SnackBar(content: Text('确认收货成功')),
-    );
+  void _confirmReceipt(Map<String, dynamic> order) async {
+    try {
+      await OrderService.confirmReceived(order['id']);
+      setState(() {
+        order['order_status'] = 4; // 已收货
+        order['status'] = '已完成';
+        order['statusText'] = '已完成';
+      });
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text('确认收货成功')),
+      );
+      // 刷新订单列表
+      _refreshOrders();
+    } catch (e) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text('确认收货失败: $e')),
+      );
+    }
   }
 
   // 申请退款
-  void _applyRefund(Map<String, dynamic> order) {
-    ScaffoldMessenger.of(context).showSnackBar(
-      const SnackBar(content: Text('跳转到退款页面')),
-    );
+  void _applyRefund(Map<String, dynamic> order) async {
+    try {
+      await OrderService.applyRefund(order['id'], '用户申请退款');
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text('退款申请已提交，请等待处理')),
+      );
+      // 刷新订单列表
+      _refreshOrders();
+    } catch (e) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text('申请退款失败: $e')),
+      );
+    }
   }
 
   // 再次购买

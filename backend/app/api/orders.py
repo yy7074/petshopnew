@@ -172,6 +172,98 @@ async def confirm_order(
     except ValueError as e:
         raise HTTPException(status_code=400, detail=str(e))
 
+@router.post("/{order_id}/pay")
+async def pay_order(
+    order_id: int,
+    payment_method: str,
+    db: Session = Depends(get_db),
+    current_user: User = Depends(get_current_user)
+):
+    """支付订单"""
+    try:
+        # 获取订单
+        order = db.query(Order).filter(
+            Order.id == order_id,
+            Order.buyer_id == current_user.id
+        ).first()
+        
+        if not order:
+            raise HTTPException(status_code=404, detail="订单不存在")
+            
+        if order.order_status != 1:  # 只有待支付状态才能支付
+            raise HTTPException(status_code=400, detail="订单状态不允许支付")
+        
+        # 这里可以集成真实的支付接口
+        # 目前返回模拟支付结果
+        return {
+            "success": True,
+            "message": "支付处理中",
+            "payment_url": f"/pay/{order_id}?method={payment_method}"
+        }
+    except HTTPException:
+        raise
+    except Exception as e:
+        raise HTTPException(status_code=500, detail="支付处理失败")
+
+@router.post("/{order_id}/apply-refund")
+async def apply_refund(
+    order_id: int,
+    reason: str,
+    db: Session = Depends(get_db),
+    current_user: User = Depends(get_current_user)
+):
+    """申请退款"""
+    try:
+        order = db.query(Order).filter(
+            Order.id == order_id,
+            Order.buyer_id == current_user.id
+        ).first()
+        
+        if not order:
+            raise HTTPException(status_code=404, detail="订单不存在")
+            
+        if order.payment_status != 2:  # 只有已支付的订单才能申请退款
+            raise HTTPException(status_code=400, detail="订单状态不允许申请退款")
+        
+        # 创建退款申请记录
+        # 这里可以添加退款申请的逻辑
+        
+        return {"message": "退款申请已提交，请等待处理"}
+    except HTTPException:
+        raise
+    except Exception as e:
+        raise HTTPException(status_code=500, detail="申请退款失败")
+
+@router.post("/{order_id}/confirm-received")
+async def confirm_received(
+    order_id: int,
+    db: Session = Depends(get_db),
+    current_user: User = Depends(get_current_user)
+):
+    """确认收货"""
+    try:
+        order = db.query(Order).filter(
+            Order.id == order_id,
+            Order.buyer_id == current_user.id
+        ).first()
+        
+        if not order:
+            raise HTTPException(status_code=404, detail="订单不存在")
+            
+        if order.order_status != 3:  # 只有已发货状态才能确认收货
+            raise HTTPException(status_code=400, detail="订单状态不允许确认收货")
+        
+        # 更新订单状态
+        order.order_status = 4  # 已收货
+        order.received_at = datetime.now()
+        db.commit()
+        
+        return {"message": "确认收货成功"}
+    except HTTPException:
+        raise
+    except Exception as e:
+        raise HTTPException(status_code=500, detail="确认收货失败")
+
 # 支付相关接口
 @router.post("/payments/", response_model=PaymentResponse)
 async def create_payment(
@@ -380,47 +472,90 @@ async def query_alipay_payment(
         raise HTTPException(status_code=500, detail=f"查询支付状态失败: {str(e)}")
 
 # 创建测试订单接口
-@router.post("/test/create")
-async def create_test_order(
+@router.post("/test/create-sample")
+async def create_sample_orders(
     db: Session = Depends(get_db),
     current_user: User = Depends(get_current_user)
 ):
-    """创建测试订单"""
+    """创建示例订单数据"""
     try:
-        from ..models.order import Order
-        from datetime import datetime
+        from ..models.order import Order, OrderItem
+        from datetime import datetime, timedelta
         import uuid
         
-        # 创建测试订单
-        test_order = Order(
-            order_no=f"TEST{datetime.now().strftime('%Y%m%d%H%M%S')}{str(uuid.uuid4().int)[:6]}",
-            buyer_id=current_user.id,
-            seller_id=current_user.id,  # 自己卖给自己用于测试
-            product_id=1,  # 假设存在商品ID 1
-            final_price=0.01,
-            shipping_fee=0.00,
-            total_amount=0.01,
-            order_status=1,  # 待支付
-            payment_status=1,  # 待支付
-            payment_method=1,  # 支付宝
-            shipping_address={"name": "测试用户", "phone": "13800138000", "address": "测试地址"}
-        )
+        sample_orders = []
         
-        db.add(test_order)
-        db.commit()
-        db.refresh(test_order)
+        # 创建不同状态的测试订单
+        order_statuses = [
+            (1, "待支付", 1),
+            (2, "待发货", 2), 
+            (3, "已发货", 2),
+            (4, "已收货", 2),
+            (5, "已完成", 2),
+        ]
+        
+        for i, (order_status, desc, payment_status) in enumerate(order_statuses, 1):
+            # 创建测试订单
+            test_order = Order(
+                order_no=f"PET{datetime.now().strftime('%Y%m%d%H%M%S')}{str(uuid.uuid4().int)[:4]}{i}",
+                buyer_id=current_user.id,
+                seller_id=1,  # 假设存在卖家ID 1
+                product_id=i,  # 假设存在商品ID
+                final_price=99.99 + i * 10,
+                shipping_fee=10.00,
+                total_amount=109.99 + i * 10,
+                order_status=order_status,
+                payment_status=payment_status,
+                payment_method=1,  # 支付宝
+                shipping_address={
+                    "name": "测试用户", 
+                    "phone": "13800138000", 
+                    "address": f"测试地址{i}号",
+                    "province": "广东省",
+                    "city": "深圳市",
+                    "district": "南山区"
+                },
+                tracking_number=f"SF{datetime.now().strftime('%Y%m%d')}{1000+i}" if order_status >= 3 else None,
+                shipped_at=datetime.now() - timedelta(days=2) if order_status >= 3 else None,
+                received_at=datetime.now() - timedelta(days=1) if order_status >= 4 else None,
+                completed_at=datetime.now() if order_status == 5 else None
+            )
+            
+            db.add(test_order)
+            db.commit()
+            db.refresh(test_order)
+            
+            # 创建订单项
+            order_item = OrderItem(
+                order_id=test_order.id,
+                product_id=i,
+                product_title=f"测试商品{i} - {desc}",
+                product_image=f"https://picsum.photos/200/200?random={i}",
+                quantity=1,
+                unit_price=test_order.final_price,
+                total_price=test_order.final_price
+            )
+            
+            db.add(order_item)
+            db.commit()
+            
+            sample_orders.append({
+                "order_id": test_order.id,
+                "order_no": test_order.order_no,
+                "status": desc,
+                "total_amount": float(test_order.total_amount)
+            })
         
         return {
             "success": True,
-            "message": "测试订单创建成功",
-            "data": {
-                "order_id": test_order.id,
-                "order_no": test_order.order_no,
-                "total_amount": test_order.total_amount
-            }
+            "message": "示例订单创建成功",
+            "data": sample_orders
         }
     except Exception as e:
-        raise HTTPException(status_code=500, detail=f"创建测试订单失败: {str(e)}")
+        print(f"创建示例订单失败: {e}")
+        import traceback
+        traceback.print_exc()
+        raise HTTPException(status_code=500, detail=f"创建示例订单失败: {str(e)}")
 
 @router.post("/{order_id}/alipay/web")
 async def create_alipay_web_payment(
