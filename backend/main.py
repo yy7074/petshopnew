@@ -35,7 +35,7 @@ os.makedirs(settings.UPLOAD_DIR, exist_ok=True)
 app.mount("/static", StaticFiles(directory="static"), name="static")
 
 # 注册路由
-from app.api import auth, products, bids, orders, auctions, events, home, wallet, deposit, stores, store_applications, chat  # search
+from app.api import auth, products, bids, orders, auctions, events, home, wallet, deposit, stores, store_applications, chat, local_services  # search
 
 app.include_router(auth.router, prefix="/api/v1/auth", tags=["认证"])
 app.include_router(products.router, prefix="/api/v1/products", tags=["商品"])
@@ -48,6 +48,7 @@ app.include_router(wallet.router, prefix="/api/v1/wallet", tags=["钱包"])
 app.include_router(deposit.router, prefix="/api/v1/deposits", tags=["保证金"])
 app.include_router(stores.router, prefix="/api/v1/stores", tags=["店铺"])
 app.include_router(store_applications.router, prefix="/api/v1/store-applications", tags=["店铺申请"])
+app.include_router(local_services.router, prefix="/api/v1/local-services", tags=["同城服务"])
 app.include_router(chat.router, prefix="/api/v1/chat", tags=["聊天"])
 # app.include_router(search.router, prefix="/api/v1/search", tags=["搜索"])
 

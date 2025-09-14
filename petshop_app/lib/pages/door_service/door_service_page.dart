@@ -1,6 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
+import 'package:pull_to_refresh/pull_to_refresh.dart';
 import '../../constants/app_colors.dart';
+import '../../services/local_service_service.dart';
 
 class DoorServicePage extends StatefulWidget {
   const DoorServicePage({super.key});
@@ -13,9 +15,17 @@ class _DoorServicePageState extends State<DoorServicePage>
     with SingleTickerProviderStateMixin {
   late TabController _tabController;
   final ScrollController _scrollController = ScrollController();
+  final RefreshController _refreshController =
+      RefreshController(initialRefresh: false);
 
-  // 宠物洗澡服务数据
-  final List<Map<String, dynamic>> _petGroomingServices = [
+  // 真实数据
+  List<Map<String, dynamic>> _services = [];
+  bool _isLoading = false;
+  bool _hasMore = true;
+  int _currentPage = 1;
+
+  // 宠物洗澡服务数据（默认数据）
+  final List<Map<String, dynamic>> _defaultPetGroomingServices = [
     {
       'id': '1',
       'shopName': '招财猫旺财狗',
@@ -281,7 +291,8 @@ class _DoorServicePageState extends State<DoorServicePage>
                   ),
                 ),
                 Container(
-                  padding: EdgeInsets.symmetric(horizontal: 16.w, vertical: 6.h),
+                  padding:
+                      EdgeInsets.symmetric(horizontal: 16.w, vertical: 6.h),
                   decoration: BoxDecoration(
                     color: AppColors.primary,
                     borderRadius: BorderRadius.circular(15.r),
@@ -354,7 +365,9 @@ class _DoorServicePageState extends State<DoorServicePage>
             SizedBox(height: 16.h),
 
             // 服务项目列表
-            ...services.map((serviceItem) => _buildServiceItem(serviceItem)).toList(),
+            ...services
+                .map((serviceItem) => _buildServiceItem(serviceItem))
+                .toList(),
           ],
         ),
       ),

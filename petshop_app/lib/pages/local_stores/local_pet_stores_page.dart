@@ -1,6 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
+import 'package:pull_to_refresh/pull_to_refresh.dart';
 import '../../constants/app_colors.dart';
+import '../../services/local_service_service.dart';
 import 'local_pet_store_detail_page.dart';
 
 class LocalPetStoresPage extends StatefulWidget {
@@ -12,9 +14,18 @@ class LocalPetStoresPage extends StatefulWidget {
 
 class _LocalPetStoresPageState extends State<LocalPetStoresPage> {
   final ScrollController _scrollController = ScrollController();
+  final RefreshController _refreshController =
+      RefreshController(initialRefresh: false);
 
-  // 模拟本地宠店数据
-  final List<Map<String, dynamic>> _stores = [
+  // 真实宠店数据
+  List<Map<String, dynamic>> _stores = [];
+  bool _isLoading = false;
+  bool _hasMore = true;
+  int _currentPage = 1;
+  String? _errorMessage;
+
+  // 默认宠店数据（API失败时使用）
+  final List<Map<String, dynamic>> _defaultStores = [
     {
       'id': '1',
       'name': '招财猫旺财狗',
@@ -118,9 +129,125 @@ class _LocalPetStoresPageState extends State<LocalPetStoresPage> {
   ];
 
   @override
+  void initState() {
+    super.initState();
+    _loadStores();
+  }
+
+  @override
   void dispose() {
     _scrollController.dispose();
+    _refreshController.dispose();
     super.dispose();
+  }
+
+  // 加载宠店数据
+  Future<void> _loadStores({bool isRefresh = false}) async {
+    if (_isLoading) return;
+
+    setState(() {
+      _isLoading = true;
+      _errorMessage = null;
+    });
+
+    try {
+      if (isRefresh) {
+        _currentPage = 1;
+        _hasMore = true;
+      }
+
+      final result = await LocalServiceService.getServicesByType(
+        'local_store',
+        page: _currentPage,
+        pageSize: 20,
+      );
+
+      final List<Map<String, dynamic>> newStores = (result['items'] as List)
+          .map((item) => LocalServiceService.formatServiceForUI(item))
+          .toList();
+
+      setState(() {
+        if (isRefresh) {
+          _stores = newStores;
+        } else {
+          _stores.addAll(newStores);
+        }
+
+        _currentPage++;
+        _hasMore = newStores.length >= 20;
+        _isLoading = false;
+      });
+
+      if (isRefresh) {
+        _refreshController.refreshCompleted();
+      } else {
+        _refreshController.loadComplete();
+      }
+    } catch (e) {
+      setState(() {
+        _isLoading = false;
+        _errorMessage = e.toString();
+        // 如果是第一次加载失败，使用默认数据
+        if (_stores.isEmpty) {
+          _stores = _defaultStores;
+        }
+      });
+
+      if (isRefresh) {
+        _refreshController.refreshFailed();
+      } else {
+        _refreshController.loadFailed();
+      }
+
+      print('加载宠店失败: $e');
+    }
+  }
+
+  // 刷新数据
+  void _onRefresh() async {
+    await _loadStores(isRefresh: true);
+  }
+
+  // 加载更多
+  void _onLoading() async {
+    if (!_hasMore) {
+      _refreshController.loadNoData();
+      return;
+    }
+    await _loadStores();
+  }
+
+  // 构建空状态
+  Widget _buildEmptyState() {
+    return Center(
+      child: Column(
+        mainAxisAlignment: MainAxisAlignment.center,
+        children: [
+          Icon(
+            Icons.store_outlined,
+            size: 80.w,
+            color: Colors.grey[400],
+          ),
+          SizedBox(height: 16.h),
+          Text(
+            '还没有找到宠物店',
+            style: TextStyle(
+              fontSize: 16.sp,
+              color: Colors.grey[500],
+              fontWeight: FontWeight.w500,
+            ),
+          ),
+          SizedBox(height: 8.h),
+          Text(
+            '快来发现附近的好店吧！',
+            style: TextStyle(
+              fontSize: 14.sp,
+              color: Colors.grey[400],
+            ),
+          ),
+        ],
+      ),
+    );
   }
 
   @override
@@ -143,14 +270,24 @@ class _LocalPetStoresPageState extends State<LocalPetStoresPage> {
           ),
         ),
       ),
-      body: ListView.builder(
-        controller: _scrollController,
-        padding: EdgeInsets.all(16.w),
-        itemCount: _stores.length,
-        itemBuilder: (context, index) {
-          final store = _stores[index];
-          return _buildStoreCard(store);
-        },
+      body: SmartRefresher(
+        controller: _refreshController,
+        onRefresh: _onRefresh,
+        onLoading: _onLoading,
+        enablePullDown: true,
+        enablePullUp: true,
+        child: _isLoading && _stores.isEmpty
+            ? const Center(child: CircularProgressIndicator())
+            : _stores.isEmpty
+                ? _buildEmptyState()
+                : ListView.builder(
+                    padding: EdgeInsets.all(16.w),
+                    itemCount: _stores.length,
+                    itemBuilder: (context, index) {
+                      final store = _stores[index];
+                      return _buildStoreCard(store);
+                    },
+                  ),
       ),
     );
   }
@@ -232,7 +369,8 @@ class _LocalPetStoresPageState extends State<LocalPetStoresPage> {
                     ),
                   ),
                   Container(
-                    padding: EdgeInsets.symmetric(horizontal: 16.w, vertical: 6.h),
+                    padding:
+                        EdgeInsets.symmetric(horizontal: 16.w, vertical: 6.h),
                     decoration: BoxDecoration(
                       color: AppColors.primary,
                       borderRadius: BorderRadius.circular(15.r),
@@ -248,9 +386,9 @@ class _LocalPetStoresPageState extends State<LocalPetStoresPage> {
                   ),
                 ],
               ),
-              
+
               SizedBox(height: 16.h),
-              
+
               // 商品网格
               GridView.builder(
                 shrinkWrap: true,
@@ -301,7 +439,8 @@ class _LocalPetStoresPageState extends State<LocalPetStoresPage> {
                     Colors.black.withValues(alpha: 0.7),
                   ],
                 ),
-                borderRadius: BorderRadius.vertical(bottom: Radius.circular(8.r)),
+                borderRadius:
+                    BorderRadius.vertical(bottom: Radius.circular(8.r)),
               ),
               child: Text(
                 '¥${product['price']}',

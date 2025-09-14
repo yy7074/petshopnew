@@ -1,5 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
+import 'package:get/get.dart';
+import '../../services/api_service.dart';
+import 'chat_detail_page.dart';
 
 class MessagePage extends StatefulWidget {
   const MessagePage({super.key});
@@ -11,9 +14,19 @@ class MessagePage extends StatefulWidget {
 class _MessagePageState extends State<MessagePage>
     with AutomaticKeepAliveClientMixin {
   bool showNotificationBanner = true;
+  final ApiService _apiService = ApiService();
+  bool _isLoading = false;
+  
+  List<Map<String, dynamic>> _conversations = [];
 
   @override
   bool get wantKeepAlive => true;
+
+  @override
+  void initState() {
+    super.initState();
+    _loadConversations();
+  }
 
   // 模拟消息数据
   final List<Map<String, dynamic>> messages = [
@@ -45,6 +58,7 @@ class _MessagePageState extends State<MessagePage>
       'avatar': 'https://picsum.photos/50/50?random=1',
       'unreadCount': 3,
       'thumbnail': 'https://picsum.photos/60/60?random=2',
+      'conversation_id': 1,
     },
     {
       'type': 'chat',
@@ -54,6 +68,7 @@ class _MessagePageState extends State<MessagePage>
       'avatar': 'https://picsum.photos/50/50?random=3',
       'unreadCount': 0,
       'thumbnail': 'https://picsum.photos/60/60?random=4',
+      'conversation_id': 2,
     },
   ];
 
@@ -83,14 +98,19 @@ class _MessagePageState extends State<MessagePage>
 
           // 消息列表
           Expanded(
-            child: ListView.builder(
-              padding: EdgeInsets.zero,
-              itemCount: messages.length,
-              itemBuilder: (context, index) {
-                final message = messages[index];
-                return _buildMessageItem(message);
-              },
-            ),
+            child: _isLoading
+                ? const Center(child: CircularProgressIndicator())
+                : RefreshIndicator(
+                    onRefresh: _loadConversations,
+                    child: ListView.builder(
+                      padding: EdgeInsets.zero,
+                      itemCount: _conversations.isNotEmpty ? _conversations.length : messages.length,
+                      itemBuilder: (context, index) {
+                        final message = _conversations.isNotEmpty ? _conversations[index] : messages[index];
+                        return _buildMessageItem(message);
+                      },
+                    ),
+                  ),
           ),
         ],
       ),
@@ -161,17 +181,19 @@ class _MessagePageState extends State<MessagePage>
 
   // 构建消息项
   Widget _buildMessageItem(Map<String, dynamic> message) {
-    return Container(
-      padding: EdgeInsets.symmetric(horizontal: 16.w, vertical: 12.h),
-      decoration: const BoxDecoration(
-        border: Border(
-          bottom: BorderSide(
-            color: Color(0xFFF0F0F0),
-            width: 1,
+    return GestureDetector(
+      onTap: () => _onMessageTap(message),
+      child: Container(
+        padding: EdgeInsets.symmetric(horizontal: 16.w, vertical: 12.h),
+        decoration: const BoxDecoration(
+          border: Border(
+            bottom: BorderSide(
+              color: Color(0xFFF0F0F0),
+              width: 1,
+            ),
           ),
         ),
-      ),
-      child: Row(
+        child: Row(
         children: [
           // 左侧图标或头像
           _buildMessageIcon(message),
@@ -283,7 +305,7 @@ class _MessagePageState extends State<MessagePage>
           ),
         ],
       ),
-    );
+    ));
   }
 
   // 构建消息图标
@@ -382,5 +404,78 @@ class _MessagePageState extends State<MessagePage>
         ],
       ),
     );
+  }
+
+  // 点击消息项处理
+  void _onMessageTap(Map<String, dynamic> message) {
+    if (message['type'] == 'chat') {
+      // 进入聊天详情页
+      Get.to(() => ChatDetailPage(
+        conversationId: message['conversation_id'] ?? 1,
+        title: message['title'],
+        avatar: message['avatar'],
+      ));
+    } else {
+      // 处理系统消息
+      Get.snackbar('提示', '系统消息：${message['content']}');
+    }
+  }
+
+  // 加载对话列表
+  Future<void> _loadConversations() async {
+    setState(() {
+      _isLoading = true;
+    });
+
+    try {
+      final response = await _apiService.get('/chat/conversations');
+      if (response.statusCode == 200) {
+        final data = response.data;
+        if (data['items'] != null) {
+          setState(() {
+            _conversations = List<Map<String, dynamic>>.from(
+              data['items'].map((item) => {
+                'type': 'chat',
+                'title': item['other_user']['username'] ?? '未知用户',
+                'content': item['last_message']?['content'] ?? '',
+                'time': _formatTime(item['last_message']?['created_at']),
+                'avatar': item['other_user']['avatar'],
+                'unreadCount': item['unread_count'] ?? 0,
+                'conversation_id': item['id'],
+              })
+            );
+          });
+        }
+      }
+    } catch (e) {
+      print('加载对话失败：$e');
+      // 保持使用模拟数据
+    } finally {
+      setState(() {
+        _isLoading = false;
+      });
+    }
+  }
+
+  // 格式化时间
+  String _formatTime(String? timestamp) {
+    if (timestamp == null) return '';
+    try {
+      final dateTime = DateTime.parse(timestamp);
+      final now = DateTime.now();
+      final difference = now.difference(dateTime);
+
+      if (difference.inDays > 0) {
+        return '${difference.inDays}天前';
+      } else if (difference.inHours > 0) {
+        return '${difference.inHours}小时前';
+      } else if (difference.inMinutes > 0) {
+        return '${difference.inMinutes}分钟前';
+      } else {
+        return '刚刚';
+      }
+    } catch (e) {
+      return timestamp;
+    }
   }
 }

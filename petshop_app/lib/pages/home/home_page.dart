@@ -58,7 +58,7 @@ class _HomePageState extends State<HomePage> {
   final List<String> tabs = [
     '首页·AI',
     '宠物',
-    '水族',
+    '发布',
     '一口价',
     '同城',
   ];
@@ -802,13 +802,17 @@ class _HomePageState extends State<HomePage> {
         children: tabs.asMap().entries.map((entry) {
           final index = entry.key;
           final tab = entry.value;
-          final isSelected = index == _currentTabIndex;
+          // 调整选中状态逻辑，跳过发布按钮
+          final adjustedCurrentIndex = _currentTabIndex >= 2 ? _currentTabIndex + 1 : _currentTabIndex;
+          final isSelected = index == adjustedCurrentIndex && index != 2;
 
           return GestureDetector(
             onTap: () {
-              if (_currentTabIndex != index) {
+              if (index == 2) { // 发布按钮
+                Get.toNamed('/publish-product');
+              } else if (_currentTabIndex != index) {
                 _pageController.animateToPage(
-                  index,
+                  index > 2 ? index - 1 : index, // 调整索引，因为发布不对应页面
                   duration: const Duration(milliseconds: 200),
                   curve: Curves.easeInOut,
                 );
@@ -826,15 +830,33 @@ class _HomePageState extends State<HomePage> {
                   child: Stack(
                     clipBehavior: Clip.none,
                     children: [
-                      Text(
-                        tab,
-                        style: TextStyle(
-                          fontSize: 14.sp, // 稍小字体
-                          color: Colors.white, // 始终保持白色，不改变
-                          fontWeight:
-                              isSelected ? FontWeight.w600 : FontWeight.w500,
+                      // 发布按钮特殊样式
+                      if (index == 2) 
+                        Container(
+                          padding: EdgeInsets.symmetric(horizontal: 12.w, vertical: 4.h),
+                          decoration: BoxDecoration(
+                            color: const Color(0xFFFFEB3B),
+                            borderRadius: BorderRadius.circular(12.r),
+                          ),
+                          child: Text(
+                            tab,
+                            style: TextStyle(
+                              fontSize: 14.sp,
+                              color: Colors.black87,
+                              fontWeight: FontWeight.w600,
+                            ),
+                          ),
+                        )
+                      else
+                        Text(
+                          tab,
+                          style: TextStyle(
+                            fontSize: 14.sp, // 稍小字体
+                            color: Colors.white, // 始终保持白色，不改变
+                            fontWeight:
+                                isSelected ? FontWeight.w600 : FontWeight.w500,
+                          ),
                         ),
-                      ),
                       // 为"宠物"添加右上角"捡漏"图标
                       if (index == 1) // 宠物是第二个标签（索引为1）
                         Positioned(

@@ -30,6 +30,7 @@ class User(Base):
     # 关联关系
     wallet_transactions = relationship("WalletTransaction", back_populates="user")
     deposits = relationship("Deposit", back_populates="user")
+    local_service_posts = relationship("LocalServicePost", back_populates="user")
 
 class UserFollow(Base):
     __tablename__ = "user_follows"

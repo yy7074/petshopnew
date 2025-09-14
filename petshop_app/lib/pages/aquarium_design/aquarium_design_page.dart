@@ -1,6 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
+import 'package:pull_to_refresh/pull_to_refresh.dart';
 import '../../constants/app_colors.dart';
+import '../../services/local_service_service.dart';
 import 'aquarium_design_detail_page.dart';
 
 class AquariumDesignPage extends StatefulWidget {
@@ -14,9 +16,18 @@ class _AquariumDesignPageState extends State<AquariumDesignPage>
     with SingleTickerProviderStateMixin {
   late TabController _tabController;
   final ScrollController _scrollController = ScrollController();
+  final RefreshController _refreshController =
+      RefreshController(initialRefresh: false);
 
-  // 悬赏数据
-  final List<Map<String, dynamic>> _rewardItems = [
+  // 真实数据
+  List<Map<String, dynamic>> _services = [];
+  List<Map<String, dynamic>> _rewardItems = [];
+  bool _isLoading = false;
+  bool _hasMore = true;
+  int _currentPage = 1;
+
+  // 悬赏数据（默认数据）
+  final List<Map<String, dynamic>> _defaultRewardItems = [
     {
       'id': '1',
       'image': 'https://picsum.photos/400/300?random=701',
@@ -135,13 +146,90 @@ class _AquariumDesignPageState extends State<AquariumDesignPage>
   void initState() {
     super.initState();
     _tabController = TabController(length: 2, vsync: this);
+    _rewardItems = List.from(_defaultRewardItems);
+    _loadServices();
   }
 
   @override
   void dispose() {
     _tabController.dispose();
     _scrollController.dispose();
+    _refreshController.dispose();
     super.dispose();
+  }
+
+  // 加载造景服务数据
+  Future<void> _loadServices({bool isRefresh = false}) async {
+    if (_isLoading) return;
+
+    setState(() {
+      _isLoading = true;
+    });
+
+    try {
+      if (isRefresh) {
+        _currentPage = 1;
+        _hasMore = true;
+      }
+
+      final result = await LocalServiceService.getServicesByType(
+        'aquarium_design',
+        page: _currentPage,
+        pageSize: 20,
+      );
+
+      final List<Map<String, dynamic>> newServices = (result['items'] as List)
+          .map((item) => LocalServiceService.formatServiceForUI(item))
+          .toList();
+
+      setState(() {
+        if (isRefresh) {
+          _services = newServices;
+        } else {
+          _services.addAll(newServices);
+        }
+
+        _currentPage++;
+        _hasMore = newServices.length >= 20;
+        _isLoading = false;
+      });
+
+      if (isRefresh) {
+        _refreshController.refreshCompleted();
+      } else {
+        _refreshController.loadComplete();
+      }
+    } catch (e) {
+      setState(() {
+        _isLoading = false;
+        // 如果是第一次加载失败，使用默认数据
+        if (_services.isEmpty) {
+          _services = _defaultRewardItems;
+        }
+      });
+
+      if (isRefresh) {
+        _refreshController.refreshFailed();
+      } else {
+        _refreshController.loadFailed();
+      }
+
+      print('加载造景服务失败: $e');
+    }
+  }
+
+  // 刷新数据
+  void _onRefresh() async {
+    await _loadServices(isRefresh: true);
+  }
+
+  // 加载更多
+  void _onLoading() async {
+    if (!_hasMore) {
+      _refreshController.loadNoData();
+      return;
+    }
+    await _loadServices();
   }
 
   @override
@@ -270,7 +358,8 @@ class _AquariumDesignPageState extends State<AquariumDesignPage>
               child: Container(
                 width: double.infinity,
                 decoration: BoxDecoration(
-                  borderRadius: BorderRadius.vertical(top: Radius.circular(12.r)),
+                  borderRadius:
+                      BorderRadius.vertical(top: Radius.circular(12.r)),
                   image: DecorationImage(
                     image: NetworkImage(item['image']),
                     fit: BoxFit.cover,
@@ -278,7 +367,7 @@ class _AquariumDesignPageState extends State<AquariumDesignPage>
                 ),
               ),
             ),
-            
+
             // 产品信息
             Expanded(
               flex: 2,
@@ -298,9 +387,9 @@ class _AquariumDesignPageState extends State<AquariumDesignPage>
                       maxLines: 2,
                       overflow: TextOverflow.ellipsis,
                     ),
-                    
+
                     SizedBox(height: 8.h),
-                    
+
                     // 价格行
                     Row(
                       children: [
@@ -322,9 +411,9 @@ class _AquariumDesignPageState extends State<AquariumDesignPage>
                         ),
                       ],
                     ),
-                    
+
                     SizedBox(height: 8.h),
-                    
+
                     // 店铺信息
                     Row(
                       children: [

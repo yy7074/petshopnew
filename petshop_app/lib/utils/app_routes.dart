@@ -14,6 +14,8 @@ import '../pages/auction/auction_test_page.dart';
 import '../pages/wallet/wallet_page.dart';
 import '../pages/store/store_page.dart';
 import '../pages/bids/bid_records_page.dart';
+import '../pages/publish/publish_product_page.dart';
+import '../pages/message/chat_detail_page.dart';
 
 class AppRoutes {
   static const String splash = '/splash';
@@ -31,6 +33,8 @@ class AppRoutes {
   static const String wallet = '/wallet';
   static const String store = '/store';
   static const String bidRecords = '/bid-records';
+  static const String publishProduct = '/publish-product';
+  static const String chatDetail = '/chat-detail';
 
   static List<GetPage> routes = [
     GetPage(
@@ -99,6 +103,18 @@ class AppRoutes {
     GetPage(
       name: bidRecords,
       page: () => const BidRecordsPage(),
+    ),
+    GetPage(
+      name: publishProduct,
+      page: () => const PublishProductPage(),
+    ),
+    GetPage(
+      name: chatDetail,
+      page: () => ChatDetailPage(
+        conversationId: Get.arguments?['conversation_id'] ?? 1,
+        title: Get.arguments?['title'] ?? '',
+        avatar: Get.arguments?['avatar'],
+      ),
     ),
   ];
 }
