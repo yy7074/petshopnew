@@ -18,6 +18,8 @@ from app.models.product import (
     Category, Product, SpecialEvent, EventProduct, 
     ProductImage, Shop
 )
+from app.models.store import Store
+from app.models.user import User
 
 def create_demo_data():
     """创建演示数据"""
@@ -289,7 +291,63 @@ def create_demo_data():
             if not existing:
                 db.add(product)
         
-        # 5. 创建专场商品关联
+        # 5. 创建演示店铺
+        print("🏪 创建演示店铺...")
+        
+        # 首先确保有用户ID=2的用户存在
+        demo_user = db.query(User).filter(User.id == 2).first()
+        if not demo_user:
+            # 创建演示用户
+            demo_user = User(
+                id=2,
+                phone="18888888888",
+                nickname="招财猫旺财狗",
+                balance=Decimal("10000.00"),
+                status="active",
+                created_at=datetime.now()
+            )
+            db.add(demo_user)
+            db.commit()  # 先提交用户数据
+        
+        stores = [
+            Store(
+                id=1,
+                owner_id=2,  # 对应我们的演示用户
+                name="招财猫旺财狗的店铺",
+                description="专注宠物拍卖多年，诚信经营，品质保证！我们提供各种可爱的宠物，包括猫咪、狗狗、水族等。每一只宠物都经过精心照料，健康有保障。欢迎大家来店选购心仪的萌宠！",
+                avatar="https://picsum.photos/200/200?random=store1",
+                banner="https://picsum.photos/800/300?random=storebanner1",
+                location="上海市浦东新区张江高科技园区",
+                phone="021-12345678",
+                is_open=True,
+                business_hours={
+                    "monday": {"open": "09:00", "close": "18:00"},
+                    "tuesday": {"open": "09:00", "close": "18:00"},
+                    "wednesday": {"open": "09:00", "close": "18:00"},
+                    "thursday": {"open": "09:00", "close": "18:00"},
+                    "friday": {"open": "09:00", "close": "18:00"},
+                    "saturday": {"open": "10:00", "close": "17:00"},
+                    "sunday": {"open": "10:00", "close": "17:00"}
+                },
+                announcement="🎉 新春特惠进行中！全场商品9折起，欢迎选购！",
+                total_products=6,
+                total_sales=156,
+                total_revenue=Decimal("45600.00"),
+                rating=Decimal("4.8"),
+                rating_count=89,
+                follower_count=267,
+                status=1,
+                verified=True,
+                created_at=datetime.now() - timedelta(days=180)  # 半年前开店
+            )
+        ]
+        
+        for store in stores:
+            existing = db.query(Store).filter(Store.id == store.id).first()
+            if not existing:
+                db.add(store)
+        
+        # 6. 创建专场商品关联
         print("🔗 创建专场商品关联...")
         event_products = [
             # 新春萌宠专场
@@ -320,6 +378,7 @@ def create_demo_data():
         event_count = db.query(SpecialEvent).count() 
         product_count = db.query(Product).count()
         shop_count = db.query(Shop).count()
+        store_count = db.query(Store).count()
         
         print(f"""
 📊 数据统计:
@@ -327,6 +386,7 @@ def create_demo_data():
 - 专场活动: {event_count} 个  
 - 商品数量: {product_count} 个
 - 商店数量: {shop_count} 个
+- 店铺数量: {store_count} 个
 - 专场商品关联: {len(event_products)} 个
         """)
         

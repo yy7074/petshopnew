@@ -276,17 +276,28 @@ class _HomePageState extends State<HomePage> {
   Map<String, dynamic> _convertProductToMap(product_models.Product product) {
     return {
       'id': product.id,
+      'seller_id': product.sellerId, // 添加seller_id字段
       'name': product.title,
+      'title': product.title, // 添加title字段（ProductDetailPage可能需要）
       'currentPrice': product.auctionInfo?.currentPrice ?? 0.0,
+      'current_price': product.auctionInfo?.currentPrice ?? 0.0, // 添加current_price字段
       'startPrice': product.auctionInfo?.startPrice ?? 0.0,
+      'starting_price': product.auctionInfo?.startPrice ?? 0.0, // 添加starting_price字段
+      'images': product.images, // 添加images字段
       'image': product.images.isNotEmpty
           ? product.images.first
           : 'https://picsum.photos/200/200?random=${product.id}',
       'category': '宠物', // TODO: 从categoryId获取分类名称
+      'category_id': product.categoryId, // 添加category_id字段
       'timeLeft': _formatTimeLeft(product.auctionInfo?.endTime),
       'bidCount': product.auctionInfo?.bidCount ?? 0,
+      'bid_count': product.auctionInfo?.bidCount ?? 0, // 添加bid_count字段
       'description': product.description,
       'location': product.location ?? '未知',
+      'auction_type': product.type == product_models.ProductType.auction ? 1 : 2,
+      'auction_end_time': product.auctionInfo?.endTime.toIso8601String(),
+      'created_at': product.createdAt.toIso8601String(),
+      'updated_at': product.updatedAt.toIso8601String(),
       'seller': {
         'name': '卖家${product.sellerId}',
         'avatar': 'https://picsum.photos/50/50?random=${product.sellerId}',

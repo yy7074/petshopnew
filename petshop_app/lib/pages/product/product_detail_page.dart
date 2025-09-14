@@ -125,6 +125,31 @@ class _ProductDetailPageState extends State<ProductDetailPage> {
     }
   }
 
+  String _getCurrentPrice() {
+    // 优先使用竞拍记录中的最高价格
+    if (_bidHistory.isNotEmpty) {
+      final highestBid = _bidHistory.first; // 竞拍记录已按时间倒序排列，第一个就是最新最高的
+      return highestBid.bidAmount.toStringAsFixed(0);
+    }
+    
+    // 其次使用拍卖状态中的价格
+    if (_auctionStatus?['current_price'] != null) {
+      final priceStr = _auctionStatus!['current_price'].toString();
+      final price = double.tryParse(priceStr);
+      return price?.toStringAsFixed(0) ?? priceStr;
+    }
+    
+    // 最后使用商品基础数据中的价格
+    final basePrice = widget.productData?['current_price'];
+    if (basePrice != null) {
+      final price = double.tryParse(basePrice.toString());
+      return price?.toStringAsFixed(0) ?? basePrice.toString();
+    }
+    
+    // 默认值
+    return '0';
+  }
+
   Future<void> _checkIfWinner(int productId) async {
     try {
       final result = await _auctionService.getMyWinningAuctions();
@@ -238,7 +263,37 @@ class _ProductDetailPageState extends State<ProductDetailPage> {
         actions: [
           TextButton(
             onPressed: () {
-              // Navigate to store
+              // 获取商品的卖家ID，导航到店铺页面
+              final sellerId = widget.productData?['seller_id'];
+              
+              if (sellerId != null) {
+                Get.toNamed(
+                  AppRoutes.store,
+                  arguments: {
+                    'seller_id': sellerId is String ? int.tryParse(sellerId) : sellerId,
+                  },
+                );
+              } else {
+                // 尝试从其他可能的字段获取
+                final sellerIdAlt = widget.productData?['seller_info']?['id'] ?? 
+                                   widget.productData?['owner_id'];
+                
+                if (sellerIdAlt != null) {
+                  Get.toNamed(
+                    AppRoutes.store,
+                    arguments: {
+                      'seller_id': sellerIdAlt is String ? int.tryParse(sellerIdAlt) : sellerIdAlt,
+                    },
+                  );
+                } else {
+                  Get.snackbar(
+                    '提示',
+                    '店铺信息不完整',
+                    backgroundColor: AppColors.error,
+                    colorText: Colors.white,
+                  );
+                }
+              }
             },
             child: Text(
               '进店',
@@ -402,7 +457,7 @@ class _ProductDetailPageState extends State<ProductDetailPage> {
                             ),
                             SizedBox(width: 8.w),
                             Text(
-                              '¥${_auctionStatus?['current_price'] ?? '432'}',
+                              '¥${_getCurrentPrice()}',
                               style: TextStyle(
                                 fontSize: 24.sp,
                                 color: Colors.red,
@@ -973,9 +1028,7 @@ class _ProductDetailPageState extends State<ProductDetailPage> {
   }
 
   void _showBiddingDialog() {
-    final currentPrice =
-        double.tryParse(_auctionStatus?['current_price']?.toString() ?? '0') ??
-            0;
+    final currentPrice = double.tryParse(_getCurrentPrice()) ?? 0;
     final minIncrement =
         double.tryParse(_auctionStatus?['min_increment']?.toString() ?? '10') ??
             10;

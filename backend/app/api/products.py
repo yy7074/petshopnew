@@ -6,7 +6,7 @@ import os
 from datetime import datetime
 
 from ..core.database import get_db
-from ..core.security import get_current_user
+from ..core.security import get_current_user, get_current_user_optional
 from ..models.user import User
 from ..models.product import Product, ProductImage, Category, ProductFavorite
 from ..schemas.product import (
@@ -52,7 +52,7 @@ async def get_products(
 async def get_product(
     product_id: int,
     db: Session = Depends(get_db),
-    current_user: User = Depends(get_current_user)
+    current_user: Optional[User] = Depends(get_current_user_optional)
 ):
     """获取商品详情"""
     product = await product_service.get_product_detail(db, product_id, current_user.id if current_user else None)

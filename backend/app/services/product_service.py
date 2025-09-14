@@ -137,8 +137,11 @@ class ProductService:
         # 获取卖家信息
         seller = db.query(User).filter(User.id == product.seller_id).first()
         
+        # 构建商品字典，排除images字段
+        product_dict = {k: v for k, v in product.__dict__.items() if k != 'images'}
+        
         return ProductDetailResponse(
-            **product.__dict__,
+            **product_dict,
             images=[img.image_url for img in images],
             is_favorited=is_favorited,
             seller_info={
