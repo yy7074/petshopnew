@@ -35,6 +35,10 @@ class _ProfilePageState extends State<ProfilePage>
   void initState() {
     super.initState();
     _loadUserInfo();
+    // 清除可能存在的overlay
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      Navigator.popUntil(context, (route) => route.isFirst);
+    });
   }
 
   void _loadUserInfo() {
@@ -50,6 +54,7 @@ class _ProfilePageState extends State<ProfilePage>
   void _logout() async {
     showDialog(
       context: context,
+      barrierDismissible: true, // 允许点击外部关闭
       builder: (BuildContext context) {
         return AlertDialog(
           title: const Text('确认退出'),
