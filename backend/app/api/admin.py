@@ -162,8 +162,7 @@ async def get_products(
     category_id: Optional[int] = Query(None)
 ):
     """获取商品列表"""
-    query = db.query(Product).join(User, Product.seller_id == User.id)\
-                             .join(Category, Product.category_id == Category.id)
+    query = db.query(Product)
     
     # 状态筛选
     if status is not None:
@@ -180,8 +179,12 @@ async def get_products(
     product_list = []
     for product in products:
         product_info = ProductInfo.from_orm(product)
-        product_info.seller_name = product.seller.username
-        product_info.category_name = product.category.name
+        # 获取卖家信息
+        seller = db.query(User).filter(User.id == product.seller_id).first()
+        product_info.seller_name = seller.username if seller else "未知"
+        # 获取分类信息
+        category = db.query(Category).filter(Category.id == product.category_id).first()
+        product_info.category_name = category.name if category else "未知"
         product_list.append(product_info)
     
     return ProductListResponse(
@@ -232,8 +235,7 @@ async def get_orders(
     search: Optional[str] = Query(None)
 ):
     """获取订单列表"""
-    query = db.query(Order).join(User, Order.buyer_id == User.id)\
-                           .join(Product, Order.product_id == Product.id)
+    query = db.query(Order)
     
     # 状态筛选
     if status is not None:
@@ -241,13 +243,8 @@ async def get_orders(
     
     # 搜索筛选
     if search:
-        query = query.filter(
-            or_(
-                Order.order_no.ilike(f"%{search}%"),
-                User.username.ilike(f"%{search}%"),
-                Product.title.ilike(f"%{search}%")
-            )
-        )
+        # 只搜索订单号，用户名和商品标题需要在后端过滤
+        query = query.filter(Order.order_no.ilike(f"%{search}%"))
     
     # 分页
     total = query.count()
@@ -256,8 +253,12 @@ async def get_orders(
     order_list = []
     for order in orders:
         order_info = OrderInfo.from_orm(order)
-        order_info.buyer_name = order.buyer.username
-        order_info.product_title = order.product.title
+        # 获取买家信息
+        buyer = db.query(User).filter(User.id == order.buyer_id).first()
+        order_info.buyer_name = buyer.username if buyer else "未知"
+        # 获取商品信息
+        product = db.query(Product).filter(Product.id == order.product_id).first()
+        order_info.product_title = product.title if product else "未知"
         order_list.append(order_info)
     
     return OrderListResponse(
@@ -347,13 +348,11 @@ async def get_messages(
     db: Session = Depends(get_db),
     page: int = Query(1, ge=1),
     size: int = Query(20, ge=1, le=100),
-    message_type: Optional[int] = Query(None),
+    message_type: Optional[str] = Query(None),
     is_read: Optional[bool] = Query(None)
 ):
     """获取消息列表"""
-    query = db.query(Message)\
-              .join(User, Message.receiver_id == User.id)\
-              .outerjoin(User.alias("sender"), Message.sender_id == User.alias("sender").id)
+    query = db.query(Message)
     
     # 类型筛选
     if message_type is not None:
@@ -370,8 +369,15 @@ async def get_messages(
     message_list = []
     for message in messages:
         message_info = MessageInfo.from_orm(message)
-        message_info.receiver_name = message.receiver.username
-        message_info.sender_name = message.sender.username if message.sender else "系统"
+        # 获取接收者信息
+        receiver = db.query(User).filter(User.id == message.receiver_id).first()
+        message_info.receiver_name = receiver.username if receiver else "未知"
+        # 获取发送者信息
+        if message.sender_id:
+            sender = db.query(User).filter(User.id == message.sender_id).first()
+            message_info.sender_name = sender.username if sender else "未知"
+        else:
+            message_info.sender_name = "系统"
         message_list.append(message_info)
     
     return MessageListResponse(
@@ -397,7 +403,7 @@ async def send_system_message(
             message = Message(
                 sender_id=None,  # 系统消息
                 receiver_id=user.id,
-                message_type=1,  # 系统消息
+                message_type="system",  # 系统消息
                 title=message_data.title,
                 content=message_data.content
             )
@@ -408,7 +414,7 @@ async def send_system_message(
             message = Message(
                 sender_id=None,
                 receiver_id=user_id,
-                message_type=1,
+                message_type="system",
                 title=message_data.title,
                 content=message_data.content
             )

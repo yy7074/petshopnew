@@ -184,7 +184,7 @@ class EventListResponse(BaseModel):
 # 消息管理
 class MessageInfo(BaseModel):
     id: int
-    message_type: int = 1
+    message_type: str = "text"
     title: Optional[str] = None
     content: str
     related_id: Optional[int] = None
