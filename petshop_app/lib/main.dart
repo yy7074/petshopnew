@@ -4,12 +4,12 @@ import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:get/get.dart';
 import 'package:provider/provider.dart';
 
-import 'constants/app_colors.dart';
 import 'constants/app_theme.dart';
 import 'pages/splash/splash_page.dart';
 import 'services/api_service.dart';
 import 'services/storage_service.dart';
 import 'utils/app_routes.dart';
+import 'utils/system_ui_helper.dart';
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
@@ -17,13 +17,8 @@ void main() async {
   // 初始化本地存储
   await StorageService.init();
 
-  // 设置状态栏样式
-  SystemChrome.setSystemUIOverlayStyle(
-    const SystemUiOverlayStyle(
-      statusBarColor: Colors.transparent,
-      statusBarIconBrightness: Brightness.light, // 白色图标适配紫色背景
-    ),
-  );
+  // 使用系统UI帮助类设置样式
+  SystemUIHelper.resetSystemUI();
 
   runApp(const MyApp());
 }

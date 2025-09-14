@@ -1,9 +1,22 @@
+import 'package:flutter/foundation.dart';
+
 class ApiConstants {
-  // 基础配置
-  static const String baseUrl = 'https://catdog.dachaonet.com/api/v1';
+  // 基础配置 - 根据环境动态设置
+  static String get baseUrl {
+    if (kDebugMode) {
+      // Debug模式：本地开发服务器
+      return 'http://localhost:3000/api/v1';
+    } else {
+      // Release模式：生产服务器
+      return 'https://catdog.dachaonet.com/api/v1';
+    }
+  }
+  
   static const String version = '';
-  static const int connectTimeout = 30000;
-  static const int receiveTimeout = 30000;
+  
+  // 超时配置 - Release模式下更短的超时时间
+  static int get connectTimeout => kDebugMode ? 30000 : 15000;
+  static int get receiveTimeout => kDebugMode ? 30000 : 15000;
 
   // 认证相关
   static const String login = '$version/auth/login';

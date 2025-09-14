@@ -1,0 +1,14 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <!-- Release环境配置 -->
+    <bool name="debug_mode">false</bool>
+    <string name="app_env">release</string>
+    
+    <!-- 网络配置 -->
+    <bool name="allow_clear_text">true</bool>
+    <string name="base_url">https://catdog.dachaonet.com</string>
+    
+    <!-- 日志配置 -->
+    <bool name="enable_logging">false</bool>
+    <bool name="enable_crash_reporting">true</bool>
+</resources>
