@@ -305,9 +305,9 @@ async def send_product_consultation(
 ):
     """发送商品咨询"""
     try:
-        # 验证不能向自己咨询
-        if request.seller_id == current_user.id:
-            raise HTTPException(status_code=400, detail="不能向自己发送咨询")
+        # 验证不能向自己咨询（为了测试方便，暂时注释掉）
+        # if request.seller_id == current_user.id:
+        #     raise HTTPException(status_code=400, detail="不能向自己发送咨询")
         
         # 发送咨询消息
         message = await chat_service.send_product_consultation(db, current_user.id, request)

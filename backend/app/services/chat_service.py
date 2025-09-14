@@ -16,6 +16,26 @@ from ..schemas.chat import (
 
 class ChatService:
     
+    def _get_message_type_int(self, message_type: str) -> int:
+        """将字符串消息类型转换为整数"""
+        type_mapping = {
+            'text': 1,
+            'image': 2,
+            'product': 3,
+            'system': 4
+        }
+        return type_mapping.get(message_type, 1)
+    
+    def _get_message_type_str(self, message_type: int) -> str:
+        """将整数消息类型转换为字符串"""
+        type_mapping = {
+            1: 'text',
+            2: 'image',
+            3: 'product',
+            4: 'system'
+        }
+        return type_mapping.get(message_type, 'text')
+    
     async def get_or_create_conversation(self, db: Session, user1_id: int, user2_id: int) -> Conversation:
         """获取或创建对话"""
         # 确保user1_id < user2_id 以避免重复对话
@@ -122,7 +142,7 @@ class ChatService:
                         conversation_id=message.conversation_id,
                         sender_id=message.sender_id,
                         receiver_id=message.receiver_id,
-                        message_type=message.message_type,
+                        message_type=self._get_message_type_str(message.message_type),
                         content=message.content,
                         related_id=message.related_id,
                         is_read=message.is_read,
@@ -181,12 +201,15 @@ class ChatService:
         else:
             conversation = await self.get_or_create_conversation(db, sender_id, receiver_id)
         
+        # 转换消息类型为整数
+        message_type_int = self._get_message_type_int(message_type)
+        
         # 创建消息
         message = Message(
             conversation_id=conversation.id,
             sender_id=sender_id,
             receiver_id=receiver_id,
-            message_type=message_type,
+            message_type=message_type_int,
             content=content,
             related_id=related_id
         )
@@ -215,7 +238,7 @@ class ChatService:
             conversation_id=message.conversation_id,
             sender_id=message.sender_id,
             receiver_id=message.receiver_id,
-            message_type=message.message_type,
+            message_type=self._get_message_type_str(message.message_type),
             content=message.content,
             related_id=message.related_id,
             is_read=message.is_read,
@@ -272,7 +295,7 @@ class ChatService:
                 conversation_id=message.conversation_id,
                 sender_id=message.sender_id,
                 receiver_id=message.receiver_id,
-                message_type=message.message_type,
+                message_type=self._get_message_type_str(message.message_type),
                 content=message.content,
                 related_id=message.related_id,
                 is_read=message.is_read,
@@ -451,7 +474,7 @@ class ChatService:
                 conversation_id=message.conversation_id,
                 sender_id=message.sender_id,
                 receiver_id=message.receiver_id,
-                message_type=message.message_type,
+                message_type=self._get_message_type_str(message.message_type),
                 content=message.content,
                 related_id=message.related_id,
                 is_read=message.is_read,

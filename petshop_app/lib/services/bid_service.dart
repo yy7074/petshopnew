@@ -37,7 +37,8 @@ class BidService {
     int pageSize = 20,
   }) async {
     try {
-      final response = await _apiService.get('/bids/product/$productId', queryParameters: {
+      final response =
+          await _apiService.get('/bids/product/$productId', queryParameters: {
         'page': page,
         'page_size': pageSize,
       });
@@ -68,7 +69,8 @@ class BidService {
 
       if (status != null) queryParams['status'] = status;
 
-      final response = await _apiService.get('/bids/my', queryParameters: queryParams);
+      final response =
+          await _apiService.get('/bids/my', queryParameters: queryParams);
 
       if (response.statusCode == 200) {
         final List<dynamic> bidsJson = response.data['items'] ?? [];
@@ -96,7 +98,8 @@ class BidService {
 
       if (status != null) queryParams['status'] = status;
 
-      final response = await _apiService.get('/bids/user', queryParameters: queryParams);
+      final response =
+          await _apiService.get('/bids/user', queryParameters: queryParams);
 
       if (response.statusCode == 200) {
         final List<dynamic> bidsJson = response.data['items'] ?? [];
@@ -148,7 +151,8 @@ class BidService {
 
       if (response.statusCode == 200) {
         final List<dynamic> autoBidsJson = response.data['items'] ?? [];
-        final autoBids = autoBidsJson.map((json) => AutoBid.fromJson(json)).toList();
+        final autoBids =
+            autoBidsJson.map((json) => AutoBid.fromJson(json)).toList();
         return ApiResult.success(autoBids);
       } else {
         return ApiResult.error(response.data['detail'] ?? '获取自动出价失败');
@@ -224,14 +228,16 @@ class BidService {
     int pageSize = 20,
   }) async {
     try {
-      final response = await _apiService.get('/auctions/active', queryParameters: {
+      final response =
+          await _apiService.get('/auctions/active', queryParameters: {
         'page': page,
         'page_size': pageSize,
       });
 
       if (response.statusCode == 200) {
         final List<dynamic> productsJson = response.data['data']['items'] ?? [];
-        final products = productsJson.map((json) => Product.fromJson(json)).toList();
+        final products =
+            productsJson.map((json) => Product.fromJson(json)).toList();
         return ApiResult.success(products);
       } else {
         return ApiResult.error(response.data['message'] ?? '获取拍卖列表失败');
@@ -246,13 +252,15 @@ class BidService {
     int limit = 10,
   }) async {
     try {
-      final response = await _apiService.get('/auctions/ending', queryParameters: {
+      final response =
+          await _apiService.get('/auctions/ending', queryParameters: {
         'limit': limit,
       });
 
       if (response.statusCode == 200) {
         final List<dynamic> productsJson = response.data['data'] ?? [];
-        final products = productsJson.map((json) => Product.fromJson(json)).toList();
+        final products =
+            productsJson.map((json) => Product.fromJson(json)).toList();
         return ApiResult.success(products);
       } else {
         return ApiResult.error(response.data['message'] ?? '获取即将结束的拍卖失败');
@@ -276,11 +284,13 @@ class BidService {
 
       if (userId != null) queryParams['user_id'] = userId;
 
-      final response = await _apiService.get('/auctions/results', queryParameters: queryParams);
+      final response = await _apiService.get('/auctions/results',
+          queryParameters: queryParams);
 
       if (response.statusCode == 200) {
         final List<dynamic> resultsJson = response.data['data']['items'] ?? [];
-        final results = resultsJson.map((json) => AuctionResult.fromJson(json)).toList();
+        final results =
+            resultsJson.map((json) => AuctionResult.fromJson(json)).toList();
         return ApiResult.success(results);
       } else {
         return ApiResult.error(response.data['message'] ?? '获取拍卖结果失败');
@@ -340,7 +350,7 @@ class BidService {
     } else if (error.response?.statusCode == 409) {
       return '竞拍已结束或商品不可竞拍';
     } else if (error.type == DioExceptionType.connectionTimeout ||
-               error.type == DioExceptionType.receiveTimeout) {
+        error.type == DioExceptionType.receiveTimeout) {
       return '网络连接超时，请检查网络';
     } else if (error.type == DioExceptionType.unknown) {
       return '网络连接失败，请检查网络';
@@ -378,9 +388,11 @@ class AuctionResult {
       productId: json['product_id'] ?? 0,
       winnerId: json['winner_id'],
       finalPrice: (json['final_price'] ?? 0).toDouble(),
-      endTime: DateTime.parse(json['end_time'] ?? DateTime.now().toIso8601String()),
+      endTime:
+          DateTime.parse(json['end_time'] ?? DateTime.now().toIso8601String()),
       status: json['status'] ?? 'ended',
-      product: json['product'] != null ? Product.fromJson(json['product']) : null,
+      product:
+          json['product'] != null ? Product.fromJson(json['product']) : null,
       winner: json['winner'] != null ? User.fromJson(json['winner']) : null,
     );
   }
