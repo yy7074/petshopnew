@@ -10,6 +10,7 @@ import '../shop/shop_application_status_page.dart';
 import '../test_api_page.dart';
 import '../../services/store_application_service.dart';
 import '../../services/storage_service.dart';
+import '../../services/user_role_service.dart';
 import '../../models/user.dart';
 import '../auth/login_page.dart';
 import '../wallet/wallet_page.dart';
@@ -30,6 +31,7 @@ class _ProfilePageState extends State<ProfilePage>
 
   User? _currentUser;
   bool _isLoggedIn = false;
+  final UserRoleService _userRoleService = UserRoleService();
 
   @override
   void initState() {
@@ -246,7 +248,7 @@ class _ProfilePageState extends State<ProfilePage>
                   mainAxisAlignment: MainAxisAlignment.center,
                   children: [
                     Text(
-                      '买家中心',
+                      _currentUser?.isSeller == true ? '卖家中心' : '买家中心',
                       style: TextStyle(
                         fontSize: 18.sp,
                         color: Colors.white,
@@ -255,14 +257,7 @@ class _ProfilePageState extends State<ProfilePage>
                     ),
                     SizedBox(width: 8.w),
                     GestureDetector(
-                      onTap: () {
-                        Navigator.push(
-                          context,
-                          MaterialPageRoute(
-                            builder: (context) => const SellerCenterPage(),
-                          ),
-                        );
-                      },
+                      onTap: _handleRoleSwitch,
                       child: Container(
                         padding: EdgeInsets.symmetric(
                             horizontal: 8.w, vertical: 4.h),
@@ -271,7 +266,7 @@ class _ProfilePageState extends State<ProfilePage>
                           borderRadius: BorderRadius.circular(12.r),
                         ),
                         child: Text(
-                          '切换卖家',
+                          _currentUser?.isSeller == true ? '切换买家' : '切换卖家',
                           style: TextStyle(
                             fontSize: 12.sp,
                             color: Colors.white,
@@ -1139,6 +1134,128 @@ class _ProfilePageState extends State<ProfilePage>
             ],
           ),
         ),
+      ),
+    );
+  }
+
+  /// 处理角色切换
+  Future<void> _handleRoleSwitch() async {
+    if (!_isLoggedIn) {
+      // 未登录，跳转到登录页面
+      Navigator.push(
+        context,
+        MaterialPageRoute(builder: (context) => const LoginPage()),
+      );
+      return;
+    }
+
+    final currentUser = _currentUser;
+    if (currentUser == null) return;
+
+    try {
+      if (currentUser.isSeller) {
+        // 当前是卖家，切换到买家模式
+        final result = await _userRoleService.switchToBuyerMode();
+        if (result.success) {
+          setState(() {
+            _loadUserInfo(); // 重新加载用户信息
+          });
+          ScaffoldMessenger.of(context).showSnackBar(
+            SnackBar(
+              content: Text(result.message),
+              backgroundColor: Colors.green,
+            ),
+          );
+        } else {
+          ScaffoldMessenger.of(context).showSnackBar(
+            SnackBar(
+              content: Text(result.message),
+              backgroundColor: Colors.red,
+            ),
+          );
+        }
+      } else {
+        // 当前是买家，尝试切换到卖家模式
+        final result = await _userRoleService.switchToSellerMode();
+        if (result.success) {
+          // 切换成功，导航到卖家中心
+          Navigator.push(
+            context,
+            MaterialPageRoute(
+              builder: (context) => const SellerCenterPage(),
+            ),
+          );
+          ScaffoldMessenger.of(context).showSnackBar(
+            SnackBar(
+              content: Text(result.message),
+              backgroundColor: Colors.green,
+            ),
+          );
+        } else {
+          // 切换失败，显示错误信息和选项
+          _showSwitchToSellerDialog(result.message);
+        }
+      }
+    } catch (e) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Text('切换失败: $e'),
+          backgroundColor: Colors.red,
+        ),
+      );
+    }
+  }
+
+  /// 显示切换到卖家模式的对话框
+  void _showSwitchToSellerDialog(String message) {
+    showDialog(
+      context: context,
+      builder: (context) => AlertDialog(
+        title: const Text('无法切换到卖家模式'),
+        content: Column(
+          mainAxisSize: MainAxisSize.min,
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Text(message),
+            SizedBox(height: 16.h),
+            const Text('您可以：'),
+            SizedBox(height: 8.h),
+            const Text('• 查看开店申请状态'),
+            const Text('• 申请开店（如果还没有申请）'),
+          ],
+        ),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.of(context).pop(),
+            child: const Text('取消'),
+          ),
+          TextButton(
+            onPressed: () {
+              Navigator.of(context).pop();
+              // 导航到开店申请状态页面
+              Navigator.push(
+                context,
+                MaterialPageRoute(
+                  builder: (context) => const ShopApplicationStatusPage(),
+                ),
+              );
+            },
+            child: const Text('查看申请状态'),
+          ),
+          TextButton(
+            onPressed: () {
+              Navigator.of(context).pop();
+              // 导航到开店申请页面
+              Navigator.push(
+                context,
+                MaterialPageRoute(
+                  builder: (context) => const ShopEntryPage(),
+                ),
+              );
+            },
+            child: const Text('去开店'),
+          ),
+        ],
       ),
     );
   }

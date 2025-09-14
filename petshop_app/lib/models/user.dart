@@ -18,6 +18,8 @@ class User {
     this.realName,
     this.idCard,
     required this.status,
+    required this.isSeller,
+    required this.isVerified,
     required this.createdAt,
   });
 
@@ -30,6 +32,8 @@ class User {
       realName: json['real_name'],
       idCard: json['id_card'],
       status: (json['status'] ?? 1).toString(), // 后台返回的是数字，需要转换为字符串
+      isSeller: json['is_seller'] ?? false,
+      isVerified: json['is_verified'] ?? false,
       createdAt: DateTime.parse(
           json['created_at'] ?? DateTime.now().toIso8601String()),
     );
@@ -44,6 +48,8 @@ class User {
       'real_name': realName,
       'id_card': idCard,
       'status': status,
+      'is_seller': isSeller,
+      'is_verified': isVerified,
       'created_at': createdAt.toIso8601String(),
     };
   }
@@ -56,6 +62,8 @@ class User {
     String? realName,
     String? idCard,
     String? status,
+    bool? isSeller,
+    bool? isVerified,
     DateTime? createdAt,
   }) {
     return User(
@@ -66,6 +74,8 @@ class User {
       realName: realName ?? this.realName,
       idCard: idCard ?? this.idCard,
       status: status ?? this.status,
+      isSeller: isSeller ?? this.isSeller,
+      isVerified: isVerified ?? this.isVerified,
       createdAt: createdAt ?? this.createdAt,
     );
   }
