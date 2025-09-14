@@ -263,37 +263,55 @@ class _ProductDetailPageState extends State<ProductDetailPage> {
         actions: [
           TextButton(
             onPressed: () {
+              print('===== 进店按钮点击 =====');
+              print('完整的productData: ${widget.productData}');
+              
               // 获取商品的卖家ID，导航到店铺页面
               final sellerId = widget.productData?['seller_id'];
+              print('直接获取的seller_id: $sellerId (类型: ${sellerId.runtimeType})');
               
               if (sellerId != null) {
+                final finalSellerId = sellerId is String ? int.tryParse(sellerId) : sellerId;
+                print('转换后的seller_id: $finalSellerId');
+                print('导航到店铺页面，seller_id: $finalSellerId');
+                
                 Get.toNamed(
                   AppRoutes.store,
                   arguments: {
-                    'seller_id': sellerId is String ? int.tryParse(sellerId) : sellerId,
+                    'seller_id': finalSellerId,
                   },
                 );
               } else {
+                print('seller_id为空，尝试从其他字段获取...');
+                
                 // 尝试从其他可能的字段获取
                 final sellerIdAlt = widget.productData?['seller_info']?['id'] ?? 
                                    widget.productData?['owner_id'];
+                print('备用seller_id: $sellerIdAlt');
                 
                 if (sellerIdAlt != null) {
+                  final finalSellerIdAlt = sellerIdAlt is String ? int.tryParse(sellerIdAlt) : sellerIdAlt;
+                  print('使用备用seller_id导航: $finalSellerIdAlt');
+                  
                   Get.toNamed(
                     AppRoutes.store,
                     arguments: {
-                      'seller_id': sellerIdAlt is String ? int.tryParse(sellerIdAlt) : sellerIdAlt,
+                      'seller_id': finalSellerIdAlt,
                     },
                   );
                 } else {
+                  print('所有seller_id字段都为空，显示错误提示');
+                  print('productData的所有键: ${widget.productData?.keys.toList()}');
+                  
                   Get.snackbar(
                     '提示',
-                    '店铺信息不完整',
+                    '店铺信息不完整 - 无法找到seller_id',
                     backgroundColor: AppColors.error,
                     colorText: Colors.white,
                   );
                 }
               }
+              print('===== 进店按钮处理完成 =====');
             },
             child: Text(
               '进店',

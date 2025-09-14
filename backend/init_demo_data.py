@@ -294,29 +294,100 @@ def create_demo_data():
         # 5. 创建演示店铺
         print("🏪 创建演示店铺...")
         
-        # 首先确保有用户ID=2的用户存在
-        demo_user = db.query(User).filter(User.id == 2).first()
-        if not demo_user:
-            # 创建演示用户
-            demo_user = User(
-                id=2,
-                phone="18888888888",
-                nickname="招财猫旺财狗",
-                balance=Decimal("10000.00"),
-                status="active",
-                created_at=datetime.now()
-            )
-            db.add(demo_user)
-            db.commit()  # 先提交用户数据
+        # 创建多个演示用户
+        demo_users = [
+            {
+                'id': 1,
+                'username': 'aichongzhijia',
+                'phone': '18888888881',
+                'nickname': '爱宠之家',
+                'balance': Decimal('8000.00')
+            },
+            {
+                'id': 2,
+                'username': 'zhaocaimao',
+                'phone': '18888888888',
+                'nickname': '招财猫旺财狗',
+                'balance': Decimal('10000.00')
+            },
+            {
+                'id': 3,
+                'username': 'mingmaoguan',
+                'phone': '18888888883',
+                'nickname': '名猫馆',
+                'balance': Decimal('12000.00')
+            },
+            {
+                'id': 4,
+                'username': 'mengchongjidi',
+                'phone': '18888888884',
+                'nickname': '萌宠基地',
+                'balance': Decimal('6000.00')
+            },
+            {
+                'id': 5,
+                'username': 'baixuegongzhu',
+                'phone': '18888888885',
+                'nickname': '白雪公主',
+                'balance': Decimal('9000.00')
+            }
+        ]
+        
+        for user_data in demo_users:
+            existing_user = db.query(User).filter(User.id == user_data['id']).first()
+            if not existing_user:
+                demo_user = User(
+                    id=user_data['id'],
+                    username=user_data['username'],
+                    phone=user_data['phone'],
+                    password_hash="demo_hash_123456",  # 临时密码hash
+                    nickname=user_data['nickname'],
+                    balance=user_data['balance'],
+                    status=1,  # 1表示活跃状态
+                    created_at=datetime.now()
+                )
+                db.add(demo_user)
+        
+        db.commit()  # 先提交用户数据
         
         stores = [
             Store(
                 id=1,
-                owner_id=2,  # 对应我们的演示用户
-                name="招财猫旺财狗的店铺",
-                description="专注宠物拍卖多年，诚信经营，品质保证！我们提供各种可爱的宠物，包括猫咪、狗狗、水族等。每一只宠物都经过精心照料，健康有保障。欢迎大家来店选购心仪的萌宠！",
+                owner_id=1,  # 爱宠之家
+                name="爱宠之家宠物店",
+                description="专业繁育英短、美短、布偶等名猫，所有小猫都有健康证明和血统证书。我们承诺每只小猫都经过专业兽医检查，疫苗齐全，健康有保障。",
                 avatar="https://picsum.photos/200/200?random=store1",
                 banner="https://picsum.photos/800/300?random=storebanner1",
+                location="北京市朝阳区三里屯",
+                phone="010-12345678",
+                is_open=True,
+                business_hours={
+                    "monday": {"open": "09:00", "close": "19:00"},
+                    "tuesday": {"open": "09:00", "close": "19:00"},
+                    "wednesday": {"open": "09:00", "close": "19:00"},
+                    "thursday": {"open": "09:00", "close": "19:00"},
+                    "friday": {"open": "09:00", "close": "19:00"},
+                    "saturday": {"open": "09:00", "close": "20:00"},
+                    "sunday": {"open": "10:00", "close": "18:00"}
+                },
+                announcement="🐱 新到一批英短蓝猫，品相极佳，欢迎预约看猫！",
+                total_products=15,
+                total_sales=89,
+                total_revenue=Decimal("67800.00"),
+                rating=Decimal("4.8"),
+                rating_count=76,
+                follower_count=234,
+                status=1,
+                verified=True,
+                created_at=datetime.now() - timedelta(days=365)
+            ),
+            Store(
+                id=2,
+                owner_id=2,  # 招财猫旺财狗
+                name="招财猫旺财狗的店铺",
+                description="专注宠物拍卖多年，诚信经营，品质保证！我们提供各种可爱的宠物，包括猫咪、狗狗、水族等。每一只宠物都经过精心照料，健康有保障。欢迎大家来店选购心仪的萌宠！",
+                avatar="https://picsum.photos/200/200?random=store2",
+                banner="https://picsum.photos/800/300?random=storebanner2",
                 location="上海市浦东新区张江高科技园区",
                 phone="021-12345678",
                 is_open=True,
@@ -338,7 +409,97 @@ def create_demo_data():
                 follower_count=267,
                 status=1,
                 verified=True,
-                created_at=datetime.now() - timedelta(days=180)  # 半年前开店
+                created_at=datetime.now() - timedelta(days=180)
+            ),
+            Store(
+                id=3,
+                owner_id=3,  # 名猫馆
+                name="名猫馆精品猫舍",
+                description="专业繁育布偶猫、波斯猫等名贵品种，拥有多个冠军血统种公种母。我们的猫咪都有专业的血统证书，品相优秀，性格温顺，适合家庭饲养。",
+                avatar="https://picsum.photos/200/200?random=store3",
+                banner="https://picsum.photos/800/300?random=storebanner3",
+                location="广州市天河区珠江新城",
+                phone="020-87654321",
+                is_open=True,
+                business_hours={
+                    "monday": {"open": "10:00", "close": "19:00"},
+                    "tuesday": {"open": "10:00", "close": "19:00"},
+                    "wednesday": {"open": "10:00", "close": "19:00"},
+                    "thursday": {"open": "10:00", "close": "19:00"},
+                    "friday": {"open": "10:00", "close": "19:00"},
+                    "saturday": {"open": "09:00", "close": "20:00"},
+                    "sunday": {"open": "09:00", "close": "20:00"}
+                },
+                announcement="🏆 CFA认证猫舍，冠军血统布偶猫现接受预定！",
+                total_products=8,
+                total_sales=42,
+                total_revenue=Decimal("89600.00"),
+                rating=Decimal("4.7"),
+                rating_count=38,
+                follower_count=156,
+                status=1,
+                verified=True,
+                created_at=datetime.now() - timedelta(days=250)
+            ),
+            Store(
+                id=4,
+                owner_id=4,  # 萌宠基地
+                name="萌宠基地犬业",
+                description="专业犬类繁育基地，主要繁育金毛、拉布拉多、柯基等热门犬种。所有狗狗都有完整的疫苗记录和健康证明，性格经过专业训练师调教，适合家庭饲养。",
+                avatar="https://picsum.photos/200/200?random=store4",
+                banner="https://picsum.photos/800/300?random=storebanner4",
+                location="南京市鼓楼区中山北路",
+                phone="025-66778899",
+                is_open=True,
+                business_hours={
+                    "monday": {"open": "08:30", "close": "18:30"},
+                    "tuesday": {"open": "08:30", "close": "18:30"},
+                    "wednesday": {"open": "08:30", "close": "18:30"},
+                    "thursday": {"open": "08:30", "close": "18:30"},
+                    "friday": {"open": "08:30", "close": "18:30"},
+                    "saturday": {"open": "08:00", "close": "19:00"},
+                    "sunday": {"open": "08:00", "close": "19:00"}
+                },
+                announcement="🐕 新到一窝柯基宝宝，小短腿超可爱，欢迎预约！",
+                total_products=12,
+                total_sales=67,
+                total_revenue=Decimal("34500.00"),
+                rating=Decimal("4.6"),
+                rating_count=54,
+                follower_count=189,
+                status=1,
+                verified=True,
+                created_at=datetime.now() - timedelta(days=320)
+            ),
+            Store(
+                id=5,
+                owner_id=5,  # 白雪公主
+                name="白雪公主萨摩耶犬舍",
+                description="专业繁育萨摩耶犬，有着'微笑天使'美誉的萨摩耶是我们的专长。我们的种犬都有优秀血统，小狗毛量丰厚，表情甜美，性格温顺友善。",
+                avatar="https://picsum.photos/200/200?random=store5",
+                banner="https://picsum.photos/800/300?random=storebanner5",
+                location="天津市河西区友谊路",
+                phone="022-23456789",
+                is_open=True,
+                business_hours={
+                    "monday": {"open": "09:30", "close": "18:00"},
+                    "tuesday": {"open": "09:30", "close": "18:00"},
+                    "wednesday": {"open": "09:30", "close": "18:00"},
+                    "thursday": {"open": "09:30", "close": "18:00"},
+                    "friday": {"open": "09:30", "close": "18:00"},
+                    "saturday": {"open": "09:00", "close": "19:00"},
+                    "sunday": {"open": "09:00", "close": "19:00"}
+                },
+                announcement="❄️ 微笑天使萨摩耶，毛量超级棒！支持视频看狗！",
+                total_products=5,
+                total_sales=23,
+                total_revenue=Decimal("28900.00"),
+                rating=Decimal("4.8"),
+                rating_count=27,
+                follower_count=143,
+                status=1,
+                verified=True,
+                created_at=datetime.now() - timedelta(days=120)
             )
         ]
         

@@ -18,24 +18,48 @@ class _LocalPetStoreDetailPageState extends State<LocalPetStoreDetailPage> {
   // 扩展商品数据用于详情页展示
   final List<Map<String, dynamic>> _detailProducts = [
     {
+      'id': 401,
+      'seller_id': 1,
       'image': 'https://picsum.photos/400/400?random=401',
+      'images': ['https://picsum.photos/400/400?random=401'],
       'title': '宠物标题宠物标题宠物',
       'price': 923.9,
+      'description': '宠物标题宠物标题宠物',
+      'location': '本地宠物店',
+      'seller_name': '本地宠物店',
     },
     {
+      'id': 402,
+      'seller_id': 1,
       'image': 'https://picsum.photos/400/400?random=402',
+      'images': ['https://picsum.photos/400/400?random=402'],
       'title': '宠物标题宠物标题宠物',
       'price': 923.9,
+      'description': '宠物标题宠物标题宠物',
+      'location': '本地宠物店',
+      'seller_name': '本地宠物店',
     },
     {
+      'id': 403,
+      'seller_id': 1,
       'image': 'https://picsum.photos/400/400?random=403',
+      'images': ['https://picsum.photos/400/400?random=403'],
       'title': '宠物标题宠物标题宠物',
       'price': 923.9,
+      'description': '宠物标题宠物标题宠物',
+      'location': '本地宠物店',
+      'seller_name': '本地宠物店',
     },
     {
+      'id': 404,
+      'seller_id': 1,
       'image': 'https://picsum.photos/400/400?random=404',
+      'images': ['https://picsum.photos/400/400?random=404'],
       'title': '宠物标题宠物标题宠物',
       'price': 923.9,
+      'description': '宠物标题宠物标题宠物',
+      'location': '本地宠物店',
+      'seller_name': '本地宠物店',
     },
   ];
 

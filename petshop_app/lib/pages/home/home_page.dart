@@ -110,15 +110,19 @@ class _HomePageState extends State<HomePage> {
   final List<Map<String, dynamic>> auctionProducts = [
     {
       'id': 1,
+      'seller_id': 1,
       'name': '纯种英短蓝猫',
+      'title': '纯种英短蓝猫',
       'currentPrice': 1200.0,
       'startPrice': 800.0,
       'image': 'https://picsum.photos/200/200?random=10',
+      'images': ['https://picsum.photos/200/200?random=10'],
       'category': '猫咪',
       'timeLeft': '2天3小时',
       'bidCount': 15,
       'description': '健康活泼的英短蓝猫，疫苗齐全，血统纯正',
       'location': '北京朝阳',
+      'seller_name': '爱宠之家',
       'seller': {
         'name': '爱宠之家',
         'avatar': 'https://picsum.photos/50/50?random=1',
@@ -127,15 +131,19 @@ class _HomePageState extends State<HomePage> {
     },
     {
       'id': 2,
+      'seller_id': 2,
       'name': '金毛犬幼崽',
+      'title': '金毛犬幼崽',
       'currentPrice': 2500.0,
       'startPrice': 1500.0,
       'image': 'https://picsum.photos/200/200?random=11',
+      'images': ['https://picsum.photos/200/200?random=11'],
       'category': '狗狗',
       'timeLeft': '1天12小时',
       'bidCount': 23,
       'description': '温顺可爱的金毛犬，已训练基本指令',
       'location': '上海浦东',
+      'seller_name': '宠物乐园',
       'seller': {
         'name': '宠物乐园',
         'avatar': 'https://picsum.photos/50/50?random=2',
@@ -190,6 +198,16 @@ class _HomePageState extends State<HomePage> {
             _recommendedProducts = homeData.recommendedProducts;
             _specialEvents = homeData.specialEvents;
             _categories = homeData.categories;
+            
+            print('===== API返回的商品数据检查 =====');
+            if (_hotProducts.isNotEmpty) {
+              print('第一个热门商品: ${_hotProducts.first.toJson()}');
+              print('sellerId: ${_hotProducts.first.sellerId}');
+            }
+            if (_recommendedProducts.isNotEmpty) {
+              print('第一个推荐商品: ${_recommendedProducts.first.toJson()}');
+              print('sellerId: ${_recommendedProducts.first.sellerId}');
+            }
 
             print('赋值后_specialEvents长度: ${_specialEvents.length}');
             print(
@@ -274,6 +292,11 @@ class _HomePageState extends State<HomePage> {
 
   /// 转换Product对象为Map格式（兼容AuctionCard）
   Map<String, dynamic> _convertProductToMap(product_models.Product product) {
+    print('===== _convertProductToMap 调用 =====');
+    print('Product ID: ${product.id}');
+    print('Product sellerId: ${product.sellerId}');
+    print('Product title: ${product.title}');
+    
     return {
       'id': product.id,
       'seller_id': product.sellerId, // 添加seller_id字段
@@ -1289,11 +1312,17 @@ class _HomePageState extends State<HomePage> {
                       child: AuctionCard(
                         product: _convertProductToMap(product),
                         onTap: () {
+                          final productData = _convertProductToMap(product);
+                          print('===== 从热门商品导航到商品详情 =====');
+                          print('Product数据: $product');
+                          print('转换后的productData: $productData');
+                          print('转换后的seller_id: ${productData['seller_id']}');
+                          
                           Navigator.push(
                             context,
                             MaterialPageRoute(
                               builder: (context) => ProductDetailPage(
-                                  productData: _convertProductToMap(product)),
+                                  productData: productData),
                             ),
                           );
                         },
@@ -1379,6 +1408,10 @@ class _HomePageState extends State<HomePage> {
                     child: AuctionCard(
                       product: product,
                       onTap: () {
+                        print('===== 从热门拍卖导航到商品详情 =====');
+                        print('Product数据: $product');
+                        print('Product的seller_id: ${product['seller_id']}');
+                        
                         Navigator.push(
                           context,
                           MaterialPageRoute(
@@ -1522,6 +1555,10 @@ class _HomePageState extends State<HomePage> {
                     child: AuctionCard(
                       product: product,
                       onTap: () {
+                        print('===== 从推荐商品导航到商品详情 =====');
+                        print('Product数据: $product');
+                        print('Product的seller_id: ${product['seller_id']}');
+                        
                         Navigator.push(
                           context,
                           MaterialPageRoute(
