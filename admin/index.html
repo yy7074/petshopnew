@@ -353,29 +353,133 @@
 
                 <!-- 店铺管理 -->
                 <div id="shops" class="content-section" style="display: none;">
-                    <div class="card shadow mb-4">
-                        <div class="card-header py-3">
-                            <h6 class="m-0 font-weight-bold text-primary">店铺列表</h6>
+                    <!-- 选项卡导航 -->
+                    <ul class="nav nav-tabs mb-4" id="shopsTab" role="tablist">
+                        <li class="nav-item" role="presentation">
+                            <button class="nav-link active" id="applications-tab" data-bs-toggle="tab" data-bs-target="#applications" type="button" role="tab">
+                                <i class="bi bi-file-earmark-text"></i> 开店申请
+                            </button>
+                        </li>
+                        <li class="nav-item" role="presentation">
+                            <button class="nav-link" id="stores-tab" data-bs-toggle="tab" data-bs-target="#stores" type="button" role="tab">
+                                <i class="bi bi-shop"></i> 店铺列表
+                            </button>
+                        </li>
+                    </ul>
+
+                    <div class="tab-content" id="shopsTabContent">
+                        <!-- 开店申请管理 -->
+                        <div class="tab-pane fade show active" id="applications" role="tabpanel">
+                            <div class="row mb-3">
+                                <div class="col-md-3">
+                                    <select class="form-select" id="applicationStatusFilter">
+                                        <option value="">全部状态</option>
+                                        <option value="0">待审核</option>
+                                        <option value="1">审核通过</option>
+                                        <option value="2">审核拒绝</option>
+                                        <option value="3">已开店</option>
+                                    </select>
+                                </div>
+                                <div class="col-md-3">
+                                    <select class="form-select" id="storeTypeFilter">
+                                        <option value="">全部类型</option>
+                                        <option value="个人店">个人店</option>
+                                        <option value="个体商家">个体商家</option>
+                                        <option value="企业店">企业店</option>
+                                        <option value="旗舰店">旗舰店</option>
+                                    </select>
+                                </div>
+                                <div class="col-md-6">
+                                    <button type="button" class="btn btn-info" onclick="loadApplications()">
+                                        <i class="bi bi-arrow-clockwise"></i> 刷新
+                                    </button>
+                                </div>
+                            </div>
+
+                            <div class="card shadow mb-4">
+                                <div class="card-header py-3">
+                                    <h6 class="m-0 font-weight-bold text-primary">开店申请列表</h6>
+                                </div>
+                                <div class="card-body">
+                                    <div class="table-responsive">
+                                        <table class="table table-bordered" id="applicationsTable">
+                                            <thead>
+                                                <tr>
+                                                    <th>ID</th>
+                                                    <th>店铺名称</th>
+                                                    <th>店铺类型</th>
+                                                    <th>申请人</th>
+                                                    <th>联系电话</th>
+                                                    <th>押金</th>
+                                                    <th>支付状态</th>
+                                                    <th>申请状态</th>
+                                                    <th>申请时间</th>
+                                                    <th>操作</th>
+                                                </tr>
+                                            </thead>
+                                            <tbody>
+                                                <!-- 数据将通过JavaScript动态加载 -->
+                                            </tbody>
+                                        </table>
+                                    </div>
+                                </div>
+                            </div>
                         </div>
-                        <div class="card-body">
-                            <div class="table-responsive">
-                                <table class="table table-bordered" id="shopsTable">
-                                    <thead>
-                                        <tr>
-                                            <th>ID</th>
-                                            <th>店铺名称</th>
-                                            <th>店主</th>
-                                            <th>联系电话</th>
-                                            <th>销售总数</th>
-                                            <th>状态</th>
-                                            <th>创建时间</th>
-                                            <th>操作</th>
-                                        </tr>
-                                    </thead>
-                                    <tbody>
-                                        <!-- 数据将通过JavaScript动态加载 -->
-                                    </tbody>
-                                </table>
+
+                        <!-- 店铺列表 -->
+                        <div class="tab-pane fade" id="stores" role="tabpanel">
+                            <div class="row mb-3">
+                                <div class="col-md-3">
+                                    <select class="form-select" id="storeStatusFilter">
+                                        <option value="">全部状态</option>
+                                        <option value="1">正常</option>
+                                        <option value="2">暂停</option>
+                                        <option value="3">关闭</option>
+                                    </select>
+                                </div>
+                                <div class="col-md-3">
+                                    <select class="form-select" id="verifiedFilter">
+                                        <option value="">全部认证</option>
+                                        <option value="true">已认证</option>
+                                        <option value="false">未认证</option>
+                                    </select>
+                                </div>
+                                <div class="col-md-6">
+                                    <button type="button" class="btn btn-info" onclick="loadStores()">
+                                        <i class="bi bi-arrow-clockwise"></i> 刷新
+                                    </button>
+                                </div>
+                            </div>
+
+                            <div class="card shadow mb-4">
+                                <div class="card-header py-3">
+                                    <h6 class="m-0 font-weight-bold text-primary">店铺列表</h6>
+                                </div>
+                                <div class="card-body">
+                                    <div class="table-responsive">
+                                        <table class="table table-bordered" id="storesTable">
+                                            <thead>
+                                                <tr>
+                                                    <th>ID</th>
+                                                    <th>店铺名称</th>
+                                                    <th>店主</th>
+                                                    <th>联系电话</th>
+                                                    <th>商品数量</th>
+                                                    <th>销售总数</th>
+                                                    <th>评分</th>
+                                                    <th>关注数</th>
+                                                    <th>认证状态</th>
+                                                    <th>营业状态</th>
+                                                    <th>创建时间</th>
+                                                    <th>操作</th>
+                                                </tr>
+                                            </thead>
+                                            <tbody>
+                                                <!-- 数据将通过JavaScript动态加载 -->
+                                            </tbody>
+                                        </table>
+                                    </div>
+                                </div>
                             </div>
                         </div>
                     </div>

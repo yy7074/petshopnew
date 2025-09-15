@@ -185,8 +185,7 @@ class _SellerCenterPageState extends State<SellerCenterPage> {
                     title: '发布商品',
                     subtitle: '添加新的商品到您的店铺',
                     onTap: () {
-                      // TODO: 导航到发布商品页面
-                      _showComingSoon('发布商品');
+                      Navigator.pushNamed(context, '/publish-product');
                     },
                   ),
                   _buildDivider(),
@@ -195,8 +194,7 @@ class _SellerCenterPageState extends State<SellerCenterPage> {
                     title: '商品管理',
                     subtitle: '管理您的商品库存和信息',
                     onTap: () {
-                      // TODO: 导航到商品管理页面
-                      _showComingSoon('商品管理');
+                      Navigator.pushNamed(context, '/seller-products');
                     },
                   ),
                   _buildDivider(),

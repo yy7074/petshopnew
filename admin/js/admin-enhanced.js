@@ -1237,3 +1237,515 @@ async function updateCharts() {
         console.error('更新图表失败:', error);
     }
 }
+
+// ===== 店铺管理相关函数 =====
+
+// 加载开店申请列表
+async function loadApplications() {
+    try {
+        const statusFilter = document.getElementById('applicationStatusFilter')?.value || '';
+        const typeFilter = document.getElementById('storeTypeFilter')?.value || '';
+        
+        let params = new URLSearchParams();
+        if (statusFilter) params.append('status', statusFilter);
+        if (typeFilter) params.append('store_type', typeFilter);
+        
+        const response = await apiRequest(`/store-applications?${params.toString()}`, {
+            headers: {
+                'Authorization': `Bearer ${authToken}`
+            }
+        });
+        renderApplicationsTable(response.items || []);
+    } catch (error) {
+        console.error('加载开店申请失败:', error);
+        showAlert('加载开店申请失败', 'error');
+        renderApplicationsTable([]);
+    }
+}
+
+// 渲染开店申请表格
+function renderApplicationsTable(applications) {
+    const tbody = document.querySelector('#applicationsTable tbody');
+    if (!tbody) return;
+    
+    if (applications.length === 0) {
+        tbody.innerHTML = '<tr><td colspan="10" class="text-center">暂无数据</td></tr>';
+        return;
+    }
+    
+    tbody.innerHTML = applications.map(app => `
+        <tr>
+            <td>${app.id}</td>
+            <td>${app.store_name}</td>
+            <td>${app.store_type}</td>
+            <td>${app.real_name}</td>
+            <td>${app.consignee_phone}</td>
+            <td>¥${app.deposit_amount}</td>
+            <td>
+                <span class="badge ${app.payment_status === 1 ? 'bg-success' : 'bg-warning'}">
+                    ${app.payment_status === 1 ? '已支付' : '未支付'}
+                </span>
+            </td>
+            <td>
+                <span class="badge ${getApplicationStatusClass(app.status)}">
+                    ${getApplicationStatusText(app.status)}
+                </span>
+            </td>
+            <td>${formatDateTime(app.created_at)}</td>
+            <td>
+                <button class="btn btn-sm btn-info" onclick="viewApplication(${app.id})">
+                    <i class="bi bi-eye"></i>
+                </button>
+                ${app.status === 0 ? `
+                    <button class="btn btn-sm btn-success" onclick="reviewApplication(${app.id}, 1)">
+                        <i class="bi bi-check"></i>
+                    </button>
+                    <button class="btn btn-sm btn-danger" onclick="showRejectModal(${app.id})">
+                        <i class="bi bi-x"></i>
+                    </button>
+                ` : ''}
+            </td>
+        </tr>
+    `).join('');
+}
+
+// 获取申请状态样式类
+function getApplicationStatusClass(status) {
+    switch (status) {
+        case 0: return 'bg-warning';
+        case 1: return 'bg-success';
+        case 2: return 'bg-danger';
+        case 3: return 'bg-primary';
+        default: return 'bg-secondary';
+    }
+}
+
+// 获取申请状态文本
+function getApplicationStatusText(status) {
+    switch (status) {
+        case 0: return '待审核';
+        case 1: return '审核通过';
+        case 2: return '审核拒绝';
+        case 3: return '已开店';
+        default: return '未知';
+    }
+}
+
+// 查看申请详情
+async function viewApplication(applicationId) {
+    try {
+        const response = await apiRequest(`/store-applications/${applicationId}`, {
+            headers: {
+                'Authorization': `Bearer ${authToken}`
+            }
+        });
+        showApplicationModal(response);
+    } catch (error) {
+        console.error('获取申请详情失败:', error);
+        showAlert('获取申请详情失败', 'error');
+    }
+}
+
+// 显示申请详情模态框
+function showApplicationModal(application) {
+    const modalHTML = `
+        <div class="modal fade" id="applicationModal" tabindex="-1">
+            <div class="modal-dialog modal-lg">
+                <div class="modal-content">
+                    <div class="modal-header">
+                        <h5 class="modal-title">开店申请详情</h5>
+                        <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                    </div>
+                    <div class="modal-body">
+                        <div class="row">
+                            <div class="col-md-6">
+                                <h6>基本信息</h6>
+                                <p><strong>店铺名称:</strong> ${application.store_name}</p>
+                                <p><strong>店铺类型:</strong> ${application.store_type}</p>
+                                <p><strong>店铺描述:</strong> ${application.store_description || '无'}</p>
+                                
+                                <h6>联系信息</h6>
+                                <p><strong>真实姓名:</strong> ${application.real_name}</p>
+                                <p><strong>联系电话:</strong> ${application.consignee_phone}</p>
+                                <p><strong>所在地区:</strong> ${application.return_region}</p>
+                                <p><strong>详细地址:</strong> ${application.return_address}</p>
+                            </div>
+                            <div class="col-md-6">
+                                <h6>身份信息</h6>
+                                <p><strong>身份证号:</strong> ${application.id_number}</p>
+                                <p><strong>有效期:</strong> ${application.id_start_date} 至 ${application.id_end_date}</p>
+                                
+                                <h6>费用信息</h6>
+                                <p><strong>保证金:</strong> ¥${application.deposit_amount}</p>
+                                <p><strong>年费:</strong> ¥${application.annual_fee}</p>
+                                <p><strong>支付状态:</strong> ${application.payment_status === 1 ? '已支付' : '未支付'}</p>
+                                
+                                <h6>审核信息</h6>
+                                <p><strong>申请状态:</strong> ${getApplicationStatusText(application.status)}</p>
+                                <p><strong>申请时间:</strong> ${formatDateTime(application.created_at)}</p>
+                                ${application.reviewed_at ? `<p><strong>审核时间:</strong> ${formatDateTime(application.reviewed_at)}</p>` : ''}
+                                ${application.reject_reason ? `<p><strong>拒绝原因:</strong> ${application.reject_reason}</p>` : ''}
+                            </div>
+                        </div>
+                        
+                        <div class="row mt-3">
+                            <div class="col-12">
+                                <h6>证件照片</h6>
+                                <div class="row">
+                                    ${application.id_front_image ? `
+                                        <div class="col-md-4">
+                                            <p>身份证人像面</p>
+                                            <img src="${application.id_front_image}" class="img-fluid" style="max-height: 200px; cursor: pointer;" onclick="showImagePreview('${application.id_front_image}')">
+                                        </div>
+                                    ` : ''}
+                                    ${application.id_back_image ? `
+                                        <div class="col-md-4">
+                                            <p>身份证国徽面</p>
+                                            <img src="${application.id_back_image}" class="img-fluid" style="max-height: 200px; cursor: pointer;" onclick="showImagePreview('${application.id_back_image}')">
+                                        </div>
+                                    ` : ''}
+                                    ${application.business_license_image ? `
+                                        <div class="col-md-4">
+                                            <p>营业执照</p>
+                                            <img src="${application.business_license_image}" class="img-fluid" style="max-height: 200px; cursor: pointer;" onclick="showImagePreview('${application.business_license_image}')">
+                                        </div>
+                                    ` : ''}
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="modal-footer">
+                        ${application.status === 0 ? `
+                            <button type="button" class="btn btn-success" onclick="reviewApplication(${application.id}, 1)">
+                                审核通过
+                            </button>
+                            <button type="button" class="btn btn-danger" onclick="showRejectModal(${application.id})">
+                                审核拒绝
+                            </button>
+                        ` : ''}
+                        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">关闭</button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    `;
+    
+    // 移除已存在的模态框
+    const existingModal = document.getElementById('applicationModal');
+    if (existingModal) {
+        existingModal.remove();
+    }
+    
+    document.body.insertAdjacentHTML('beforeend', modalHTML);
+    const modal = new bootstrap.Modal(document.getElementById('applicationModal'));
+    modal.show();
+}
+
+// 显示拒绝原因输入模态框
+function showRejectModal(applicationId) {
+    const modalHTML = `
+        <div class="modal fade" id="rejectModal" tabindex="-1">
+            <div class="modal-dialog">
+                <div class="modal-content">
+                    <div class="modal-header">
+                        <h5 class="modal-title">审核拒绝</h5>
+                        <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                    </div>
+                    <div class="modal-body">
+                        <div class="mb-3">
+                            <label for="rejectReason" class="form-label">拒绝原因 <span class="text-danger">*</span></label>
+                            <textarea class="form-control" id="rejectReason" rows="4" placeholder="请输入拒绝原因..."></textarea>
+                        </div>
+                    </div>
+                    <div class="modal-footer">
+                        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">取消</button>
+                        <button type="button" class="btn btn-danger" onclick="confirmReject(${applicationId})">确认拒绝</button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    `;
+    
+    // 移除已存在的模态框
+    const existingModal = document.getElementById('rejectModal');
+    if (existingModal) {
+        existingModal.remove();
+    }
+    
+    document.body.insertAdjacentHTML('beforeend', modalHTML);
+    const modal = new bootstrap.Modal(document.getElementById('rejectModal'));
+    modal.show();
+}
+
+// 确认拒绝申请
+function confirmReject(applicationId) {
+    const rejectReason = document.getElementById('rejectReason').value.trim();
+    if (!rejectReason) {
+        showAlert('请输入拒绝原因', 'error');
+        return;
+    }
+    
+    reviewApplication(applicationId, 2, rejectReason);
+    
+    // 关闭模态框
+    const modal = bootstrap.Modal.getInstance(document.getElementById('rejectModal'));
+    if (modal) modal.hide();
+}
+
+// 审核申请
+async function reviewApplication(applicationId, status, rejectReason = '') {
+    try {
+        const body = { status: status };
+        if (status === 2 && rejectReason) {
+            body.reject_reason = rejectReason;
+        }
+        
+        const response = await apiRequest(`/store-applications/${applicationId}/review`, {
+            method: 'POST',
+            headers: {
+                'Authorization': `Bearer ${authToken}`,
+                'Content-Type': 'application/json'
+            },
+            body: JSON.stringify(body)
+        });
+        
+        showAlert(status === 1 ? '审核通过成功' : '审核拒绝成功', 'success');
+        loadApplications(); // 重新加载列表
+        
+        // 关闭申请详情模态框
+        const applicationModal = bootstrap.Modal.getInstance(document.getElementById('applicationModal'));
+        if (applicationModal) applicationModal.hide();
+        
+    } catch (error) {
+        console.error('审核申请失败:', error);
+        showAlert('审核申请失败: ' + error.message, 'error');
+    }
+}
+
+// 加载店铺列表
+async function loadStores() {
+    try {
+        const statusFilter = document.getElementById('storeStatusFilter')?.value || '';
+        const verifiedFilter = document.getElementById('verifiedFilter')?.value || '';
+        
+        let params = new URLSearchParams();
+        if (statusFilter) params.append('status', statusFilter);
+        if (verifiedFilter) params.append('verified_only', verifiedFilter === 'true');
+        
+        const response = await apiRequest(`/stores?${params.toString()}`, {
+            headers: {
+                'Authorization': `Bearer ${authToken}`
+            }
+        });
+        renderStoresTable(response.items || []);
+    } catch (error) {
+        console.error('加载店铺列表失败:', error);
+        showAlert('加载店铺列表失败', 'error');
+        renderStoresTable([]);
+    }
+}
+
+// 渲染店铺表格
+function renderStoresTable(stores) {
+    const tbody = document.querySelector('#storesTable tbody');
+    if (!tbody) return;
+    
+    if (stores.length === 0) {
+        tbody.innerHTML = '<tr><td colspan="12" class="text-center">暂无数据</td></tr>';
+        return;
+    }
+    
+    tbody.innerHTML = stores.map(store => `
+        <tr>
+            <td>${store.id}</td>
+            <td>${store.name}</td>
+            <td>${store.owner_info ? store.owner_info.nickname : '未知'}</td>
+            <td>${store.phone || '未填写'}</td>
+            <td>${store.total_products}</td>
+            <td>${store.total_sales}</td>
+            <td>${store.rating}/5.0</td>
+            <td>${store.follower_count}</td>
+            <td>
+                <span class="badge ${store.verified ? 'bg-success' : 'bg-warning'}">
+                    ${store.verified ? '已认证' : '未认证'}
+                </span>
+            </td>
+            <td>
+                <span class="badge ${store.is_open ? 'bg-success' : 'bg-danger'}">
+                    ${store.is_open ? '营业中' : '已关闭'}
+                </span>
+            </td>
+            <td>${formatDateTime(store.created_at)}</td>
+            <td>
+                <button class="btn btn-sm btn-info" onclick="viewStore(${store.id})" title="查看详情">
+                    <i class="bi bi-eye"></i>
+                </button>
+                <button class="btn btn-sm ${store.verified ? 'btn-warning' : 'btn-success'}" 
+                        onclick="toggleStoreVerification(${store.id}, ${!store.verified})"
+                        title="${store.verified ? '取消认证' : '认证店铺'}">
+                    <i class="bi bi-${store.verified ? 'x-circle' : 'check-circle'}"></i>
+                </button>
+            </td>
+        </tr>
+    `).join('');
+}
+
+// 查看店铺详情
+async function viewStore(storeId) {
+    try {
+        const response = await apiRequest(`/stores/${storeId}`, {
+            headers: {
+                'Authorization': `Bearer ${authToken}`
+            }
+        });
+        showStoreModal(response);
+    } catch (error) {
+        console.error('获取店铺详情失败:', error);
+        showAlert('获取店铺详情失败', 'error');
+    }
+}
+
+// 显示店铺详情模态框
+function showStoreModal(store) {
+    const modalHTML = `
+        <div class="modal fade" id="storeModal" tabindex="-1">
+            <div class="modal-dialog modal-lg">
+                <div class="modal-content">
+                    <div class="modal-header">
+                        <h5 class="modal-title">店铺详情</h5>
+                        <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                    </div>
+                    <div class="modal-body">
+                        <div class="row">
+                            <div class="col-md-6">
+                                <h6>基本信息</h6>
+                                <p><strong>店铺名称:</strong> ${store.name}</p>
+                                <p><strong>店铺描述:</strong> ${store.description || '无'}</p>
+                                <p><strong>联系电话:</strong> ${store.phone || '未填写'}</p>
+                                <p><strong>店铺地址:</strong> ${store.location || '未填写'}</p>
+                                <p><strong>营业状态:</strong> ${store.is_open ? '营业中' : '已关闭'}</p>
+                                <p><strong>认证状态:</strong> ${store.verified ? '已认证' : '未认证'}</p>
+                            </div>
+                            <div class="col-md-6">
+                                <h6>经营数据</h6>
+                                <p><strong>商品总数:</strong> ${store.total_products}</p>
+                                <p><strong>销售总数:</strong> ${store.total_sales}</p>
+                                <p><strong>总收入:</strong> ¥${store.total_revenue}</p>
+                                <p><strong>店铺评分:</strong> ${store.rating}/5.0 (${store.rating_count}条评价)</p>
+                                <p><strong>关注数量:</strong> ${store.follower_count}</p>
+                                <p><strong>创建时间:</strong> ${formatDateTime(store.created_at)}</p>
+                            </div>
+                        </div>
+                        
+                        ${store.announcement ? `
+                            <div class="row mt-3">
+                                <div class="col-12">
+                                    <h6>店铺公告</h6>
+                                    <div class="alert alert-info">${store.announcement}</div>
+                                </div>
+                            </div>
+                        ` : ''}
+                        
+                        ${store.recent_products && store.recent_products.length > 0 ? `
+                            <div class="row mt-3">
+                                <div class="col-12">
+                                    <h6>最近商品</h6>
+                                    <div class="row">
+                                        ${store.recent_products.slice(0, 6).map(product => `
+                                            <div class="col-md-2 mb-2">
+                                                <div class="card">
+                                                    ${product.images && product.images.length > 0 ? `
+                                                        <img src="${product.images[0]}" class="card-img-top" style="height: 80px; object-fit: cover;">
+                                                    ` : `
+                                                        <div class="card-img-top bg-light d-flex align-items-center justify-content-center" style="height: 80px;">
+                                                            <i class="bi bi-image text-muted"></i>
+                                                        </div>
+                                                    `}
+                                                    <div class="card-body p-2">
+                                                        <small class="card-title d-block text-truncate" title="${product.title}">${product.title}</small>
+                                                        <small class="text-muted">¥${product.current_price}</small>
+                                                    </div>
+                                                </div>
+                                            </div>
+                                        `).join('')}
+                                    </div>
+                                </div>
+                            </div>
+                        ` : ''}
+                    </div>
+                    <div class="modal-footer">
+                        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">关闭</button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    `;
+    
+    // 移除已存在的模态框
+    const existingModal = document.getElementById('storeModal');
+    if (existingModal) {
+        existingModal.remove();
+    }
+    
+    document.body.insertAdjacentHTML('beforeend', modalHTML);
+    const modal = new bootstrap.Modal(document.getElementById('storeModal'));
+    modal.show();
+}
+
+// 切换店铺认证状态
+async function toggleStoreVerification(storeId, verified) {
+    if (!confirm(`确定要${verified ? '认证' : '取消认证'}这个店铺吗？`)) {
+        return;
+    }
+    
+    try {
+        const response = await apiRequest(`/admin/stores/${storeId}/verify`, {
+            method: 'POST',
+            headers: {
+                'Authorization': `Bearer ${authToken}`,
+                'Content-Type': 'application/json'
+            },
+            body: JSON.stringify({ verified: verified })
+        });
+        
+        showAlert(verified ? '店铺认证成功' : '取消认证成功', 'success');
+        loadStores(); // 重新加载列表
+        
+    } catch (error) {
+        console.error('切换认证状态失败:', error);
+        showAlert('操作失败: ' + error.message, 'error');
+    }
+}
+
+// 显示图片预览
+function showImagePreview(imageUrl) {
+    const modalHTML = `
+        <div class="modal fade" id="imagePreviewModal" tabindex="-1">
+            <div class="modal-dialog modal-lg">
+                <div class="modal-content">
+                    <div class="modal-header">
+                        <h5 class="modal-title">图片预览</h5>
+                        <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                    </div>
+                    <div class="modal-body text-center">
+                        <img src="${imageUrl}" class="img-fluid" style="max-width: 100%; max-height: 500px;">
+                    </div>
+                    <div class="modal-footer">
+                        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">关闭</button>
+                        <a href="${imageUrl}" target="_blank" class="btn btn-primary">在新窗口打开</a>
+                    </div>
+                </div>
+            </div>
+        </div>
+    `;
+    
+    // 移除已存在的模态框
+    const existingModal = document.getElementById('imagePreviewModal');
+    if (existingModal) {
+        existingModal.remove();
+    }
+    
+    document.body.insertAdjacentHTML('beforeend', modalHTML);
+    const modal = new bootstrap.Modal(document.getElementById('imagePreviewModal'));
+    modal.show();
+}

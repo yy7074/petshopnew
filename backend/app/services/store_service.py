@@ -301,6 +301,70 @@ class StoreService:
             recent_reviews=recent_reviews
         )
     
+    async def get_stores_list(
+        self, 
+        db: Session, 
+        page: int = 1, 
+        page_size: int = 20,
+        keyword: Optional[str] = None,
+        location: Optional[str] = None,
+        verified_only: bool = False
+    ) -> StoreListResponse:
+        """获取店铺列表"""
+        query = db.query(Store).filter(Store.status == 1)  # 正常状态
+        
+        if keyword:
+            query = query.filter(
+                or_(
+                    Store.name.contains(keyword),
+                    Store.description.contains(keyword)
+                )
+            )
+        
+        if location:
+            query = query.filter(Store.location.contains(location))
+        
+        if verified_only:
+            query = query.filter(Store.verified == True)
+        
+        # 按评分和关注度排序
+        query = query.order_by(desc(Store.rating), desc(Store.follower_count))
+        
+        # 分页
+        total = query.count()
+        offset = (page - 1) * page_size
+        stores = query.offset(offset).limit(page_size).all()
+        
+        # 转换为响应格式
+        store_list = [self._to_store_response(store, db) for store in stores]
+        
+        return StoreListResponse(
+            items=store_list,
+            total=total,
+            page=page,
+            page_size=page_size,
+            total_pages=(total + page_size - 1) // page_size
+        )
+    
+    async def toggle_store_status(self, db: Session, store_id: int, owner_id: int) -> Dict[str, Any]:
+        """切换店铺营业状态"""
+        store = db.query(Store).filter(
+            and_(Store.id == store_id, Store.owner_id == owner_id)
+        ).first()
+        
+        if not store:
+            raise ValueError("店铺不存在或无权限")
+        
+        # 切换营业状态
+        store.is_open = not store.is_open
+        db.commit()
+        
+        return {
+            "store_id": store_id,
+            "is_open": store.is_open,
+            "message": "营业中" if store.is_open else "暂停营业"
+        }
+    
     def _to_store_response(self, store: Store, db: Session, user_id: Optional[int] = None) -> StoreResponse:
         """转换为响应格式"""
         # 获取店主信息

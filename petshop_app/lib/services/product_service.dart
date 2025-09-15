@@ -15,6 +15,7 @@ class ProductService {
     ProductType? type,
     String? sortBy,
     String? sortOrder,
+    int? auctionType, // 添加auctionType参数
   }) async {
     try {
       final queryParams = <String, dynamic>{
@@ -23,16 +24,20 @@ class ProductService {
       };
 
       if (categoryId != null) queryParams['category_id'] = categoryId;
-      if (keyword != null && keyword.isNotEmpty) queryParams['keyword'] = keyword;
+      if (keyword != null && keyword.isNotEmpty)
+        queryParams['keyword'] = keyword;
       if (type != null) queryParams['type'] = type.toString();
       if (sortBy != null) queryParams['sort_by'] = sortBy;
       if (sortOrder != null) queryParams['sort_order'] = sortOrder;
+      if (auctionType != null) queryParams['auction_type'] = auctionType;
 
-      final response = await _apiService.get('/products', queryParameters: queryParams);
+      final response =
+          await _apiService.get('/products', queryParameters: queryParams);
 
       if (response.statusCode == 200) {
         final List<dynamic> productsJson = response.data['data']['items'] ?? [];
-        final products = productsJson.map((json) => Product.fromJson(json)).toList();
+        final products =
+            productsJson.map((json) => Product.fromJson(json)).toList();
         return ApiResult.success(products);
       } else {
         return ApiResult.error(response.data['message'] ?? '获取商品列表失败');
@@ -67,7 +72,8 @@ class ProductService {
 
       if (response.statusCode == 200) {
         final List<dynamic> productsJson = response.data['data'] ?? [];
-        final products = productsJson.map((json) => Product.fromJson(json)).toList();
+        final products =
+            productsJson.map((json) => Product.fromJson(json)).toList();
         return ApiResult.success(products);
       } else {
         return ApiResult.error(response.data['message'] ?? '获取热门商品失败');
@@ -78,15 +84,18 @@ class ProductService {
   }
 
   // 获取推荐商品
-  Future<ApiResult<List<Product>>> getRecommendedProducts({int limit = 10}) async {
+  Future<ApiResult<List<Product>>> getRecommendedProducts(
+      {int limit = 10}) async {
     try {
-      final response = await _apiService.get('/products/recommended', queryParameters: {
+      final response =
+          await _apiService.get('/products/recommended', queryParameters: {
         'limit': limit,
       });
 
       if (response.statusCode == 200) {
         final List<dynamic> productsJson = response.data['data'] ?? [];
-        final products = productsJson.map((json) => Product.fromJson(json)).toList();
+        final products =
+            productsJson.map((json) => Product.fromJson(json)).toList();
         return ApiResult.success(products);
       } else {
         return ApiResult.error(response.data['message'] ?? '获取推荐商品失败');
@@ -103,7 +112,8 @@ class ProductService {
 
       if (response.statusCode == 200) {
         final List<dynamic> categoriesJson = response.data['data'] ?? [];
-        final categories = categoriesJson.map((json) => Category.fromJson(json)).toList();
+        final categories =
+            categoriesJson.map((json) => Category.fromJson(json)).toList();
         return ApiResult.success(categories);
       } else {
         return ApiResult.error(response.data['message'] ?? '获取分类列表失败');
@@ -120,7 +130,8 @@ class ProductService {
 
       if (response.statusCode == 200) {
         final List<dynamic> bannersJson = response.data['data'] ?? [];
-        final banners = bannersJson.map((json) => Banner.fromJson(json)).toList();
+        final banners =
+            bannersJson.map((json) => Banner.fromJson(json)).toList();
         return ApiResult.success(banners);
       } else {
         return ApiResult.error(response.data['message'] ?? '获取轮播图失败');
@@ -168,14 +179,17 @@ class ProductService {
     int pageSize = 20,
   }) async {
     try {
-      final response = await _apiService.get('/user/favorites', queryParameters: {
+      final response =
+          await _apiService.get('/user/favorites', queryParameters: {
         'page': page,
         'page_size': pageSize,
       });
 
       if (response.statusCode == 200) {
         final List<dynamic> productsJson = response.data['data']['items'] ?? [];
-        final products = productsJson.map((json) => Product.fromJson(json['product'])).toList();
+        final products = productsJson
+            .map((json) => Product.fromJson(json['product']))
+            .toList();
         return ApiResult.success(products);
       } else {
         return ApiResult.error(response.data['message'] ?? '获取收藏列表失败');

@@ -14,6 +14,20 @@ import '../pages/auction/auction_test_page.dart';
 import '../pages/wallet/wallet_page.dart';
 import '../pages/store/store_page.dart';
 import '../pages/bids/bid_records_page.dart';
+import '../pages/seller/seller_products_page.dart';
+import '../pages/publish/publish_product_page.dart';
+import '../pages/ai_recognition/ai_pet_recognition_page.dart';
+import '../pages/auction/limited_auction_page.dart';
+import '../pages/brand/brand_zone_page.dart';
+import '../pages/fixed_price/fixed_price_zone_page.dart';
+import '../pages/transaction/transaction_query_page.dart';
+import '../pages/local_delivery/local_delivery_page.dart';
+import '../pages/recycling/recycling_query_page.dart';
+import '../pages/partner/partner_agent_page.dart';
+import '../pages/pet_breeding/pet_breeding_page.dart';
+import '../pages/local_pickup/local_pickup_page.dart';
+import '../pages/pet_valuation/pet_valuation_page.dart';
+import '../pages/nearby_discovery/nearby_discovery_page.dart';
 
 class AppRoutes {
   static const String splash = '/splash';
@@ -31,6 +45,20 @@ class AppRoutes {
   static const String wallet = '/wallet';
   static const String store = '/store';
   static const String bidRecords = '/bid-records';
+  static const String sellerProducts = '/seller-products';
+  static const String publishProduct = '/publish-product';
+  static const String aiPetRecognition = '/ai-pet-recognition';
+  static const String limitedAuction = '/limited-auction';
+  static const String brandZone = '/brand-zone';
+  static const String fixedPriceZone = '/fixed-price-zone';
+  static const String transactionQuery = '/transaction-query';
+  static const String localDelivery = '/local-delivery';
+  static const String recyclingQuery = '/recycling-query';
+  static const String partnerAgent = '/partner-agent';
+  static const String petBreeding = '/pet-breeding';
+  static const String localPickup = '/local-pickup';
+  static const String petValuation = '/pet-valuation';
+  static const String nearbyDiscovery = '/nearby-discovery';
 
   static List<GetPage> routes = [
     GetPage(
@@ -99,6 +127,62 @@ class AppRoutes {
     GetPage(
       name: bidRecords,
       page: () => const BidRecordsPage(),
+    ),
+    GetPage(
+      name: sellerProducts,
+      page: () => const SellerProductsPage(),
+    ),
+    GetPage(
+      name: publishProduct,
+      page: () => const PublishProductPage(),
+    ),
+    GetPage(
+      name: aiPetRecognition,
+      page: () => const AiPetRecognitionPage(),
+    ),
+    GetPage(
+      name: limitedAuction,
+      page: () => const LimitedAuctionPage(),
+    ),
+    GetPage(
+      name: brandZone,
+      page: () => const BrandZonePage(),
+    ),
+    GetPage(
+      name: fixedPriceZone,
+      page: () => const FixedPriceZonePage(),
+    ),
+    GetPage(
+      name: transactionQuery,
+      page: () => const TransactionQueryPage(),
+    ),
+    GetPage(
+      name: localDelivery,
+      page: () => const LocalDeliveryPage(),
+    ),
+    GetPage(
+      name: recyclingQuery,
+      page: () => const RecyclingQueryPage(),
+    ),
+    GetPage(
+      name: partnerAgent,
+      page: () => const PartnerAgentPage(),
+    ),
+    GetPage(
+      name: petBreeding,
+      page: () => const PetBreedingPage(),
+    ),
+    GetPage(
+      name: localPickup,
+      page: () => const LocalPickupPage(),
+    ),
+    GetPage(
+      name: petValuation,
+      page: () => const PetValuationPage(),
+    ),
+    GetPage(
+      name: nearbyDiscovery,
+      page: () => const NearbyDiscoveryPage(),
     ),
   ];
 }

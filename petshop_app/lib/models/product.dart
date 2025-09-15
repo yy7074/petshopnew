@@ -138,6 +138,33 @@ class Product {
     if (now.isAfter(auctionInfo!.endTime)) return null;
     return auctionInfo!.endTime.difference(now);
   }
+
+  // 获取起拍价（兼容旧代码）
+  double? get startingPrice {
+    if (type == ProductType.auction) {
+      return auctionInfo?.startPrice;
+    }
+    return null;
+  }
+
+  // 获取出价次数
+  int? get bidCount {
+    if (type == ProductType.auction) {
+      return auctionInfo?.bidCount;
+    } else {
+      return fixedInfo?.salesCount;
+    }
+  }
+
+  // 获取浏览次数（模拟数据）
+  int? get viewCount {
+    return (id * 13) % 1000 + 50; // 简单的模拟算法
+  }
+
+  // 获取收藏次数（模拟数据）
+  int? get favoriteCount {
+    return (id * 7) % 200 + 10; // 简单的模拟算法
+  }
 }
 
 enum ProductType {

@@ -1070,25 +1070,39 @@ class _HomePageState extends State<HomePage> {
           return GestureDetector(
             onTap: () {
               // 处理功能点击
-              if (item['name'] == '限时拍卖') {
-                // 跳转到专场列表页面
-                Navigator.push(
-                  context,
-                  MaterialPageRoute(
-                    builder: (context) => const SpecialEventPage(
-                      title: '限时拍卖专场',
-                      eventId: '1',
-                    ),
-                  ),
-                );
-              } else if (item['name'] == '支付测试') {
-                // 跳转到支付测试页面
-                Get.toNamed('/test-payment');
-              } else if (item['name'] == '拍卖测试') {
-                // 跳转到拍卖测试页面
-                Get.toNamed('/auction-test');
-              } else {
-                debugPrint('点击了：${item['name']}');
+              switch (item['name']) {
+                case 'AI识宠':
+                  Get.toNamed('/ai-pet-recognition');
+                  break;
+                case '限时拍卖':
+                  Get.toNamed('/limited-auction');
+                  break;
+                case '品牌专区':
+                  Get.toNamed('/brand-zone');
+                  break;
+                case '一口价专区':
+                  Get.toNamed('/fixed-price-zone');
+                  break;
+                case '成交查询':
+                  Get.toNamed('/transaction-query');
+                  break;
+                case '同城送达':
+                  Get.toNamed('/local-delivery');
+                  break;
+                case '回收查询':
+                  Get.toNamed('/recycling-query');
+                  break;
+                case '合作方及代理':
+                  Get.toNamed('/partner-agent');
+                  break;
+                case '支付测试':
+                  Get.toNamed('/test-payment');
+                  break;
+                case '拍卖测试':
+                  Get.toNamed('/auction-test');
+                  break;
+                default:
+                  debugPrint('点击了：${item['name']}');
               }
             },
             child: Container(
@@ -3457,28 +3471,47 @@ class _HomePageState extends State<HomePage> {
   Widget _buildLocalServiceCard(Map<String, dynamic> service) {
     return GestureDetector(
       onTap: () {
-        if (service['title'] == '宠物交流') {
-          Navigator.push(
-            context,
-            MaterialPageRoute(builder: (context) => const PetSocialPage()),
-          );
-        } else if (service['title'] == '本地宠店') {
-          Navigator.push(
-            context,
-            MaterialPageRoute(builder: (context) => const LocalPetStoresPage()),
-          );
-        } else if (service['title'] == '鱼缸造景') {
-          Navigator.push(
-            context,
-            MaterialPageRoute(builder: (context) => const AquariumDesignPage()),
-          );
-        } else if (service['title'] == '上门服务') {
-          Navigator.push(
-            context,
-            MaterialPageRoute(builder: (context) => const DoorServicePage()),
-          );
-        } else {
-          print('点击了服务: ${service['title']}');
+        switch (service['title']) {
+          case '宠物交流':
+            Navigator.push(
+              context,
+              MaterialPageRoute(builder: (context) => const PetSocialPage()),
+            );
+            break;
+          case '宠物配种':
+            Get.toNamed('/pet-breeding');
+            break;
+          case '本地宠店':
+            Navigator.push(
+              context,
+              MaterialPageRoute(
+                  builder: (context) => const LocalPetStoresPage()),
+            );
+            break;
+          case '鱼缸造景':
+            Navigator.push(
+              context,
+              MaterialPageRoute(
+                  builder: (context) => const AquariumDesignPage()),
+            );
+            break;
+          case '同城快取':
+            Get.toNamed('/local-pickup');
+            break;
+          case '上门服务':
+            Navigator.push(
+              context,
+              MaterialPageRoute(builder: (context) => const DoorServicePage()),
+            );
+            break;
+          case '宠物估价':
+            Get.toNamed('/pet-valuation');
+            break;
+          case '附近':
+            Get.toNamed('/nearby-discovery');
+            break;
+          default:
+            print('点击了服务: ${service['title']}');
         }
       },
       child: Container(

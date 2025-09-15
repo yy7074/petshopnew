@@ -212,3 +212,51 @@ async def get_store_stats(
         raise HTTPException(status_code=403, detail=str(e))
     except Exception as e:
         raise HTTPException(status_code=500, detail=str(e))
+
+@router.get("/", response_model=StoreListResponse)
+async def get_stores_list(
+    page: int = Query(1, ge=1),
+    page_size: int = Query(20, ge=1, le=100),
+    keyword: Optional[str] = None,
+    location: Optional[str] = None,
+    verified_only: bool = False,
+    db: Session = Depends(get_db)
+):
+    """获取店铺列表"""
+    try:
+        stores = await store_service.get_stores_list(
+            db, page, page_size, keyword, location, verified_only
+        )
+        return stores
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=str(e))
+
+@router.get("/my", response_model=Optional[StoreResponse])
+async def get_my_store(
+    db: Session = Depends(get_db),
+    current_user: User = Depends(get_current_user)
+):
+    """获取我的店铺"""
+    try:
+        store = await store_service.get_store_by_owner(db, current_user.id)
+        return store
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=str(e))
+
+@router.post("/{store_id}/toggle-status")
+async def toggle_store_status(
+    store_id: int,
+    db: Session = Depends(get_db),
+    current_user: User = Depends(get_current_user)
+):
+    """切换店铺营业状态"""
+    try:
+        if store_id <= 0:
+            raise HTTPException(status_code=400, detail="无效的店铺ID")
+            
+        result = await store_service.toggle_store_status(db, store_id, current_user.id)
+        return result
+    except ValueError as e:
+        raise HTTPException(status_code=400, detail=str(e))
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=str(e))
