@@ -43,6 +43,8 @@ class OrderService {
       final uri = Uri.parse('$baseUrl${ApiConstants.orders}')
           .replace(queryParameters: queryParams);
 
+      print('OrderService.getOrders - 请求URL: $uri');
+
       final response = await http.get(
         uri,
         headers: {
@@ -51,10 +53,16 @@ class OrderService {
         },
       );
 
+      print('OrderService.getOrders - 响应状态: ${response.statusCode}');
+
       if (response.statusCode == 200) {
-        return json.decode(response.body);
+        final data = json.decode(response.body);
+        print(
+            'OrderService.getOrders - 响应数据: ${data.toString().substring(0, 500)}...');
+        return data;
       } else {
         final errorData = json.decode(response.body);
+        print('OrderService.getOrders - 错误: $errorData');
         throw Exception(errorData['detail'] ?? '获取订单列表失败');
       }
     } catch (e) {

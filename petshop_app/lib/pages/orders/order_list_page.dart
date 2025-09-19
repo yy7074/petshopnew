@@ -4,6 +4,7 @@ import 'package:cached_network_image/cached_network_image.dart';
 import 'package:pull_to_refresh/pull_to_refresh.dart';
 import 'order_detail_page.dart';
 import 'logistics_tracking_page.dart';
+import '../payment/payment_page.dart';
 import '../../services/order_service.dart';
 
 class OrderListPage extends StatefulWidget {
@@ -27,7 +28,6 @@ class _OrderListPageState extends State<OrderListPage>
   bool _isLoading = false;
   bool _hasMore = true;
   int _currentPage = 1;
-  String? _errorMessage;
 
   // 移除假数据，只显示真实API数据
 
@@ -54,7 +54,6 @@ class _OrderListPageState extends State<OrderListPage>
       if (isRefresh) {
         _currentPage = 1;
         _hasMore = true;
-        _errorMessage = null;
       }
     });
 
@@ -83,7 +82,6 @@ class _OrderListPageState extends State<OrderListPage>
     } catch (e) {
       setState(() {
         _isLoading = false;
-        _errorMessage = e.toString();
         // 不再使用假数据，显示空列表和错误信息
       });
 
@@ -645,13 +643,28 @@ class _OrderListPageState extends State<OrderListPage>
   // 继续付款
   void _continuePayment(Map<String, dynamic> order) async {
     try {
-      final result = await OrderService.payOrder(order['id'], 'alipay');
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('跳转到支付页面')),
+      // 跳转到支付页面
+      final result = await Navigator.push(
+        context,
+        MaterialPageRoute(
+          builder: (context) => PaymentPage(
+            orderId: order['id'],
+            totalAmount: double.parse(order['total_amount'].toString()),
+            orderNo: order['order_no'] ?? '',
+          ),
+        ),
       );
+
+      // 如果支付成功，刷新订单列表
+      if (result == true) {
+        _refreshOrders();
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(content: Text('支付成功')),
+        );
+      }
     } catch (e) {
       ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text('支付失败: $e')),
+        SnackBar(content: Text('跳转支付页面失败: $e')),
       );
     }
   }
