@@ -49,6 +49,33 @@ body {
     width: 16px;
 }
 
+/* 分割线样式 */
+.sidebar-divider {
+    margin: 1rem 0;
+    border-color: rgba(0, 0, 0, 0.1);
+}
+
+/* 退出登录按钮特殊样式 */
+.sidebar .nav-link.text-danger:hover {
+    color: #dc3545 !important;
+    background-color: rgba(220, 53, 69, 0.1);
+}
+
+/* 登录模态框样式 */
+.modal-content {
+    border-radius: 10px;
+    border: none;
+    box-shadow: 0 10px 30px rgba(0, 0, 0, 0.2);
+}
+
+.modal-header {
+    border-bottom: 1px solid #dee2e6;
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    color: white;
+    border-top-left-radius: 10px;
+    border-top-right-radius: 10px;
+}
+
 .border-left-primary {
     border-left: 0.25rem solid #4e73df !important;
 }
@@ -212,6 +239,7 @@ body {
 .status-banned {
     background-color: #e74a3b;
 }
+
 
 
 

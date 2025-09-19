@@ -40,7 +40,7 @@ class PetSocialPost(Base):
     updated_at = Column(DateTime(timezone=True), onupdate=func.now())
     
     # 关联关系
-    user = relationship("User", back_populates="social_posts")
+    # user = relationship("User", back_populates="social_posts")
     comments = relationship("PetSocialComment", back_populates="post", cascade="all, delete-orphan")
 
 # 宠物交流评论

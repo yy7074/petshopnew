@@ -76,6 +76,15 @@
                                 系统设置
                             </a>
                         </li>
+                        <li class="nav-item mt-3">
+                            <hr class="sidebar-divider">
+                        </li>
+                        <li class="nav-item">
+                            <a class="nav-link text-danger" href="#" onclick="logout()">
+                                <i class="bi bi-box-arrow-right"></i>
+                                退出登录
+                            </a>
+                        </li>
                     </ul>
                 </div>
             </nav>
@@ -91,10 +100,18 @@
                                 导出数据
                             </button>
                         </div>
-                        <button type="button" class="btn btn-sm btn-primary">
-                            <i class="bi bi-plus"></i>
-                            新建
-                        </button>
+                        <div class="btn-group me-2">
+                            <button type="button" class="btn btn-sm btn-outline-info" onclick="showProfile()">
+                                <i class="bi bi-person-circle"></i>
+                                <span id="current-admin">admin</span>
+                            </button>
+                        </div>
+                        <div class="btn-group">
+                            <button type="button" class="btn btn-sm btn-outline-danger" onclick="logout()">
+                                <i class="bi bi-box-arrow-right"></i>
+                                退出登录
+                            </button>
+                        </div>
                     </div>
                 </div>
 

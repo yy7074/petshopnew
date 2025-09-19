@@ -28,9 +28,9 @@ class User(Base):
     updated_at = Column(DateTime, server_default=func.now(), onupdate=func.now())
     
     # 关联关系
-    wallet_transactions = relationship("WalletTransaction", back_populates="user")
-    deposits = relationship("Deposit", back_populates="user")
-    social_posts = relationship("PetSocialPost", back_populates="user")
+    # wallet_transactions = relationship("WalletTransaction", back_populates="user")
+    # deposits = relationship("Deposit", back_populates="user")
+    # 暂时注释掉所有关系，避免错误
 
 class UserFollow(Base):
     __tablename__ = "user_follows"

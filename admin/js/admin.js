@@ -1,11 +1,19 @@
 // 全局变量
 const API_BASE_URL = 'http://localhost:8000/api';
 let currentSection = 'dashboard';
+let authToken = localStorage.getItem('admin_token') || null;
 
 // 页面加载完成后初始化
 document.addEventListener('DOMContentLoaded', function() {
+    // 检查登录状态
+    if (!authToken) {
+        showLoginModal();
+        return;
+    }
+    
     initCharts();
     loadDashboardData();
+    loadCurrentAdminInfo();
 });
 
 // 显示指定的内容区域
@@ -374,6 +382,140 @@ function showError(message) {
 // 显示成功信息
 function showSuccess(message) {
     alert('成功: ' + message);
+}
+
+// 退出登录
+function logout() {
+    if (confirm('确定要退出登录吗？')) {
+        // 清除本地存储的token
+        localStorage.removeItem('admin_token');
+        authToken = null;
+        
+        // 显示退出成功消息
+        showSuccess('退出登录成功');
+        
+        // 延迟一下再重新加载页面，让用户看到成功消息
+        setTimeout(() => {
+            // 重新加载页面，会触发登录检查
+            window.location.reload();
+        }, 1000);
+    }
+}
+
+// 显示用户资料
+function showProfile() {
+    alert('管理员资料功能开发中...');
+}
+
+// 加载当前管理员信息
+function loadCurrentAdminInfo() {
+    // 这里可以从token中解析用户信息，或者调用API获取
+    // 暂时显示默认的admin
+    const adminSpan = document.getElementById('current-admin');
+    if (adminSpan) {
+        adminSpan.textContent = 'admin';
+    }
+}
+
+// 显示登录模态框
+function showLoginModal() {
+    // 创建登录表单
+    const loginModal = document.createElement('div');
+    loginModal.innerHTML = `
+        <div class="modal fade" id="loginModal" tabindex="-1" aria-hidden="true">
+            <div class="modal-dialog modal-dialog-centered">
+                <div class="modal-content">
+                    <div class="modal-header">
+                        <h5 class="modal-title">管理员登录</h5>
+                    </div>
+                    <div class="modal-body">
+                        <form id="loginForm">
+                            <div class="mb-3">
+                                <label for="username" class="form-label">用户名</label>
+                                <input type="text" class="form-control" id="username" value="admin" required>
+                            </div>
+                            <div class="mb-3">
+                                <label for="password" class="form-label">密码</label>
+                                <input type="password" class="form-control" id="password" placeholder="请输入密码" required>
+                            </div>
+                            <div class="d-grid">
+                                <button type="submit" class="btn btn-primary">登录</button>
+                            </div>
+                        </form>
+                    </div>
+                    <div class="modal-footer">
+                        <small class="text-muted">默认账号: admin, 密码: 123456</small>
+                    </div>
+                </div>
+            </div>
+        </div>
+    `;
+    
+    document.body.appendChild(loginModal);
+    
+    // 显示模态框
+    const modal = new bootstrap.Modal(document.getElementById('loginModal'), {
+        backdrop: 'static',
+        keyboard: false
+    });
+    modal.show();
+    
+    // 绑定登录表单提交事件
+    document.getElementById('loginForm').addEventListener('submit', handleLogin);
+}
+
+// 处理登录
+async function handleLogin(e) {
+    e.preventDefault();
+    
+    const username = document.getElementById('username').value;
+    const password = document.getElementById('password').value;
+    
+    if (!username || !password) {
+        showError('请输入用户名和密码');
+        return;
+    }
+    
+    try {
+        // 这里应该调用实际的登录API
+        // const response = await apiRequest('/v1/admin/login', {
+        //     method: 'POST',
+        //     body: JSON.stringify({ username, password })
+        // });
+        
+        // 暂时模拟登录验证
+        if (username === 'admin' && password === '123456') {
+            // 模拟token
+            const token = 'mock-admin-token-' + Date.now();
+            localStorage.setItem('admin_token', token);
+            authToken = token;
+            
+            // 关闭登录模态框
+            const modal = bootstrap.Modal.getInstance(document.getElementById('loginModal'));
+            modal.hide();
+            
+            // 移除模态框元素
+            setTimeout(() => {
+                const modalElement = document.getElementById('loginModal');
+                if (modalElement) {
+                    modalElement.remove();
+                }
+            }, 300);
+            
+            showSuccess('登录成功');
+            
+            // 初始化页面
+            setTimeout(() => {
+                initCharts();
+                loadDashboardData();
+                loadCurrentAdminInfo();
+            }, 1000);
+        } else {
+            showError('用户名或密码错误');
+        }
+    } catch (error) {
+        showError('登录失败: ' + error.message);
+    }
 }
 
 

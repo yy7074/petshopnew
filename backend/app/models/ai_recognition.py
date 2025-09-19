@@ -34,7 +34,7 @@ class AIRecognitionRecord(Base):
     updated_at = Column(DateTime, server_default=func.now(), onupdate=func.now())
     
     # 关联关系
-    user = relationship("User", back_populates="ai_recognitions")
+    # user = relationship("User", back_populates="ai_recognitions")
 
 class AIRecognitionFeedback(Base):
     """AI识别反馈模型"""

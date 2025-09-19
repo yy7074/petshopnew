@@ -1,3 +1,4 @@
+
 #!/usr/bin/env python3
 """
 测试同城服务API脚本

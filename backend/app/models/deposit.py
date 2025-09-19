@@ -21,7 +21,7 @@ class Deposit(Base):
     refunded_at = Column(DateTime, comment="退还时间")
     
     # 关联关系
-    user = relationship("User", back_populates="deposits")
+    # user = relationship("User", back_populates="deposits")
 
 class DepositLog(Base):
     """保证金操作日志"""

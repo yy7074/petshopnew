@@ -20,4 +20,4 @@ class WalletTransaction(Base):
     completed_at = Column(DateTime)
     
     # 关联关系
-    user = relationship("User", back_populates="wallet_transactions")
+    # user = relationship("User", back_populates="wallet_transactions")

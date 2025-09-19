@@ -691,6 +691,8 @@ function formatDateTime(dateString) {
 async function apiRequest(endpoint, options = {}) {
     const url = `${API_BASE_URL}${endpoint}`;
     const config = {
+        mode: 'cors',
+        credentials: 'same-origin',
         headers: {
             'Content-Type': 'application/json',
             ...options.headers
@@ -698,14 +700,21 @@ async function apiRequest(endpoint, options = {}) {
         ...options
     };
     
+    if (authToken) {
+        config.headers['Authorization'] = `Bearer ${authToken}`;
+    }
+    
     try {
         const response = await fetch(url, config);
         if (!response.ok) {
-            throw new Error(`HTTP error! status: ${response.status}`);
+            const errorText = await response.text();
+            throw new Error(`HTTP ${response.status}: ${errorText}`);
         }
         return await response.json();
     } catch (error) {
         console.error('API请求失败:', error);
+        console.error('请求URL:', url);
+        console.error('请求配置:', config);
         throw error;
     }
 }
@@ -763,6 +772,27 @@ function deleteUser(userId) {
         // TODO: 实现用户删除
         console.log('删除用户:', userId);
     }
+}
+
+// 退出登录
+function logout() {
+    if (confirm('确定要退出登录吗？')) {
+        // 清除认证信息
+        authToken = null;
+        localStorage.removeItem('admin_token');
+        
+        showSuccess('退出登录成功');
+        
+        // 1秒后显示登录界面
+        setTimeout(() => {
+            showAdminLogin();
+        }, 1000);
+    }
+}
+
+// 显示用户资料
+function showProfile() {
+    showInfo('管理员资料功能开发中...');
 }
 
 function viewProduct(productId) {
