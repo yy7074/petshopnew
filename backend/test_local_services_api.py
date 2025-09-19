@@ -7,7 +7,7 @@ import requests
 import json
 import sys
 
-BASE_URL = "http://localhost:8000/api/v1"
+BASE_URL = "https://catdog.dachaonet.com/api/v1"
 
 def test_api():
     """测试同城服务API"""
@@ -139,7 +139,7 @@ def test_health():
     """测试服务健康状态"""
     try:
         print("🏥 检查服务健康状态...")
-        response = requests.get(f"{BASE_URL}/../health", timeout=5)
+        response = requests.get("https://catdog.dachaonet.com/health", timeout=5)
         if response.status_code == 200:
             print("✅ 服务运行正常")
             return True

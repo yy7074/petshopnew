@@ -34,7 +34,7 @@ class PetSocialCommentResponse(BaseModel):
     parent_id: Optional[int]
     user_id: int
     user_nickname: Optional[str]
-    user_avatar: Optional[str]
+    user_avatar: Optional[str] = None
     created_at: datetime
     replies: List['PetSocialCommentResponse'] = []
 
@@ -55,7 +55,7 @@ class PetSocialPostResponse(BaseModel):
     status: ServiceStatus
     user_id: int
     user_nickname: Optional[str]
-    user_avatar: Optional[str]
+    user_avatar: Optional[str] = None
     created_at: datetime
     updated_at: Optional[datetime]
 
@@ -126,7 +126,7 @@ class PetBreedingInfoResponse(BaseModel):
     status: ServiceStatus
     user_id: int
     user_nickname: Optional[str]
-    user_avatar: Optional[str]
+    user_avatar: Optional[str] = None
     created_at: datetime
     updated_at: Optional[datetime]
 
@@ -235,7 +235,7 @@ class AquariumDesignServiceResponse(BaseModel):
     status: ServiceStatus
     provider_id: int
     provider_nickname: Optional[str]
-    provider_avatar: Optional[str]
+    provider_avatar: Optional[str] = None
     created_at: datetime
     updated_at: Optional[datetime]
 
@@ -290,7 +290,7 @@ class DoorServiceResponse(BaseModel):
     status: ServiceStatus
     provider_id: int
     provider_nickname: Optional[str]
-    provider_avatar: Optional[str]
+    provider_avatar: Optional[str] = None
     created_at: datetime
     updated_at: Optional[datetime]
 
@@ -388,7 +388,7 @@ class NearbyItemResponse(BaseModel):
     status: ServiceStatus
     user_id: int
     user_nickname: Optional[str]
-    user_avatar: Optional[str]
+    user_avatar: Optional[str] = None
     created_at: datetime
     updated_at: Optional[datetime]
 

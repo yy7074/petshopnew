@@ -14,6 +14,7 @@ class PetSocialDetailPage extends StatefulWidget {
 
 class _PetSocialDetailPageState extends State<PetSocialDetailPage> {
   final TextEditingController _commentController = TextEditingController();
+  final FocusNode _commentFocusNode = FocusNode();
   final List<Map<String, dynamic>> _comments = [
     {
       'id': '1',
@@ -45,6 +46,7 @@ class _PetSocialDetailPageState extends State<PetSocialDetailPage> {
   @override
   void dispose() {
     _commentController.dispose();
+    _commentFocusNode.dispose();
     super.dispose();
   }
 
@@ -454,7 +456,7 @@ class _PetSocialDetailPageState extends State<PetSocialDetailPage> {
 
   // 聚焦评论输入框
   void _focusCommentInput() {
-    _commentController.requestFocus();
+    _commentFocusNode.requestFocus();
   }
 
   // 分享帖子

@@ -165,6 +165,11 @@ class Product {
   int? get favoriteCount {
     return (id * 7) % 200 + 10; // 简单的模拟算法
   }
+
+  // 收藏状态 (需要通过API获取，这里先用本地变量)
+  bool _isFavorite = false;
+  bool get isFavorite => _isFavorite;
+  set isFavorite(bool value) => _isFavorite = value;
 }
 
 enum ProductType {

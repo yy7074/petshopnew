@@ -473,7 +473,7 @@ class LocalService:
             status=post.status,
             user_id=post.user_id,
             user_nickname=user.nickname if user else None,
-            user_avatar=user.avatar if user else None,
+            user_avatar=user.avatar_url if user else None,
             created_at=post.created_at,
             updated_at=post.updated_at
         )
@@ -494,7 +494,7 @@ class LocalService:
             parent_id=comment.parent_id,
             user_id=comment.user_id,
             user_nickname=user.nickname if user else None,
-            user_avatar=user.avatar if user else None,
+            user_avatar=user.avatar_url if user else None,
             created_at=comment.created_at,
             replies=reply_responses
         )
@@ -524,7 +524,7 @@ class LocalService:
             status=breeding.status,
             user_id=breeding.user_id,
             user_nickname=user.nickname if user else None,
-            user_avatar=user.avatar if user else None,
+            user_avatar=user.avatar_url if user else None,
             created_at=breeding.created_at,
             updated_at=breeding.updated_at
         )
@@ -572,7 +572,7 @@ class LocalService:
             status=design.status,
             provider_id=design.provider_id,
             provider_nickname=user.nickname if user else None,
-            provider_avatar=user.avatar if user else None,
+            provider_avatar=user.avatar_url if user else None,
             created_at=design.created_at,
             updated_at=design.updated_at
         )
@@ -598,7 +598,7 @@ class LocalService:
             status=service.status,
             provider_id=service.provider_id,
             provider_nickname=user.nickname if user else None,
-            provider_avatar=user.avatar if user else None,
+            provider_avatar=user.avatar_url if user else None,
             created_at=service.created_at,
             updated_at=service.updated_at
         )
@@ -651,7 +651,7 @@ class LocalService:
             status=item.status,
             user_id=item.user_id,
             user_nickname=user.nickname if user else None,
-            user_avatar=user.avatar if user else None,
+            user_avatar=user.avatar_url if user else None,
             created_at=item.created_at,
             updated_at=item.updated_at
         )
