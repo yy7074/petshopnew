@@ -4,6 +4,7 @@ import '../pages/auth/login_page.dart';
 import '../pages/main/main_page.dart';
 import '../pages/home/home_page.dart';
 import '../pages/category/category_page.dart';
+import '../pages/category/category_list_page.dart';
 import '../pages/message/message_page.dart';
 import '../pages/profile/profile_page.dart';
 import '../pages/product/product_detail_page.dart';
@@ -39,6 +40,7 @@ class AppRoutes {
   static const String main = '/main';
   static const String home = '/home';
   static const String category = '/category';
+  static const String categoryList = '/category-list';
   static const String message = '/message';
   static const String profile = '/profile';
   static const String productDetail = '/product-detail';
@@ -88,6 +90,17 @@ class AppRoutes {
     GetPage(
       name: category,
       page: () => const CategoryPage(),
+    ),
+    GetPage(
+      name: categoryList,
+      page: () {
+        final arguments = Get.arguments as Map<String, dynamic>? ?? {};
+        return CategoryListPage(
+          categoryName: arguments['categoryName'] ?? '分类',
+          subCategoryName: arguments['subCategoryName'],
+          categoryId: arguments['categoryId'],
+        );
+      },
     ),
     GetPage(
       name: message,

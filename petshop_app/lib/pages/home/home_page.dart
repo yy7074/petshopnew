@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:cached_network_image/cached_network_image.dart';
 import 'package:get/get.dart';
+import 'package:url_launcher/url_launcher.dart';
 import '../../constants/app_colors.dart';
 import '../../widgets/auction_card.dart';
 import '../../widgets/banner_swiper.dart';
@@ -55,6 +56,42 @@ class _HomePageState extends State<HomePage> {
   bool _isAquaticLoading = false;
   bool _isFixedPriceLoading = false;
   String? _errorMessage;
+
+  // 筛选状态
+  String _selectedPetFilter = '';
+  String _selectedAquaticFilter = '';
+  String _selectedFixedPriceFilter = '';
+
+  // 筛选标签
+  final List<String> _petFilterTags = [
+    '全部',
+    '猫咪',
+    '狗狗',
+    '鸟类',
+    '仓鼠',
+    '兔子',
+    '爬虫'
+  ];
+
+  final List<String> _aquaticFilterTags = [
+    '全部',
+    '观赏鱼',
+    '海水鱼',
+    '淡水鱼',
+    '水草',
+    '器材',
+    '造景'
+  ];
+
+  final List<String> _fixedPriceFilterTags = [
+    '全部',
+    '猫粮',
+    '狗粮',
+    '零食',
+    '玩具',
+    '用品',
+    '医疗'
+  ];
 
   final List<String> tabs = [
     '首页·AI',
@@ -500,19 +537,202 @@ class _HomePageState extends State<HomePage> {
   }
 
   /// 处理轮播图点击
-  void _handleBannerTap(home_service.Banner banner) {
+  Future<void> _handleBannerTap(home_service.Banner banner) async {
     debugPrint('Banner clicked: ${banner.title}');
-    // 根据链接类型进行导航
-    if (banner.link.startsWith('/events/')) {
-      // 跳转到专场页面
-      Get.toNamed('/special-event',
-          arguments: {'eventId': banner.link.split('/').last});
-    } else if (banner.link.startsWith('/products')) {
-      // 跳转到商品列表页面
-      Get.toNamed('/products', arguments: {'query': banner.link});
-    } else {
-      // 其他链接处理
-      debugPrint('Banner link: ${banner.link}');
+    debugPrint('Banner link: ${banner.link}');
+
+    try {
+      // 如果链接为空，显示提示
+      if (banner.link.isEmpty) {
+        Get.snackbar(
+          '提示',
+          '${banner.title} - 敬请期待',
+          snackPosition: SnackPosition.TOP,
+          duration: const Duration(seconds: 2),
+        );
+        return;
+      }
+
+      // 根据链接类型进行导航
+      if (banner.link.startsWith('/events/')) {
+        // 跳转到专场活动页面
+        final eventId = banner.link.split('/').last;
+        Get.toNamed('/special-event', arguments: {'eventId': eventId});
+      } else if (banner.link.startsWith('/products/')) {
+        // 跳转到具体商品详情页面
+        final productId = banner.link.split('/').last;
+        await _navigateToProduct(productId);
+      } else if (banner.link.startsWith('/products?')) {
+        // 带查询参数的商品列表页面
+        final uri = Uri.parse(banner.link);
+        final queryParams = uri.queryParameters;
+        Get.toNamed('/products', arguments: queryParams);
+      } else if (banner.link.startsWith('/products')) {
+        // 跳转到商品列表页面
+        Get.toNamed('/products', arguments: {'query': banner.link});
+      } else if (banner.link.startsWith('/category/')) {
+        // 跳转到分类页面
+        final categoryId = banner.link.split('/').last;
+        Get.toNamed('/category', arguments: {'categoryId': categoryId});
+      } else if (banner.link.startsWith('/auction/')) {
+        // 跳转到拍卖页面
+        final auctionId = banner.link.split('/').last;
+        Get.toNamed('/auction-detail',
+            arguments: {'auctionId': int.tryParse(auctionId) ?? 0});
+      } else if (banner.link.startsWith('/limited-auction')) {
+        // 跳转到限时拍卖页面
+        Get.toNamed('/limited-auction');
+      } else if (banner.link.startsWith('/ai-pet-recognition')) {
+        // 跳转到AI识宠页面
+        Get.toNamed('/ai-pet-recognition');
+      } else if (banner.link.startsWith('/brand-zone')) {
+        // 跳转到品牌专区
+        Get.toNamed('/brand-zone');
+      } else if (banner.link.startsWith('/fixed-price-zone')) {
+        // 跳转到一口价专区
+        Get.toNamed('/fixed-price-zone');
+      } else if (banner.link.startsWith('/local-services')) {
+        // 跳转到本地服务
+        Get.toNamed('/local-services');
+      } else if (banner.link.startsWith('http://') ||
+          banner.link.startsWith('https://')) {
+        // 外部链接，使用系统浏览器打开
+        await _openWebPage(banner.link, banner.title);
+      } else if (banner.link.startsWith('/')) {
+        // 其他内部路由
+        Get.toNamed(banner.link);
+      } else {
+        // 未知链接类型，显示提示
+        Get.snackbar(
+          '提示',
+          '${banner.title} - 功能开发中',
+          snackPosition: SnackPosition.TOP,
+          duration: const Duration(seconds: 2),
+        );
+      }
+    } catch (e) {
+      debugPrint('处理轮播图点击错误: $e');
+      Get.snackbar(
+        '错误',
+        '页面跳转失败，请稍后重试',
+        snackPosition: SnackPosition.TOP,
+        backgroundColor: Colors.red[400],
+        colorText: Colors.white,
+        duration: const Duration(seconds: 2),
+      );
+    }
+  }
+
+  /// 跳转到商品详情页面
+  Future<void> _navigateToProduct(String productId) async {
+    try {
+      final id = int.tryParse(productId);
+      if (id == null || id <= 0) {
+        Get.snackbar(
+          '错误',
+          '无效的商品ID: $productId',
+          snackPosition: SnackPosition.TOP,
+          backgroundColor: Colors.red[400],
+          colorText: Colors.white,
+          duration: const Duration(seconds: 2),
+        );
+        return;
+      }
+
+      // 显示加载提示
+      Get.snackbar(
+        '加载中',
+        '正在获取商品信息...',
+        snackPosition: SnackPosition.TOP,
+        duration: const Duration(seconds: 1),
+      );
+
+      // 获取商品详情
+      final result = await _productService.getProductDetail(id);
+
+      if (result.success && result.data != null) {
+        // 跳转到商品详情页面
+        Get.toNamed('/product-detail', arguments: {
+          'id': id,
+          'title': result.data!.title,
+          'price': result.data!.currentPrice,
+          'images': result.data!.images,
+          'description': result.data!.description,
+          'seller': result.data!.seller?.name ?? '未知卖家',
+          'sellerId': result.data!.sellerId,
+          'categoryId': result.data!.categoryId,
+          'status': result.data!.status,
+          'type': result.data!.type.toString(),
+          'location': result.data!.location,
+          'createdAt': result.data!.createdAt.toIso8601String(),
+          'auctionInfo': result.data!.auctionInfo?.toJson(),
+          'fixedInfo': result.data!.fixedInfo?.toJson(),
+          // 添加其他需要的字段
+        });
+      } else {
+        Get.snackbar(
+          '错误',
+          result.message ?? '获取商品信息失败',
+          snackPosition: SnackPosition.TOP,
+          backgroundColor: Colors.red[400],
+          colorText: Colors.white,
+          duration: const Duration(seconds: 3),
+        );
+      }
+    } catch (e) {
+      debugPrint('跳转商品详情失败: $e');
+      Get.snackbar(
+        '错误',
+        '加载商品信息失败，请稍后重试',
+        snackPosition: SnackPosition.TOP,
+        backgroundColor: Colors.red[400],
+        colorText: Colors.white,
+        duration: const Duration(seconds: 3),
+      );
+    }
+  }
+
+  /// 打开网页
+  Future<void> _openWebPage(String url, String title) async {
+    try {
+      final uri = Uri.parse(url);
+
+      // 检查是否可以启动URL
+      if (await canLaunchUrl(uri)) {
+        // 显示即将打开的提示
+        Get.snackbar(
+          '外部链接',
+          '即将打开：$title',
+          snackPosition: SnackPosition.TOP,
+          duration: const Duration(seconds: 1),
+        );
+
+        // 延迟一秒后打开链接
+        await Future.delayed(const Duration(seconds: 1));
+        await launchUrl(
+          uri,
+          mode: LaunchMode.externalApplication, // 使用外部浏览器打开
+        );
+      } else {
+        Get.snackbar(
+          '错误',
+          '无法打开链接：$url',
+          snackPosition: SnackPosition.TOP,
+          backgroundColor: Colors.red[400],
+          colorText: Colors.white,
+          duration: const Duration(seconds: 3),
+        );
+      }
+    } catch (e) {
+      debugPrint('打开外部链接失败: $e');
+      Get.snackbar(
+        '错误',
+        '打开链接失败，请检查网络连接',
+        snackPosition: SnackPosition.TOP,
+        backgroundColor: Colors.red[400],
+        colorText: Colors.white,
+        duration: const Duration(seconds: 3),
+      );
     }
   }
 
@@ -1016,46 +1236,174 @@ class _HomePageState extends State<HomePage> {
       );
     }
 
+    // 使用瀑布流布局
     return Container(
-      height: 120.h,
       margin: EdgeInsets.symmetric(horizontal: 16.w),
-      child: ListView.builder(
-        key: ValueKey('special_events_${_specialEvents.length}'),
-        scrollDirection: Axis.horizontal,
-        itemCount: _specialEvents.length,
-        itemBuilder: (context, index) {
-          final event = _specialEvents[index];
-          return Container(
-            width: 200.w,
-            margin: EdgeInsets.only(right: 12.w),
-            child: GestureDetector(
-              onTap: () {
-                // 跳转到专场详情页面，传递专场 ID
-                Navigator.push(
-                  context,
-                  MaterialPageRoute(
-                    builder: (context) => SpecialEventPage(
-                      title: event.title,
-                      eventId: event.id.toString(),
-                    ),
+      child: _buildStaggeredSpecialEvents(),
+    );
+  }
+
+  /// 构建瀑布流专场列表
+  Widget _buildStaggeredSpecialEvents() {
+    // 计算每行显示的卡片数量
+    const crossAxisCount = 2;
+    final cardWidth = (1.sw - 48.w) / crossAxisCount; // 减去边距
+
+    return GridView.builder(
+      physics: const NeverScrollableScrollPhysics(),
+      shrinkWrap: true,
+      gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
+        crossAxisCount: crossAxisCount,
+        mainAxisSpacing: 12.h,
+        crossAxisSpacing: 12.w,
+        childAspectRatio: 0.8, // 调整宽高比让卡片更美观
+      ),
+      itemCount: _specialEvents.length,
+      itemBuilder: (context, index) {
+        final event = _specialEvents[index];
+        return GestureDetector(
+          onTap: () {
+            // 跳转到专场详情页面，传递专场 ID
+            Navigator.push(
+              context,
+              MaterialPageRoute(
+                builder: (context) => SpecialEventPage(
+                  title: event.title,
+                  eventId: event.id.toString(),
+                ),
+              ),
+            ).then((_) {
+              // 从专场页面返回时刷新首页数据
+              _loadHomeData();
+            });
+          },
+          child: _buildStaggeredSpecialCard(event, index),
+        );
+      },
+    );
+  }
+
+  /// 构建瀑布流专场卡片
+  Widget _buildStaggeredSpecialCard(
+      home_service.SpecialEvent event, int index) {
+    // 为不同卡片设置不同的颜色
+    final colors = [
+      const Color(0xFF4A90E2),
+      const Color(0xFF9C4DFF),
+      const Color(0xFFFF7043),
+      const Color(0xFF42A5F5),
+      const Color(0xFF66BB6A),
+      const Color(0xFFFFB74D),
+    ];
+    final cardColor = colors[index % colors.length];
+
+    return Container(
+      decoration: BoxDecoration(
+        gradient: LinearGradient(
+          begin: Alignment.topLeft,
+          end: Alignment.bottomRight,
+          colors: [
+            cardColor,
+            cardColor.withOpacity(0.8),
+          ],
+        ),
+        borderRadius: BorderRadius.circular(16.r),
+        boxShadow: [
+          BoxShadow(
+            color: cardColor.withOpacity(0.3),
+            blurRadius: 8,
+            offset: const Offset(0, 4),
+          ),
+        ],
+      ),
+      child: ClipRRect(
+        borderRadius: BorderRadius.circular(16.r),
+        child: Stack(
+          children: [
+            // 背景图片
+            if (event.bannerImage != null)
+              Positioned.fill(
+                child: CachedNetworkImage(
+                  imageUrl: event.bannerImage!,
+                  fit: BoxFit.cover,
+                  errorWidget: (context, url, error) => Container(
+                    color: cardColor.withOpacity(0.3),
                   ),
-                ).then((_) {
-                  // 从专场页面返回时刷新首页数据
-                  _loadHomeData();
-                });
-              },
-              child: _buildSpecialCard(
-                '专场',
-                event.title,
-                _formatEventTime(event.endTime ?? DateTime.now()),
-                '进行中',
-                event.bannerImage ??
-                    'https://picsum.photos/200/150?random=event${event.id}',
-                const Color(0xFF4A90E2),
+                ),
+              ),
+
+            // 渐变遮罩
+            Positioned.fill(
+              child: Container(
+                decoration: BoxDecoration(
+                  gradient: LinearGradient(
+                    begin: Alignment.topCenter,
+                    end: Alignment.bottomCenter,
+                    colors: [
+                      Colors.transparent,
+                      Colors.black.withOpacity(0.6),
+                    ],
+                  ),
+                ),
               ),
             ),
-          );
-        },
+
+            // 内容
+            Positioned.fill(
+              child: Padding(
+                padding: EdgeInsets.all(16.w),
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  mainAxisAlignment: MainAxisAlignment.end,
+                  children: [
+                    // 专场标签
+                    Container(
+                      padding: EdgeInsets.symmetric(
+                        horizontal: 8.w,
+                        vertical: 4.h,
+                      ),
+                      decoration: BoxDecoration(
+                        color: Colors.white.withOpacity(0.9),
+                        borderRadius: BorderRadius.circular(12.r),
+                      ),
+                      child: Text(
+                        '专场',
+                        style: TextStyle(
+                          fontSize: 10.sp,
+                          fontWeight: FontWeight.bold,
+                          color: cardColor,
+                        ),
+                      ),
+                    ),
+                    SizedBox(height: 8.h),
+
+                    // 专场标题
+                    Text(
+                      event.title,
+                      style: TextStyle(
+                        fontSize: 14.sp,
+                        fontWeight: FontWeight.bold,
+                        color: Colors.white,
+                      ),
+                      maxLines: 2,
+                      overflow: TextOverflow.ellipsis,
+                    ),
+                    SizedBox(height: 4.h),
+
+                    // 时间信息
+                    Text(
+                      _formatEventTime(event.endTime ?? DateTime.now()),
+                      style: TextStyle(
+                        fontSize: 12.sp,
+                        color: Colors.white.withOpacity(0.9),
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+            ),
+          ],
+        ),
       ),
     );
   }
@@ -2206,40 +2554,93 @@ class _HomePageState extends State<HomePage> {
 
   // 构建宠物页面标签筛选
   Widget _buildPetFilterTags() {
-    final tags = ['标签', '标签', '标签', '标签', '标签', '标签', '标签'];
-
     return Container(
       margin: EdgeInsets.symmetric(horizontal: 16.w, vertical: 8.h),
-      child: Row(
-        mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-        children: tags.map((tag) {
-          final isSelected = false; // 从设计图看都没有选中状态
-          return GestureDetector(
-            onTap: () {
-              print('点击了标签: $tag');
-            },
-            child: Container(
-              width: 40.w,
-              height: 20.h,
-              decoration: BoxDecoration(
-                color: const Color(0xFF9C4DFF),
-                borderRadius: BorderRadius.circular(10.r),
-              ),
-              child: Center(
+      height: 35.h,
+      child: ListView.builder(
+        scrollDirection: Axis.horizontal,
+        itemCount: _petFilterTags.length,
+        itemBuilder: (context, index) {
+          final tag = _petFilterTags[index];
+          final isSelected = _selectedPetFilter == tag ||
+              (index == 0 && _selectedPetFilter.isEmpty);
+
+          return Container(
+            margin: EdgeInsets.only(right: 12.w),
+            child: GestureDetector(
+              onTap: () {
+                setState(() {
+                  _selectedPetFilter = tag == '全部' ? '' : tag;
+                });
+                _loadPetProductsWithFilter(tag == '全部' ? '' : tag);
+              },
+              child: Container(
+                padding: EdgeInsets.symmetric(horizontal: 16.w, vertical: 8.h),
+                decoration: BoxDecoration(
+                  color: isSelected ? const Color(0xFF9C4DFF) : Colors.white,
+                  borderRadius: BorderRadius.circular(18.r),
+                  border: Border.all(
+                    color: isSelected
+                        ? const Color(0xFF9C4DFF)
+                        : const Color(0xFFE0E0E0),
+                    width: 1,
+                  ),
+                  boxShadow: isSelected
+                      ? [
+                          BoxShadow(
+                            color: const Color(0xFF9C4DFF).withOpacity(0.3),
+                            blurRadius: 8,
+                            offset: const Offset(0, 2),
+                          ),
+                        ]
+                      : [],
+                ),
                 child: Text(
                   tag,
                   style: TextStyle(
-                    fontSize: 10.sp,
-                    color: Colors.white,
-                    fontWeight: FontWeight.w500,
+                    fontSize: 12.sp,
+                    color: isSelected ? Colors.white : const Color(0xFF666666),
+                    fontWeight: isSelected ? FontWeight.w600 : FontWeight.w500,
                   ),
                 ),
               ),
             ),
           );
-        }).toList(),
+        },
       ),
     );
+  }
+
+  // 根据筛选条件加载宠物商品
+  Future<void> _loadPetProductsWithFilter(String filter) async {
+    setState(() {
+      _isPetLoading = true;
+    });
+
+    try {
+      // 这里应该调用实际的API，传入筛选条件
+      // 现在先模拟数据
+      await Future.delayed(const Duration(milliseconds: 500));
+
+      final result = await CategoryProductService.getProductsByCategory(
+        categoryId: 1, // 宠物分类ID
+        page: 1,
+        auctionType: filter.isNotEmpty ? null : null, // 根据筛选条件可以调整
+      );
+
+      if (result['data'] != null) {
+        setState(() {
+          _petProducts =
+              List<Map<String, dynamic>>.from(result['data']['items'] ?? []);
+        });
+      }
+    } catch (e) {
+      print('加载宠物商品失败: $e');
+    } finally {
+      setState(() {
+        _isPetLoading = false;
+      });
+    }
   }
 
   // 构建宠物商品列表
@@ -2254,24 +2655,50 @@ class _HomePageState extends State<HomePage> {
 
     final products =
         _petProducts.isNotEmpty ? _petProducts : _getDefaultPetProducts();
-    final displayProducts = products.take(2).toList();
 
-    return Container(
-      margin: EdgeInsets.symmetric(horizontal: 16.w),
-      child: Row(
-        children: [
-          if (displayProducts.isNotEmpty) ...[
-            Expanded(
-              child: _buildPetProductCard(displayProducts[0]),
-            ),
-            if (displayProducts.length > 1) ...[
-              SizedBox(width: 12.w),
-              Expanded(
-                child: _buildPetProductCard(displayProducts[1]),
+    if (products.isEmpty) {
+      return Container(
+        height: 200.h,
+        margin: EdgeInsets.symmetric(horizontal: 16.w),
+        child: Center(
+          child: Column(
+            mainAxisAlignment: MainAxisAlignment.center,
+            children: [
+              Icon(
+                Icons.pets_outlined,
+                size: 48.w,
+                color: Colors.grey[400],
+              ),
+              SizedBox(height: 12.h),
+              Text(
+                '暂无相关商品',
+                style: TextStyle(
+                  fontSize: 14.sp,
+                  color: Colors.grey[600],
+                ),
               ),
             ],
-          ],
-        ],
+          ),
+        ),
+      );
+    }
+
+    // 使用瀑布流网格布局
+    return Container(
+      margin: EdgeInsets.symmetric(horizontal: 16.w),
+      child: GridView.builder(
+        physics: const NeverScrollableScrollPhysics(),
+        shrinkWrap: true,
+        gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
+          crossAxisCount: 2,
+          mainAxisSpacing: 12.h,
+          crossAxisSpacing: 12.w,
+          childAspectRatio: 0.75, // 调整宽高比
+        ),
+        itemCount: products.length > 6 ? 6 : products.length, // 最多显示6个
+        itemBuilder: (context, index) {
+          return _buildPetProductCard(products[index]);
+        },
       ),
     );
   }
@@ -2722,39 +3149,91 @@ class _HomePageState extends State<HomePage> {
 
   // 构建水族标签筛选
   Widget _buildAquaticFilterTags() {
-    final tags = ['标签', '标签', '标签', '标签', '标签', '标签', '标签'];
-
     return Container(
       margin: EdgeInsets.symmetric(horizontal: 16.w, vertical: 8.h),
-      child: Row(
-        mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-        children: tags.map((tag) {
-          return GestureDetector(
-            onTap: () {
-              print('点击了标签: $tag');
-            },
-            child: Container(
-              width: 40.w,
-              height: 20.h,
-              decoration: BoxDecoration(
-                color: const Color(0xFF9C4DFF),
-                borderRadius: BorderRadius.circular(10.r),
-              ),
-              child: Center(
+      height: 35.h,
+      child: ListView.builder(
+        scrollDirection: Axis.horizontal,
+        itemCount: _aquaticFilterTags.length,
+        itemBuilder: (context, index) {
+          final tag = _aquaticFilterTags[index];
+          final isSelected = _selectedAquaticFilter == tag ||
+              (index == 0 && _selectedAquaticFilter.isEmpty);
+
+          return Container(
+            margin: EdgeInsets.only(right: 12.w),
+            child: GestureDetector(
+              onTap: () {
+                setState(() {
+                  _selectedAquaticFilter = tag == '全部' ? '' : tag;
+                });
+                _loadAquaticProductsWithFilter(tag == '全部' ? '' : tag);
+              },
+              child: Container(
+                padding: EdgeInsets.symmetric(horizontal: 16.w, vertical: 8.h),
+                decoration: BoxDecoration(
+                  color: isSelected ? const Color(0xFF42A5F5) : Colors.white,
+                  borderRadius: BorderRadius.circular(18.r),
+                  border: Border.all(
+                    color: isSelected
+                        ? const Color(0xFF42A5F5)
+                        : const Color(0xFFE0E0E0),
+                    width: 1,
+                  ),
+                  boxShadow: isSelected
+                      ? [
+                          BoxShadow(
+                            color: const Color(0xFF42A5F5).withOpacity(0.3),
+                            blurRadius: 8,
+                            offset: const Offset(0, 2),
+                          ),
+                        ]
+                      : [],
+                ),
                 child: Text(
                   tag,
                   style: TextStyle(
-                    fontSize: 10.sp,
-                    color: Colors.white,
-                    fontWeight: FontWeight.w500,
+                    fontSize: 12.sp,
+                    color: isSelected ? Colors.white : const Color(0xFF666666),
+                    fontWeight: isSelected ? FontWeight.w600 : FontWeight.w500,
                   ),
                 ),
               ),
             ),
           );
-        }).toList(),
+        },
       ),
     );
+  }
+
+  // 根据筛选条件加载水族商品
+  Future<void> _loadAquaticProductsWithFilter(String filter) async {
+    setState(() {
+      _isAquaticLoading = true;
+    });
+
+    try {
+      await Future.delayed(const Duration(milliseconds: 500));
+
+      final result = await CategoryProductService.getProductsByCategory(
+        categoryId: 2, // 水族分类ID
+        page: 1,
+        auctionType: filter.isNotEmpty ? null : null,
+      );
+
+      if (result['data'] != null) {
+        setState(() {
+          _aquaticProducts =
+              List<Map<String, dynamic>>.from(result['data']['items'] ?? []);
+        });
+      }
+    } catch (e) {
+      print('加载水族商品失败: $e');
+    } finally {
+      setState(() {
+        _isAquaticLoading = false;
+      });
+    }
   }
 
   // 构建水族商品列表
@@ -2770,24 +3249,50 @@ class _HomePageState extends State<HomePage> {
     final products = _aquaticProducts.isNotEmpty
         ? _aquaticProducts
         : _getDefaultAquaticProducts();
-    final displayProducts = products.take(2).toList();
 
-    return Container(
-      margin: EdgeInsets.symmetric(horizontal: 16.w),
-      child: Row(
-        children: [
-          if (displayProducts.isNotEmpty) ...[
-            Expanded(
-              child: _buildAquaticProductCard(displayProducts[0]),
-            ),
-            if (displayProducts.length > 1) ...[
-              SizedBox(width: 12.w),
-              Expanded(
-                child: _buildAquaticProductCard(displayProducts[1]),
+    if (products.isEmpty) {
+      return Container(
+        height: 200.h,
+        margin: EdgeInsets.symmetric(horizontal: 16.w),
+        child: Center(
+          child: Column(
+            mainAxisAlignment: MainAxisAlignment.center,
+            children: [
+              Icon(
+                Icons.water_outlined,
+                size: 48.w,
+                color: Colors.grey[400],
+              ),
+              SizedBox(height: 12.h),
+              Text(
+                '暂无相关商品',
+                style: TextStyle(
+                  fontSize: 14.sp,
+                  color: Colors.grey[600],
+                ),
               ),
             ],
-          ],
-        ],
+          ),
+        ),
+      );
+    }
+
+    // 使用瀑布流网格布局
+    return Container(
+      margin: EdgeInsets.symmetric(horizontal: 16.w),
+      child: GridView.builder(
+        physics: const NeverScrollableScrollPhysics(),
+        shrinkWrap: true,
+        gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
+          crossAxisCount: 2,
+          mainAxisSpacing: 12.h,
+          crossAxisSpacing: 12.w,
+          childAspectRatio: 0.75,
+        ),
+        itemCount: products.length > 6 ? 6 : products.length,
+        itemBuilder: (context, index) {
+          return _buildAquaticProductCard(products[index]);
+        },
       ),
     );
   }
@@ -2961,12 +3466,105 @@ class _HomePageState extends State<HomePage> {
           _buildFixedPriceCategorySection(),
           SizedBox(height: 16.h),
 
+          // 标签筛选
+          _buildFixedPriceFilterTags(),
+          SizedBox(height: 16.h),
+
           // 底部商品网格列表
           _buildFixedPriceProductGrid(),
           SizedBox(height: 100.h),
         ],
       ),
     );
+  }
+
+  // 构建一口价标签筛选
+  Widget _buildFixedPriceFilterTags() {
+    return Container(
+      margin: EdgeInsets.symmetric(horizontal: 16.w, vertical: 8.h),
+      height: 35.h,
+      child: ListView.builder(
+        scrollDirection: Axis.horizontal,
+        itemCount: _fixedPriceFilterTags.length,
+        itemBuilder: (context, index) {
+          final tag = _fixedPriceFilterTags[index];
+          final isSelected = _selectedFixedPriceFilter == tag ||
+              (index == 0 && _selectedFixedPriceFilter.isEmpty);
+
+          return Container(
+            margin: EdgeInsets.only(right: 12.w),
+            child: GestureDetector(
+              onTap: () {
+                setState(() {
+                  _selectedFixedPriceFilter = tag == '全部' ? '' : tag;
+                });
+                _loadFixedPriceProductsWithFilter(tag == '全部' ? '' : tag);
+              },
+              child: Container(
+                padding: EdgeInsets.symmetric(horizontal: 16.w, vertical: 8.h),
+                decoration: BoxDecoration(
+                  color: isSelected ? const Color(0xFF66BB6A) : Colors.white,
+                  borderRadius: BorderRadius.circular(18.r),
+                  border: Border.all(
+                    color: isSelected
+                        ? const Color(0xFF66BB6A)
+                        : const Color(0xFFE0E0E0),
+                    width: 1,
+                  ),
+                  boxShadow: isSelected
+                      ? [
+                          BoxShadow(
+                            color: const Color(0xFF66BB6A).withOpacity(0.3),
+                            blurRadius: 8,
+                            offset: const Offset(0, 2),
+                          ),
+                        ]
+                      : [],
+                ),
+                child: Text(
+                  tag,
+                  style: TextStyle(
+                    fontSize: 12.sp,
+                    color: isSelected ? Colors.white : const Color(0xFF666666),
+                    fontWeight: isSelected ? FontWeight.w600 : FontWeight.w500,
+                  ),
+                ),
+              ),
+            ),
+          );
+        },
+      ),
+    );
+  }
+
+  // 根据筛选条件加载一口价商品
+  Future<void> _loadFixedPriceProductsWithFilter(String filter) async {
+    setState(() {
+      _isFixedPriceLoading = true;
+    });
+
+    try {
+      await Future.delayed(const Duration(milliseconds: 500));
+
+      final result = await CategoryProductService.getProductsByCategory(
+        categoryId: 3, // 一口价分类ID
+        page: 1,
+        auctionType: 2, // 一口价类型
+      );
+
+      if (result['data'] != null) {
+        setState(() {
+          _fixedPriceProducts =
+              List<Map<String, dynamic>>.from(result['data']['items'] ?? []);
+        });
+      }
+    } catch (e) {
+      print('加载一口价商品失败: $e');
+    } finally {
+      setState(() {
+        _isFixedPriceLoading = false;
+      });
+    }
   }
 
   // 构建一口价页面顶部上新和热门商品行

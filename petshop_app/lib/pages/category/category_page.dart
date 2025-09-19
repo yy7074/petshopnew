@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
+import './category_list_page.dart';
 
 class CategoryPage extends StatefulWidget {
   const CategoryPage({super.key});
@@ -227,8 +228,16 @@ class _CategoryPageState extends State<CategoryPage> {
             final subCat = subCats[index];
             return GestureDetector(
               onTap: () {
-                // 这里可以处理子分类点击事件
-                print('点击了子分类: $subCat');
+                Navigator.push(
+                  context,
+                  MaterialPageRoute(
+                    builder: (context) => CategoryListPage(
+                      categoryName: selectedCategory,
+                      subCategoryName: subCat,
+                      categoryId: selectedMainCategoryIndex + 1,
+                    ),
+                  ),
+                );
               },
               child: Container(
                 decoration: BoxDecoration(
