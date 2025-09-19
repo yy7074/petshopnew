@@ -490,6 +490,7 @@ class BidService:
             } if user else None,
             product_info={
                 "title": product.title,
-                "image": product.images[0] if product.images else None
+                "image": product.images[0] if product.images else None,
+                "status": product.status
             } if product else None
         )

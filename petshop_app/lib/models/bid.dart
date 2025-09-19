@@ -8,6 +8,7 @@ class Bid {
   final DateTime bidTime;
   final String status;
   final User? user;
+  final BidProductInfo? product;
 
   Bid({
     required this.id,
@@ -17,9 +18,20 @@ class Bid {
     required this.bidTime,
     required this.status,
     this.user,
+    this.product,
   });
 
   factory Bid.fromJson(Map<String, dynamic> json) {
+    print('Bid.fromJson - 原始数据: ${json.toString()}');
+    print('  product_info: ${json['product_info']}');
+
+    final productInfo = json['product_info'] != null
+        ? BidProductInfo.fromJson(json['product_info'])
+        : null;
+
+    print(
+        '  解析后的productInfo: title=${productInfo?.title}, status=${productInfo?.status}');
+
     return Bid(
       id: json['id'] ?? 0,
       productId: json['product_id'] ?? 0,
@@ -35,6 +47,7 @@ class Bid {
       user: json['user_info'] != null
           ? User.fromJson(json['user_info'])
           : (json['user'] != null ? User.fromJson(json['user']) : null),
+      product: productInfo,
     );
   }
 
@@ -67,6 +80,7 @@ class Bid {
       'bid_time': bidTime.toIso8601String(),
       'status': status,
       'user': user?.toJson(),
+      'product': product?.toJson(),
     };
   }
 }
@@ -123,6 +137,34 @@ class AutoBid {
       'product_id': productId,
       'max_amount': maxAmount,
       'increment': increment,
+      'status': status,
+    };
+  }
+}
+
+class BidProductInfo {
+  final String title;
+  final String? image;
+  final int? status; // 商品状态: 1:活跃 2:拍卖中 3:已结束
+
+  BidProductInfo({
+    required this.title,
+    this.image,
+    this.status,
+  });
+
+  factory BidProductInfo.fromJson(Map<String, dynamic> json) {
+    return BidProductInfo(
+      title: json['title'] ?? '未知商品',
+      image: json['image'],
+      status: json['status'],
+    );
+  }
+
+  Map<String, dynamic> toJson() {
+    return {
+      'title': title,
+      'image': image,
       'status': status,
     };
   }

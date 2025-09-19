@@ -74,7 +74,25 @@ class BidService {
 
       if (response.statusCode == 200) {
         final List<dynamic> bidsJson = response.data['items'] ?? [];
+
+        // 调试：打印原始API响应
+        print('BidService API响应数据:');
+        for (int i = 0; i < bidsJson.length && i < 3; i++) {
+          final json = bidsJson[i];
+          print(
+              '  出价${i + 1}: ID=${json['id']}, status=${json['status']}, product_info=${json['product_info']}');
+        }
+
         final bids = bidsJson.map((json) => Bid.fromJson(json)).toList();
+
+        // 调试：打印解析后的数据
+        print('解析后的Bid数据:');
+        for (int i = 0; i < bids.length && i < 3; i++) {
+          final bid = bids[i];
+          print(
+              '  出价${i + 1}: ID=${bid.id}, status=${bid.status}, product.status=${bid.product?.status}');
+        }
+
         return ApiResult.success(bids);
       } else {
         return ApiResult.error(response.data['detail'] ?? '获取我的竞拍记录失败');
