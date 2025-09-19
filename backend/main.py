@@ -9,6 +9,9 @@ from app.core.config import settings
 from app.core.database import engine, Base
 from app.api import auth
 
+# 导入所有模型以确保数据库表被创建
+from app.models import user, product, bid, order, auction, event, wallet, deposit, store, store_application, chat, message, local_service
+
 # 创建数据库表
 Base.metadata.create_all(bind=engine)
 

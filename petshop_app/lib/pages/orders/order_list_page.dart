@@ -3,6 +3,7 @@ import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:cached_network_image/cached_network_image.dart';
 import 'package:pull_to_refresh/pull_to_refresh.dart';
 import 'order_detail_page.dart';
+import 'logistics_tracking_page.dart';
 import '../../services/order_service.dart';
 
 class OrderListPage extends StatefulWidget {
@@ -641,26 +642,6 @@ class _OrderListPageState extends State<OrderListPage>
     );
   }
 
-  // 取消订单
-  Future<void> _cancelOrder(Map<String, dynamic> order) async {
-    try {
-      await OrderService.cancelOrder(order['id'], '用户主动取消');
-      setState(() {
-        order['order_status'] = 6; // 已取消
-        order['status'] = '已取消';
-        order['statusText'] = '已取消';
-      });
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('订单已取消')),
-      );
-      _refreshOrders();
-    } catch (e) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text('取消订单失败: $e')),
-      );
-    }
-  }
-
   // 继续付款
   void _continuePayment(Map<String, dynamic> order) async {
     try {
@@ -677,8 +658,14 @@ class _OrderListPageState extends State<OrderListPage>
 
   // 查看物流
   void _viewLogistics(Map<String, dynamic> order) {
-    ScaffoldMessenger.of(context).showSnackBar(
-      const SnackBar(content: Text('跳转到物流页面')),
+    Navigator.push(
+      context,
+      MaterialPageRoute(
+        builder: (context) => LogisticsTrackingPage(
+          orderId: order['id'],
+          orderNo: order['order_no'] ?? '',
+        ),
+      ),
     );
   }
 

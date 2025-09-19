@@ -15,6 +15,7 @@ import '../product/product_detail_page.dart';
 import '../../services/product_service.dart' as product_service;
 import '../../services/event_service.dart';
 import '../../services/home_service.dart' as home_service;
+import '../../services/favorite_service.dart';
 import '../../services/category_product_service.dart';
 import '../../models/product.dart' as product_models;
 import '../../models/category.dart';
@@ -582,9 +583,46 @@ class _HomePageState extends State<HomePage> {
   }
 
   /// 切换收藏状态
-  void _toggleFavorite(product_models.Product product) {
-    // TODO: 实现收藏功能
-    debugPrint('Toggle favorite for product: ${product.id}');
+  void _toggleFavorite(product_models.Product product) async {
+    try {
+      final favoriteService = FavoriteService();
+
+      if (product.isFavorite) {
+        // 取消收藏
+        final result = await favoriteService.removeFavorite(product.id);
+        if (result.success) {
+          setState(() {
+            product.isFavorite = false;
+          });
+          ScaffoldMessenger.of(context).showSnackBar(
+            const SnackBar(content: Text('已取消收藏')),
+          );
+        } else {
+          ScaffoldMessenger.of(context).showSnackBar(
+            SnackBar(content: Text(result.message)),
+          );
+        }
+      } else {
+        // 添加收藏
+        final result = await favoriteService.addFavorite(product.id);
+        if (result.success) {
+          setState(() {
+            product.isFavorite = true;
+          });
+          ScaffoldMessenger.of(context).showSnackBar(
+            const SnackBar(content: Text('已添加收藏')),
+          );
+        } else {
+          ScaffoldMessenger.of(context).showSnackBar(
+            SnackBar(content: Text(result.message)),
+          );
+        }
+      }
+    } catch (e) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text('操作失败: $e')),
+      );
+    }
   }
 
   /// 构建商品卡片骨架屏

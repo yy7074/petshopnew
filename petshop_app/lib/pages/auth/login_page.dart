@@ -2,7 +2,6 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:get/get.dart';
-import '../../constants/app_colors.dart';
 import '../../utils/app_routes.dart';
 import '../../services/auth_service.dart';
 import 'sms_login_page.dart';

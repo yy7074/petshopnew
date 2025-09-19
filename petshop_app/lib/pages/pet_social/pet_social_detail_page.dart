@@ -185,18 +185,22 @@ class _PetSocialDetailPageState extends State<PetSocialDetailPage> {
 
                   // 互动数据栏
                   Container(
-                    padding: EdgeInsets.symmetric(horizontal: 16.w, vertical: 12.h),
+                    padding:
+                        EdgeInsets.symmetric(horizontal: 16.w, vertical: 12.h),
                     decoration: BoxDecoration(
                       border: Border(
                         top: BorderSide(color: Colors.grey[200]!, width: 0.5),
-                        bottom: BorderSide(color: Colors.grey[200]!, width: 0.5),
+                        bottom:
+                            BorderSide(color: Colors.grey[200]!, width: 0.5),
                       ),
                     ),
                     child: Row(
                       children: [
-                        _buildActionButton(Icons.favorite_border, '${widget.post['likeCount']}', false),
+                        _buildActionButton(Icons.favorite_border,
+                            '${widget.post['likeCount']}', false),
                         SizedBox(width: 24.w),
-                        _buildActionButton(Icons.chat_bubble_outline, '${widget.post['commentCount']}', false),
+                        _buildActionButton(Icons.chat_bubble_outline,
+                            '${widget.post['commentCount']}', false),
                         SizedBox(width: 24.w),
                         _buildActionButton(Icons.share, '分享', false),
                         const Spacer(),
@@ -220,9 +224,11 @@ class _PetSocialDetailPageState extends State<PetSocialDetailPage> {
                           ),
                         ),
                         SizedBox(height: 16.h),
-                        
+
                         // 评论列表
-                        ..._comments.map((comment) => _buildCommentItem(comment)).toList(),
+                        ..._comments
+                            .map((comment) => _buildCommentItem(comment))
+                            .toList(),
                       ],
                     ),
                   ),
@@ -241,7 +247,7 @@ class _PetSocialDetailPageState extends State<PetSocialDetailPage> {
   Widget _buildActionButton(IconData icon, String label, bool isActive) {
     return GestureDetector(
       onTap: () {
-        // TODO: 实现对应的交互功能
+        _handleActionTap(label, isActive);
       },
       child: Row(
         children: [
@@ -291,7 +297,8 @@ class _PetSocialDetailPageState extends State<PetSocialDetailPage> {
                     if (comment['isReply'] == true && comment['label'] != null)
                       Container(
                         margin: EdgeInsets.only(left: 8.w),
-                        padding: EdgeInsets.symmetric(horizontal: 6.w, vertical: 2.h),
+                        padding: EdgeInsets.symmetric(
+                            horizontal: 6.w, vertical: 2.h),
                         decoration: BoxDecoration(
                           color: AppColors.primary,
                           borderRadius: BorderRadius.circular(8.r),
@@ -380,7 +387,8 @@ class _PetSocialDetailPageState extends State<PetSocialDetailPage> {
                     fontSize: 14.sp,
                   ),
                   border: InputBorder.none,
-                  contentPadding: EdgeInsets.symmetric(horizontal: 16.w, vertical: 10.h),
+                  contentPadding:
+                      EdgeInsets.symmetric(horizontal: 16.w, vertical: 10.h),
                 ),
                 style: TextStyle(fontSize: 14.sp),
               ),
@@ -414,5 +422,49 @@ class _PetSocialDetailPageState extends State<PetSocialDetailPage> {
         ],
       ),
     );
+  }
+
+  // 处理动作按钮点击
+  void _handleActionTap(String label, bool isActive) {
+    switch (label) {
+      case '点赞':
+        _toggleLike(isActive);
+        break;
+      case '评论':
+        _focusCommentInput();
+        break;
+      case '分享':
+        _sharePost();
+        break;
+      default:
+        break;
+    }
+  }
+
+  // 切换点赞状态
+  void _toggleLike(bool isCurrentlyLiked) {
+    ScaffoldMessenger.of(context).showSnackBar(
+      SnackBar(
+        content: Text(isCurrentlyLiked ? '已取消点赞' : '已点赞'),
+        duration: const Duration(seconds: 1),
+      ),
+    );
+    // TODO: 实现实际的点赞API调用
+  }
+
+  // 聚焦评论输入框
+  void _focusCommentInput() {
+    _commentController.requestFocus();
+  }
+
+  // 分享帖子
+  void _sharePost() {
+    ScaffoldMessenger.of(context).showSnackBar(
+      const SnackBar(
+        content: Text('分享功能开发中'),
+        duration: Duration(seconds: 1),
+      ),
+    );
+    // TODO: 实现实际的分享功能
   }
 }

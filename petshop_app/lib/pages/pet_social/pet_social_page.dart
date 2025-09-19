@@ -22,7 +22,10 @@ class _PetSocialPageState extends State<PetSocialPage> {
       'username': '萌宠小主',
       'postTime': '2小时前',
       'content': '今天带我家小橘猫去洗澡，结果它居然很乖呢！',
-      'images': ['https://picsum.photos/300/400?random=11', 'https://picsum.photos/300/400?random=12'],
+      'images': [
+        'https://picsum.photos/300/400?random=11',
+        'https://picsum.photos/300/400?random=12'
+      ],
       'likeCount': 128,
       'commentCount': 36,
       'viewCount': 1253,
@@ -44,7 +47,11 @@ class _PetSocialPageState extends State<PetSocialPage> {
       'username': '鸟儿之家',
       'postTime': '6小时前',
       'content': '我家鹦鹉学会说"你好"啦！',
-      'images': ['https://picsum.photos/300/400?random=31', 'https://picsum.photos/300/400?random=32', 'https://picsum.photos/300/400?random=33'],
+      'images': [
+        'https://picsum.photos/300/400?random=31',
+        'https://picsum.photos/300/400?random=32',
+        'https://picsum.photos/300/400?random=33'
+      ],
       'likeCount': 234,
       'commentCount': 67,
       'viewCount': 2134,
@@ -66,7 +73,10 @@ class _PetSocialPageState extends State<PetSocialPage> {
       'username': '仓鼠妈妈',
       'postTime': '12小时前',
       'content': '我家小仓鼠又偷偷藏食物了哈哈',
-      'images': ['https://picsum.photos/300/400?random=51', 'https://picsum.photos/300/400?random=52'],
+      'images': [
+        'https://picsum.photos/300/400?random=51',
+        'https://picsum.photos/300/400?random=52'
+      ],
       'likeCount': 92,
       'commentCount': 18,
       'viewCount': 723,
@@ -113,7 +123,7 @@ class _PetSocialPageState extends State<PetSocialPage> {
           IconButton(
             icon: const Icon(Icons.search, color: Colors.black87),
             onPressed: () {
-              // TODO: 实现搜索功能
+              _showSearchDialog();
             },
           ),
         ],
@@ -145,7 +155,8 @@ class _PetSocialPageState extends State<PetSocialPage> {
         onPressed: () {
           Navigator.push(
             context,
-            MaterialPageRoute(builder: (context) => const PetSocialPublishPage()),
+            MaterialPageRoute(
+                builder: (context) => const PetSocialPublishPage()),
           );
         },
         backgroundColor: AppColors.primary,
@@ -168,183 +179,186 @@ class _PetSocialPageState extends State<PetSocialPage> {
         );
       },
       child: Container(
-      decoration: BoxDecoration(
-        color: Colors.white,
-        borderRadius: BorderRadius.circular(12.r),
-        boxShadow: [
-          BoxShadow(
-            color: Colors.black.withOpacity(0.08),
-            blurRadius: 8,
-            offset: const Offset(0, 2),
-          ),
-        ],
-      ),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          // 主图片
-          Expanded(
-            child: Container(
-              width: double.infinity,
-              decoration: BoxDecoration(
-                borderRadius: BorderRadius.vertical(top: Radius.circular(12.r)),
-                image: DecorationImage(
-                  image: NetworkImage(mainImage),
-                  fit: BoxFit.cover,
+        decoration: BoxDecoration(
+          color: Colors.white,
+          borderRadius: BorderRadius.circular(12.r),
+          boxShadow: [
+            BoxShadow(
+              color: Colors.black.withOpacity(0.08),
+              blurRadius: 8,
+              offset: const Offset(0, 2),
+            ),
+          ],
+        ),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            // 主图片
+            Expanded(
+              child: Container(
+                width: double.infinity,
+                decoration: BoxDecoration(
+                  borderRadius:
+                      BorderRadius.vertical(top: Radius.circular(12.r)),
+                  image: DecorationImage(
+                    image: NetworkImage(mainImage),
+                    fit: BoxFit.cover,
+                  ),
                 ),
-              ),
-              child: Stack(
-                children: [
-                  // 多图标识
-                  if (images.length > 1)
-                    Positioned(
-                      top: 8.h,
-                      right: 8.w,
-                      child: Container(
-                        padding: EdgeInsets.symmetric(horizontal: 6.w, vertical: 2.h),
-                        decoration: BoxDecoration(
-                          color: Colors.black54,
-                          borderRadius: BorderRadius.circular(10.r),
-                        ),
-                        child: Text(
-                          '${images.length}',
-                          style: TextStyle(
-                            color: Colors.white,
-                            fontSize: 10.sp,
-                            fontWeight: FontWeight.w500,
+                child: Stack(
+                  children: [
+                    // 多图标识
+                    if (images.length > 1)
+                      Positioned(
+                        top: 8.h,
+                        right: 8.w,
+                        child: Container(
+                          padding: EdgeInsets.symmetric(
+                              horizontal: 6.w, vertical: 2.h),
+                          decoration: BoxDecoration(
+                            color: Colors.black54,
+                            borderRadius: BorderRadius.circular(10.r),
                           ),
-                        ),
-                      ),
-                    ),
-                  // 观看次数
-                  Positioned(
-                    bottom: 8.h,
-                    right: 8.w,
-                    child: Container(
-                      padding: EdgeInsets.symmetric(horizontal: 6.w, vertical: 2.h),
-                      decoration: BoxDecoration(
-                        color: Colors.black54,
-                        borderRadius: BorderRadius.circular(10.r),
-                      ),
-                      child: Row(
-                        mainAxisSize: MainAxisSize.min,
-                        children: [
-                          Icon(
-                            Icons.visibility,
-                            size: 10.sp,
-                            color: Colors.white,
-                          ),
-                          SizedBox(width: 2.w),
-                          Text(
-                            _formatCount(post['viewCount']),
+                          child: Text(
+                            '${images.length}',
                             style: TextStyle(
                               color: Colors.white,
                               fontSize: 10.sp,
                               fontWeight: FontWeight.w500,
                             ),
                           ),
-                        ],
+                        ),
+                      ),
+                    // 观看次数
+                    Positioned(
+                      bottom: 8.h,
+                      right: 8.w,
+                      child: Container(
+                        padding: EdgeInsets.symmetric(
+                            horizontal: 6.w, vertical: 2.h),
+                        decoration: BoxDecoration(
+                          color: Colors.black54,
+                          borderRadius: BorderRadius.circular(10.r),
+                        ),
+                        child: Row(
+                          mainAxisSize: MainAxisSize.min,
+                          children: [
+                            Icon(
+                              Icons.visibility,
+                              size: 10.sp,
+                              color: Colors.white,
+                            ),
+                            SizedBox(width: 2.w),
+                            Text(
+                              _formatCount(post['viewCount']),
+                              style: TextStyle(
+                                color: Colors.white,
+                                fontSize: 10.sp,
+                                fontWeight: FontWeight.w500,
+                              ),
+                            ),
+                          ],
+                        ),
                       ),
                     ),
+                  ],
+                ),
+              ),
+            ),
+
+            // 用户信息和内容
+            Padding(
+              padding: EdgeInsets.all(12.w),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  // 用户头像和信息
+                  Row(
+                    children: [
+                      CircleAvatar(
+                        radius: 12.r,
+                        backgroundImage: NetworkImage(post['userAvatar']),
+                      ),
+                      SizedBox(width: 8.w),
+                      Expanded(
+                        child: Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            Text(
+                              post['username'],
+                              style: TextStyle(
+                                fontSize: 12.sp,
+                                fontWeight: FontWeight.w600,
+                                color: Colors.black87,
+                              ),
+                            ),
+                            Text(
+                              post['postTime'],
+                              style: TextStyle(
+                                fontSize: 10.sp,
+                                color: Colors.grey[600],
+                              ),
+                            ),
+                          ],
+                        ),
+                      ),
+                    ],
+                  ),
+
+                  SizedBox(height: 8.h),
+
+                  // 帖子内容
+                  Text(
+                    post['content'],
+                    style: TextStyle(
+                      fontSize: 12.sp,
+                      color: Colors.black87,
+                      height: 1.3,
+                    ),
+                    maxLines: 2,
+                    overflow: TextOverflow.ellipsis,
+                  ),
+
+                  SizedBox(height: 8.h),
+
+                  // 互动数据
+                  Row(
+                    children: [
+                      Icon(
+                        Icons.favorite_border,
+                        size: 14.sp,
+                        color: Colors.grey[600],
+                      ),
+                      SizedBox(width: 4.w),
+                      Text(
+                        _formatCount(post['likeCount']),
+                        style: TextStyle(
+                          fontSize: 10.sp,
+                          color: Colors.grey[600],
+                        ),
+                      ),
+                      SizedBox(width: 12.w),
+                      Icon(
+                        Icons.chat_bubble_outline,
+                        size: 14.sp,
+                        color: Colors.grey[600],
+                      ),
+                      SizedBox(width: 4.w),
+                      Text(
+                        _formatCount(post['commentCount']),
+                        style: TextStyle(
+                          fontSize: 10.sp,
+                          color: Colors.grey[600],
+                        ),
+                      ),
+                    ],
                   ),
                 ],
               ),
             ),
-          ),
-          
-          // 用户信息和内容
-          Padding(
-            padding: EdgeInsets.all(12.w),
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                // 用户头像和信息
-                Row(
-                  children: [
-                    CircleAvatar(
-                      radius: 12.r,
-                      backgroundImage: NetworkImage(post['userAvatar']),
-                    ),
-                    SizedBox(width: 8.w),
-                    Expanded(
-                      child: Column(
-                        crossAxisAlignment: CrossAxisAlignment.start,
-                        children: [
-                          Text(
-                            post['username'],
-                            style: TextStyle(
-                              fontSize: 12.sp,
-                              fontWeight: FontWeight.w600,
-                              color: Colors.black87,
-                            ),
-                          ),
-                          Text(
-                            post['postTime'],
-                            style: TextStyle(
-                              fontSize: 10.sp,
-                              color: Colors.grey[600],
-                            ),
-                          ),
-                        ],
-                      ),
-                    ),
-                  ],
-                ),
-                
-                SizedBox(height: 8.h),
-                
-                // 帖子内容
-                Text(
-                  post['content'],
-                  style: TextStyle(
-                    fontSize: 12.sp,
-                    color: Colors.black87,
-                    height: 1.3,
-                  ),
-                  maxLines: 2,
-                  overflow: TextOverflow.ellipsis,
-                ),
-                
-                SizedBox(height: 8.h),
-                
-                // 互动数据
-                Row(
-                  children: [
-                    Icon(
-                      Icons.favorite_border,
-                      size: 14.sp,
-                      color: Colors.grey[600],
-                    ),
-                    SizedBox(width: 4.w),
-                    Text(
-                      _formatCount(post['likeCount']),
-                      style: TextStyle(
-                        fontSize: 10.sp,
-                        color: Colors.grey[600],
-                      ),
-                    ),
-                    SizedBox(width: 12.w),
-                    Icon(
-                      Icons.chat_bubble_outline,
-                      size: 14.sp,
-                      color: Colors.grey[600],
-                    ),
-                    SizedBox(width: 4.w),
-                    Text(
-                      _formatCount(post['commentCount']),
-                      style: TextStyle(
-                        fontSize: 10.sp,
-                        color: Colors.grey[600],
-                      ),
-                    ),
-                  ],
-                ),
-              ],
-            ),
-          ),
-        ],
+          ],
+        ),
       ),
-    ),
     );
   }
 
@@ -353,5 +367,63 @@ class _PetSocialPageState extends State<PetSocialPage> {
       return '${(count / 1000).toStringAsFixed(1)}k';
     }
     return count.toString();
+  }
+
+  // 显示搜索对话框
+  void _showSearchDialog() {
+    showDialog(
+      context: context,
+      builder: (context) {
+        final TextEditingController searchController = TextEditingController();
+        return AlertDialog(
+          shape: RoundedRectangleBorder(
+            borderRadius: BorderRadius.circular(16.r),
+          ),
+          title: Text(
+            '搜索宠物话题',
+            style: TextStyle(
+              fontSize: 18.sp,
+              fontWeight: FontWeight.w600,
+            ),
+          ),
+          content: TextField(
+            controller: searchController,
+            decoration: InputDecoration(
+              hintText: '输入关键词搜索',
+              prefixIcon: const Icon(Icons.search),
+              border: OutlineInputBorder(
+                borderRadius: BorderRadius.circular(8.r),
+              ),
+            ),
+            autofocus: true,
+          ),
+          actions: [
+            TextButton(
+              onPressed: () => Navigator.pop(context),
+              child: const Text('取消'),
+            ),
+            ElevatedButton(
+              onPressed: () {
+                final query = searchController.text.trim();
+                if (query.isNotEmpty) {
+                  Navigator.pop(context);
+                  _performSearch(query);
+                }
+              },
+              child: const Text('搜索'),
+            ),
+          ],
+        );
+      },
+    );
+  }
+
+  // 执行搜索
+  void _performSearch(String query) {
+    // 这里可以实现实际的搜索逻辑
+    ScaffoldMessenger.of(context).showSnackBar(
+      SnackBar(content: Text('搜索: $query')),
+    );
+    // TODO: 实现实际的搜索API调用和结果显示
   }
 }
