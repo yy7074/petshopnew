@@ -29,6 +29,9 @@ import '../pages/pet_breeding/pet_breeding_page.dart';
 import '../pages/local_pickup/local_pickup_page.dart';
 import '../pages/pet_valuation/pet_valuation_page.dart';
 import '../pages/nearby_discovery/nearby_discovery_page.dart';
+import '../pages/seller/seller_orders_page.dart';
+import '../pages/seller/seller_shop_settings_page.dart';
+import '../pages/seller/seller_analytics_page.dart';
 
 class AppRoutes {
   static const String splash = '/splash';
@@ -61,6 +64,9 @@ class AppRoutes {
   static const String localPickup = '/local-pickup';
   static const String petValuation = '/pet-valuation';
   static const String nearbyDiscovery = '/nearby-discovery';
+  static const String sellerOrders = '/seller-orders';
+  static const String sellerShopSettings = '/seller-shop-settings';
+  static const String sellerAnalytics = '/seller-analytics';
 
   static List<GetPage> routes = [
     GetPage(
@@ -196,6 +202,18 @@ class AppRoutes {
     GetPage(
       name: nearbyDiscovery,
       page: () => const NearbyDiscoveryPage(),
+    ),
+    GetPage(
+      name: sellerOrders,
+      page: () => const SellerOrdersPage(),
+    ),
+    GetPage(
+      name: sellerShopSettings,
+      page: () => const SellerShopSettingsPage(),
+    ),
+    GetPage(
+      name: sellerAnalytics,
+      page: () => const SellerAnalyticsPage(),
     ),
   ];
 }

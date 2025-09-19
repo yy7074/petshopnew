@@ -181,6 +181,165 @@ async def get_sales_analytics(
     except Exception as e:
         raise HTTPException(status_code=500, detail=f"获取销售分析失败: {str(e)}")
 
+@router.post("/orders/{order_id}/ship")
+async def ship_order(
+    order_id: int,
+    shipping_data: Dict[str, str],
+    db: Session = Depends(get_db),
+    current_user: User = Depends(get_current_user)
+):
+    """商家发货"""
+    try:
+        from ..models.order import Order
+        
+        order = db.query(Order).filter(
+            and_(
+                Order.id == order_id,
+                Order.seller_id == current_user.id
+            )
+        ).first()
+        
+        if not order:
+            raise HTTPException(status_code=404, detail="订单不存在或无权限操作")
+        
+        if order.order_status != 2:  # 非待发货状态
+            raise HTTPException(status_code=400, detail="订单状态不允许发货")
+        
+        tracking_number = shipping_data.get("tracking_number")
+        if not tracking_number:
+            raise HTTPException(status_code=400, detail="快递单号不能为空")
+        
+        # 更新订单状态
+        order.order_status = 3  # 已发货
+        order.tracking_number = tracking_number
+        order.shipped_at = datetime.now()
+        
+        db.commit()
+        
+        return {
+            "success": True,
+            "message": "发货成功",
+            "order_id": order_id,
+            "tracking_number": tracking_number
+        }
+        
+    except HTTPException:
+        raise
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=f"发货失败: {str(e)}")
+
+@router.get("/statistics")
+async def get_seller_statistics(
+    days: int = Query(30, ge=1, le=365),
+    db: Session = Depends(get_db),
+    current_user: User = Depends(get_current_user)
+):
+    """获取商家详细统计数据"""
+    try:
+        from ..models.order import Order
+        from ..models.product import Product
+        from sqlalchemy import and_, func
+        from datetime import datetime, timedelta
+        
+        start_date = datetime.now() - timedelta(days=days)
+        
+        # 销售统计
+        sales_stats = db.query(
+            func.count(Order.id).label('total_orders'),
+            func.sum(Order.total_amount).label('total_sales'),
+            func.avg(Order.total_amount).label('avg_order_value')
+        ).filter(
+            and_(
+                Order.seller_id == current_user.id,
+                Order.created_at >= start_date,
+                Order.payment_status == 2  # 已支付
+            )
+        ).first()
+        
+        # 订单状态统计
+        order_status_stats = db.query(
+            Order.order_status,
+            func.count(Order.id).label('count')
+        ).filter(
+            and_(
+                Order.seller_id == current_user.id,
+                Order.created_at >= start_date
+            )
+        ).group_by(Order.order_status).all()
+        
+        # 商品统计
+        product_stats = db.query(
+            func.count(Product.id).label('total_products'),
+            func.sum(func.case([(Product.status == 2, 1)], else_=0)).label('active_products'),
+            func.sum(func.case([(Product.status == 4, 1)], else_=0)).label('inactive_products'),
+            func.sum(Product.view_count).label('total_views')
+        ).filter(Product.seller_id == current_user.id).first()
+        
+        # 热销商品
+        top_products = db.query(
+            Product.id,
+            Product.title,
+            Product.images,
+            func.count(Order.id).label('sales_count'),
+            func.sum(Order.total_amount).label('total_sales')
+        ).join(Order, Product.id == Order.product_id).filter(
+            and_(
+                Product.seller_id == current_user.id,
+                Order.created_at >= start_date,
+                Order.payment_status == 2
+            )
+        ).group_by(Product.id).order_by(
+            func.count(Order.id).desc()
+        ).limit(5).all()
+        
+        # 组织返回数据
+        order_status_dict = {
+            1: 0,  # 待付款
+            2: 0,  # 待发货
+            3: 0,  # 已发货
+            4: 0,  # 已完成
+            5: 0,  # 已取消
+        }
+        
+        for status_stat in order_status_stats:
+            order_status_dict[status_stat.order_status] = status_stat.count
+        
+        top_products_list = []
+        for product in top_products:
+            top_products_list.append({
+                "id": product.id,
+                "name": product.title,
+                "image": product.images[0] if product.images else None,
+                "sales_count": product.sales_count,
+                "total_sales": float(product.total_sales or 0)
+            })
+        
+        return {
+            "success": True,
+            "data": {
+                "total_sales": float(sales_stats.total_sales or 0),
+                "total_orders": sales_stats.total_orders or 0,
+                "avg_order_value": float(sales_stats.avg_order_value or 0),
+                "pending_payment": order_status_dict[1],
+                "pending_shipment": order_status_dict[2],
+                "shipped": order_status_dict[3],
+                "completed": order_status_dict[4],
+                "cancelled": order_status_dict[5],
+                "active_products": product_stats.active_products or 0,
+                "inactive_products": product_stats.inactive_products or 0,
+                "total_views": product_stats.total_views or 0,
+                "top_products": top_products_list,
+                "total_customers": 0,  # 待实现
+                "new_customers": 0,  # 待实现
+                "repeat_customers": 0,  # 待实现
+                "customer_regions": [],  # 待实现
+                "low_stock_products": 0  # 待实现
+            }
+        }
+        
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=f"获取统计数据失败: {str(e)}")
+
 @router.post("/auto-management/enable")
 async def enable_auto_management(
     settings: Dict[str, Any],

@@ -394,6 +394,77 @@ class OrderService {
     }
   }
 
+  // 获取订单统计信息
+  static Future<Map<String, dynamic>> getOrderStatistics(
+      {String period = 'month'}) async {
+    try {
+      final token = StorageService.getUserToken();
+      if (token == null || token.isEmpty) {
+        throw Exception('请先登录');
+      }
+
+      final uri = Uri.parse('$baseUrl${ApiConstants.orders}/statistics')
+          .replace(queryParameters: {'period': period});
+
+      final response = await http.get(
+        uri,
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': 'Bearer $token',
+        },
+      );
+
+      if (response.statusCode == 200) {
+        return json.decode(response.body);
+      } else {
+        final error = json.decode(response.body);
+        throw Exception(error['detail'] ?? '获取订单统计失败');
+      }
+    } catch (e) {
+      print('获取订单统计错误: $e');
+      throw Exception('网络错误: $e');
+    }
+  }
+
+  // 获取各状态订单数量
+  static Future<Map<String, int>> getOrderStatusCounts() async {
+    try {
+      final token = StorageService.getUserToken();
+      if (token == null || token.isEmpty) {
+        throw Exception('请先登录');
+      }
+
+      // 并发获取各状态的订单数量
+      final futures = [
+        getOrders(
+            page: 1, pageSize: 1, status: 'pending', orderType: 'buy'), // 待付款
+        getOrders(
+            page: 1, pageSize: 1, status: 'paid', orderType: 'buy'), // 待发货
+        getOrders(
+            page: 1, pageSize: 1, status: 'shipped', orderType: 'buy'), // 待收货
+        getOrders(
+            page: 1, pageSize: 1, status: 'refunded', orderType: 'buy'), // 退款售后
+      ];
+
+      final results = await Future.wait(futures);
+
+      return {
+        'pending': results[0]['total'] ?? 0, // 待付款
+        'paid': results[1]['total'] ?? 0, // 待发货
+        'shipped': results[2]['total'] ?? 0, // 待收货
+        'refunded': results[3]['total'] ?? 0, // 退款售后
+      };
+    } catch (e) {
+      print('获取订单状态统计错误: $e');
+      return {
+        'pending': 0,
+        'paid': 0,
+        'shipped': 0,
+        'refunded': 0,
+      };
+    }
+  }
+
   // 创建测试订单数据
   static Future<Map<String, dynamic>> createTestOrders() async {
     try {

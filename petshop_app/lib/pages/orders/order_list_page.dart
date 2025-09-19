@@ -8,7 +8,9 @@ import '../payment/payment_page.dart';
 import '../../services/order_service.dart';
 
 class OrderListPage extends StatefulWidget {
-  const OrderListPage({super.key});
+  final int initialTabIndex;
+
+  const OrderListPage({super.key, this.initialTabIndex = 0});
 
   @override
   State<OrderListPage> createState() => _OrderListPageState();
@@ -34,7 +36,11 @@ class _OrderListPageState extends State<OrderListPage>
   @override
   void initState() {
     super.initState();
-    _tabController = TabController(length: _tabs.length, vsync: this);
+    _tabController = TabController(
+      length: _tabs.length,
+      vsync: this,
+      initialIndex: widget.initialTabIndex,
+    );
     _tabController.addListener(_onTabChanged);
     _loadOrders();
   }

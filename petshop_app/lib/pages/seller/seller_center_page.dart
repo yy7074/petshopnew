@@ -229,8 +229,7 @@ class _SellerCenterPageState extends State<SellerCenterPage> {
                     title: '订单管理',
                     subtitle: '处理买家订单和发货',
                     onTap: () {
-                      // TODO: 导航到订单管理页面
-                      _showComingSoon('订单管理');
+                      Navigator.pushNamed(context, '/seller-orders');
                     },
                   ),
                   _buildDivider(),
@@ -239,8 +238,7 @@ class _SellerCenterPageState extends State<SellerCenterPage> {
                     title: '店铺设置',
                     subtitle: '编辑店铺信息和设置',
                     onTap: () {
-                      // TODO: 导航到店铺设置页面
-                      _showComingSoon('店铺设置');
+                      Navigator.pushNamed(context, '/seller-shop-settings');
                     },
                   ),
                   _buildDivider(),
@@ -249,8 +247,7 @@ class _SellerCenterPageState extends State<SellerCenterPage> {
                     title: '数据分析',
                     subtitle: '查看店铺经营数据',
                     onTap: () {
-                      // TODO: 导航到数据分析页面
-                      _showComingSoon('数据分析');
+                      Navigator.pushNamed(context, '/seller-analytics');
                     },
                   ),
                 ],

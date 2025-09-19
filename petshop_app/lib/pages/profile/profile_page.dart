@@ -10,6 +10,7 @@ import '../shop/shop_application_status_page.dart';
 import '../../services/store_application_service.dart';
 import '../../services/storage_service.dart';
 import '../../services/user_role_service.dart';
+import '../../services/order_service.dart';
 import '../../models/user.dart';
 import '../auth/login_page.dart';
 import '../wallet/wallet_page.dart';
@@ -32,6 +33,14 @@ class _ProfilePageState extends State<ProfilePage>
   bool _isLoggedIn = false;
   final UserRoleService _userRoleService = UserRoleService();
 
+  // 订单数量统计
+  Map<String, int> _orderCounts = {
+    'pending': 0, // 待付款
+    'paid': 0, // 待发货
+    'shipped': 0, // 待收货
+    'refunded': 0, // 退款售后
+  };
+
   @override
   void initState() {
     super.initState();
@@ -49,6 +58,67 @@ class _ProfilePageState extends State<ProfilePage>
     setState(() {
       _currentUser = user;
       _isLoggedIn = token != null && token.isNotEmpty;
+    });
+
+    // 如果已登录，加载订单统计
+    if (_isLoggedIn) {
+      _loadOrderCounts();
+    }
+  }
+
+  // 加载订单数量统计
+  void _loadOrderCounts() async {
+    try {
+      final counts = await OrderService.getOrderStatusCounts();
+      if (mounted) {
+        setState(() {
+          _orderCounts = counts;
+        });
+      }
+    } catch (e) {
+      print('加载订单统计失败: $e');
+    }
+  }
+
+  // 导航到订单列表页面
+  void _navigateToOrderList(String status) {
+    if (!_isLoggedIn) {
+      // 未登录，跳转到登录页面
+      Navigator.push(
+        context,
+        MaterialPageRoute(builder: (context) => const LoginPage()),
+      );
+      return;
+    }
+
+    // 根据状态确定tab索引
+    int initialTabIndex = 0;
+    switch (status) {
+      case 'pending':
+        initialTabIndex = 1; // 待付款
+        break;
+      case 'paid':
+        initialTabIndex = 2; // 待发货
+        break;
+      case 'shipped':
+        initialTabIndex = 3; // 待收货
+        break;
+      case 'refunded':
+        initialTabIndex = 4; // 退款/售后
+        break;
+      default:
+        initialTabIndex = 0; // 全部
+        break;
+    }
+
+    Navigator.push(
+      context,
+      MaterialPageRoute(
+        builder: (context) => OrderListPage(initialTabIndex: initialTabIndex),
+      ),
+    ).then((_) {
+      // 从订单页面返回后刷新订单统计
+      _loadOrderCounts();
     });
   }
 
@@ -578,22 +648,26 @@ class _ProfilePageState extends State<ProfilePage>
               _buildOrderStatusItem(
                 icon: Icons.credit_card,
                 label: '待付款',
-                badgeCount: 2,
+                badgeCount: _orderCounts['pending'] ?? 0,
+                status: 'pending',
               ),
               _buildOrderStatusItem(
                 icon: Icons.card_giftcard,
                 label: '待发货',
-                badgeCount: 0,
+                badgeCount: _orderCounts['paid'] ?? 0,
+                status: 'paid',
               ),
               _buildOrderStatusItem(
                 icon: Icons.local_shipping,
                 label: '待收货',
-                badgeCount: 0,
+                badgeCount: _orderCounts['shipped'] ?? 0,
+                status: 'shipped',
               ),
               _buildOrderStatusItem(
                 icon: Icons.account_balance_wallet,
                 label: '退款售后',
-                badgeCount: 0,
+                badgeCount: _orderCounts['refunded'] ?? 0,
+                status: 'refunded',
               ),
             ],
           ),
@@ -606,9 +680,10 @@ class _ProfilePageState extends State<ProfilePage>
     required IconData icon,
     required String label,
     required int badgeCount,
+    required String status,
   }) {
     return GestureDetector(
-      onTap: () {},
+      onTap: () => _navigateToOrderList(status),
       child: Column(
         children: [
           Stack(
