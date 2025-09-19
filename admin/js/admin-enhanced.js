@@ -88,7 +88,7 @@ function createLoginModal() {
 }
 
 // 管理员登录
-async function adminLogin() {
+window.adminLogin = async function() {
     const username = document.getElementById('adminUsername').value;
     const password = document.getElementById('adminPassword').value;
 
@@ -761,17 +761,271 @@ function showSuccess(message) {
 }
 
 // 详细操作函数
-function viewUser(userId) {
+window.viewUser = function(userId) {
     // TODO: 实现用户详情查看
     console.log('查看用户:', userId);
 }
 
-function editUser(userId) {
-    // TODO: 实现用户编辑
-    console.log('编辑用户:', userId);
+window.editUser = async function(userId) {
+    try {
+        // 获取用户详细信息
+        const userResponse = await apiRequest(`/users/${userId}`);
+        
+        // 创建编辑用户的模态框
+        const modalHtml = `
+            <div class="modal fade" id="editUserModal" tabindex="-1">
+                <div class="modal-dialog modal-lg">
+                    <div class="modal-content">
+                        <div class="modal-header">
+                            <h5 class="modal-title">编辑用户 - ${userResponse.username}</h5>
+                            <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                        </div>
+                        <div class="modal-body">
+                            <form id="editUserForm">
+                                <div class="row">
+                                    <div class="col-md-6">
+                                        <div class="mb-3">
+                                            <label class="form-label">用户名</label>
+                                            <input type="text" class="form-control" id="username" value="${userResponse.username || ''}" required>
+                                        </div>
+                                    </div>
+                                    <div class="col-md-6">
+                                        <div class="mb-3">
+                                            <label class="form-label">手机号</label>
+                                            <input type="text" class="form-control" id="phone" value="${userResponse.phone || ''}" required>
+                                        </div>
+                                    </div>
+                                </div>
+                                <div class="row">
+                                    <div class="col-md-6">
+                                        <div class="mb-3">
+                                            <label class="form-label">邮箱</label>
+                                            <input type="email" class="form-control" id="email" value="${userResponse.email || ''}">
+                                        </div>
+                                    </div>
+                                    <div class="col-md-6">
+                                        <div class="mb-3">
+                                            <label class="form-label">昵称</label>
+                                            <input type="text" class="form-control" id="nickname" value="${userResponse.nickname || ''}">
+                                        </div>
+                                    </div>
+                                </div>
+                                <div class="row">
+                                    <div class="col-md-6">
+                                        <div class="mb-3">
+                                            <label class="form-label">真实姓名</label>
+                                            <input type="text" class="form-control" id="real_name" value="${userResponse.real_name || ''}">
+                                        </div>
+                                    </div>
+                                    <div class="col-md-6">
+                                        <div class="mb-3">
+                                            <label class="form-label">性别</label>
+                                            <select class="form-control" id="gender">
+                                                <option value="0" ${userResponse.gender === 0 ? 'selected' : ''}>未知</option>
+                                                <option value="1" ${userResponse.gender === 1 ? 'selected' : ''}>男</option>
+                                                <option value="2" ${userResponse.gender === 2 ? 'selected' : ''}>女</option>
+                                            </select>
+                                        </div>
+                                    </div>
+                                </div>
+                                <div class="row">
+                                    <div class="col-md-6">
+                                        <div class="mb-3">
+                                            <label class="form-label">地区</label>
+                                            <input type="text" class="form-control" id="location" value="${userResponse.location || ''}">
+                                        </div>
+                                    </div>
+                                    <div class="col-md-6">
+                                        <div class="mb-3">
+                                            <label class="form-label">账户余额 (¥)</label>
+                                            <div class="input-group">
+                                                <input type="number" class="form-control" id="balance" value="${userResponse.balance || 0}" step="0.01" min="0">
+                                                <button type="button" class="btn btn-outline-primary" onclick="showAddBalanceDialog(${userId})">
+                                                    <i class="bi bi-plus"></i> 充值
+                                                </button>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                                <div class="row">
+                                    <div class="col-md-6">
+                                        <div class="mb-3">
+                                            <label class="form-label">信用分</label>
+                                            <input type="number" class="form-control" id="credit_score" value="${userResponse.credit_score || 100}" min="0" max="1000">
+                                        </div>
+                                    </div>
+                                    <div class="col-md-6">
+                                        <div class="mb-3">
+                                            <label class="form-label">账户状态</label>
+                                            <select class="form-control" id="status">
+                                                <option value="1" ${userResponse.status === 1 ? 'selected' : ''}>正常</option>
+                                                <option value="2" ${userResponse.status === 2 ? 'selected' : ''}>冻结</option>
+                                                <option value="3" ${userResponse.status === 3 ? 'selected' : ''}>禁用</option>
+                                            </select>
+                                        </div>
+                                    </div>
+                                </div>
+                                <div class="row">
+                                    <div class="col-md-12">
+                                        <div class="mb-3">
+                                            <div class="form-check">
+                                                <input class="form-check-input" type="checkbox" id="is_seller" ${userResponse.is_seller ? 'checked' : ''}>
+                                                <label class="form-check-label" for="is_seller">卖家权限</label>
+                                            </div>
+                                            <div class="form-check">
+                                                <input class="form-check-input" type="checkbox" id="is_verified" ${userResponse.is_verified ? 'checked' : ''}>
+                                                <label class="form-check-label" for="is_verified">已认证</label>
+                                            </div>
+                                            <div class="form-check">
+                                                <input class="form-check-input" type="checkbox" id="is_admin" ${userResponse.is_admin ? 'checked' : ''}>
+                                                <label class="form-check-label" for="is_admin">管理员权限</label>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </form>
+                        </div>
+                        <div class="modal-footer">
+                            <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">取消</button>
+                            <button type="button" class="btn btn-primary" onclick="updateUser(${userId})">保存更改</button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        `;
+        
+        // 添加模态框到页面
+        document.body.insertAdjacentHTML('beforeend', modalHtml);
+        
+        // 显示模态框
+        const modal = new bootstrap.Modal(document.getElementById('editUserModal'));
+        modal.show();
+        
+        // 模态框隐藏时删除
+        document.getElementById('editUserModal').addEventListener('hidden.bs.modal', () => {
+            document.getElementById('editUserModal').remove();
+        });
+        
+    } catch (error) {
+        console.error('获取用户详情失败:', error);
+        showError('获取用户详情失败: ' + error.message);
+    }
 }
 
-function deleteUser(userId) {
+window.updateUser = async function(userId) {
+    try {
+        const formData = {
+            username: document.getElementById('username').value,
+            phone: document.getElementById('phone').value,
+            email: document.getElementById('email').value,
+            nickname: document.getElementById('nickname').value,
+            real_name: document.getElementById('real_name').value,
+            gender: parseInt(document.getElementById('gender').value),
+            location: document.getElementById('location').value,
+            balance: parseFloat(document.getElementById('balance').value),
+            credit_score: parseInt(document.getElementById('credit_score').value),
+            status: parseInt(document.getElementById('status').value),
+            is_seller: document.getElementById('is_seller').checked,
+            is_verified: document.getElementById('is_verified').checked,
+            is_admin: document.getElementById('is_admin').checked
+        };
+        
+        const response = await apiRequest(`/users/${userId}`, {
+            method: 'PUT',
+            body: JSON.stringify(formData)
+        });
+        
+        if (response.success) {
+            showSuccess('用户信息更新成功');
+            // 关闭模态框
+            const modal = bootstrap.Modal.getInstance(document.getElementById('editUserModal'));
+            modal.hide();
+            // 刷新用户列表
+            loadUsers();
+        } else {
+            showError(response.message || '更新失败');
+        }
+    } catch (error) {
+        console.error('更新用户失败:', error);
+        showError('更新用户失败: ' + error.message);
+    }
+}
+
+window.showAddBalanceDialog = function(userId) {
+    const balanceModalHtml = `
+        <div class="modal fade" id="addBalanceModal" tabindex="-1">
+            <div class="modal-dialog">
+                <div class="modal-content">
+                    <div class="modal-header">
+                        <h5 class="modal-title">为用户充值</h5>
+                        <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                    </div>
+                    <div class="modal-body">
+                        <div class="mb-3">
+                            <label class="form-label">充值金额 (¥)</label>
+                            <input type="number" class="form-control" id="addAmount" placeholder="请输入充值金额" step="0.01" min="0.01" required>
+                        </div>
+                        <div class="mb-3">
+                            <label class="form-label">充值说明</label>
+                            <textarea class="form-control" id="addReason" placeholder="充值原因或说明" rows="3"></textarea>
+                        </div>
+                    </div>
+                    <div class="modal-footer">
+                        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">取消</button>
+                        <button type="button" class="btn btn-primary" onclick="addUserBalance(${userId})">确认充值</button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    `;
+    
+    // 添加模态框到页面
+    document.body.insertAdjacentHTML('beforeend', balanceModalHtml);
+    
+    // 显示模态框
+    const modal = new bootstrap.Modal(document.getElementById('addBalanceModal'));
+    modal.show();
+    
+    // 模态框隐藏时删除
+    document.getElementById('addBalanceModal').addEventListener('hidden.bs.modal', () => {
+        document.getElementById('addBalanceModal').remove();
+    });
+}
+
+window.addUserBalance = async function(userId) {
+    try {
+        const amount = parseFloat(document.getElementById('addAmount').value);
+        const reason = document.getElementById('addReason').value;
+        
+        if (!amount || amount <= 0) {
+            showError('请输入有效的充值金额');
+            return;
+        }
+        
+        const response = await apiRequest(`/users/${userId}/add-balance`, {
+            method: 'POST',
+            body: JSON.stringify({ amount: amount, reason: reason })
+        });
+        
+        if (response.success) {
+            showSuccess(`成功充值 ¥${amount}，当前余额: ¥${response.new_balance}`);
+            // 关闭充值模态框
+            const balanceModal = bootstrap.Modal.getInstance(document.getElementById('addBalanceModal'));
+            balanceModal.hide();
+            // 更新编辑框中的余额显示
+            if (document.getElementById('balance')) {
+                document.getElementById('balance').value = response.new_balance;
+            }
+        } else {
+            showError(response.message || '充值失败');
+        }
+    } catch (error) {
+        console.error('充值失败:', error);
+        showError('充值失败: ' + error.message);
+    }
+}
+
+window.deleteUser = function(userId) {
     if (confirm('确定要删除这个用户吗？')) {
         // TODO: 实现用户删除
         console.log('删除用户:', userId);
@@ -833,7 +1087,7 @@ async function loadEvents() {
 }
 
 // 管理专场商品
-async function manageEventProducts(eventId) {
+window.manageEventProducts = async function(eventId) {
     try {
         // 创建模态框
         const modal = document.createElement('div');
@@ -905,26 +1159,37 @@ async function loadEventProducts(eventId) {
         const container = document.getElementById('eventProductsList');
         if (!container) return;
         
-        if (response.products && response.products.length > 0) {
-            const html = response.products.map(product => `
+        if (response.items && response.items.length > 0) {
+            const html = response.items.map(product => `
                 <div class="card mb-2">
                     <div class="card-body p-2">
-                        <h6 class="card-title">${product.title}</h6>
-                        <p class="card-text small">
-                            起拍价: ¥${product.starting_price}<br>
-                            当前价: ¥${product.current_price}<br>
-                            卖家: ${product.seller_name}
-                        </p>
-                        <button class="btn btn-sm btn-danger" 
-                                onclick="removeProductFromEvent(${eventId}, ${product.id})">
-                            移除
-                        </button>
+                        <div class="d-flex">
+                            ${product.images && product.images.length > 0 ? 
+                                `<img src="${product.images[0]}" alt="${product.title}" 
+                                     style="width: 50px; height: 50px; object-fit: cover; margin-right: 10px; border-radius: 4px;">` : 
+                                `<div style="width: 50px; height: 50px; background: #f8f9fa; margin-right: 10px; border-radius: 4px; display: flex; align-items: center; justify-content: center;">
+                                    <i class="bi bi-image text-muted"></i>
+                                </div>`
+                            }
+                            <div class="flex-grow-1">
+                                <h6 class="card-title mb-1">${product.title}</h6>
+                                <p class="card-text small mb-1 text-muted">
+                                    起拍价: ¥${product.starting_price} | 当前价: ¥${product.current_price}<br>
+                                    状态: ${getProductStatusText(product.status)} | 
+                                    出价数: ${product.bid_count || 0}
+                                </p>
+                                <button class="btn btn-sm btn-danger" 
+                                        onclick="removeProductFromEvent(${eventId}, ${product.id})">
+                                    <i class="bi bi-dash"></i> 移除
+                                </button>
+                            </div>
+                        </div>
                     </div>
                 </div>
             `).join('');
             container.innerHTML = html;
         } else {
-            container.innerHTML = '<p class="text-muted">暂无商品</p>';
+            container.innerHTML = '<p class="text-muted text-center">暂无商品</p>';
         }
         
     } catch (error) {
@@ -946,22 +1211,33 @@ async function loadAvailableProducts(eventId, keyword = '') {
             const html = response.products.map(product => `
                 <div class="card mb-2">
                     <div class="card-body p-2">
-                        <h6 class="card-title">${product.title}</h6>
-                        <p class="card-text small">
-                            起拍价: ¥${product.starting_price}<br>
-                            当前价: ¥${product.current_price}<br>
-                            卖家: ${product.seller_name}
-                        </p>
-                        <button class="btn btn-sm btn-success" 
-                                onclick="addProductToEvent(${eventId}, ${product.id})">
-                            添加到专场
-                        </button>
+                        <div class="d-flex">
+                            ${product.images && product.images.length > 0 ? 
+                                `<img src="${product.images[0]}" alt="${product.title}" 
+                                     style="width: 50px; height: 50px; object-fit: cover; margin-right: 10px; border-radius: 4px;">` : 
+                                `<div style="width: 50px; height: 50px; background: #f8f9fa; margin-right: 10px; border-radius: 4px; display: flex; align-items: center; justify-content: center;">
+                                    <i class="bi bi-image text-muted"></i>
+                                </div>`
+                            }
+                            <div class="flex-grow-1">
+                                <h6 class="card-title mb-1">${product.title}</h6>
+                                <p class="card-text small mb-1 text-muted">
+                                    起拍价: ¥${product.starting_price} | 当前价: ¥${product.current_price}<br>
+                                    状态: ${getProductStatusText(product.status)} | 
+                                    出价数: ${product.bid_count || 0}
+                                </p>
+                                <button class="btn btn-sm btn-success" 
+                                        onclick="addProductToEvent(${eventId}, ${product.id})">
+                                    <i class="bi bi-plus"></i> 添加到专场
+                                </button>
+                            </div>
+                        </div>
                     </div>
                 </div>
             `).join('');
             container.innerHTML = html;
         } else {
-            container.innerHTML = '<p class="text-muted">暂无可添加商品</p>';
+            container.innerHTML = '<p class="text-muted text-center">暂无可添加商品</p>';
         }
         
     } catch (error) {
@@ -971,7 +1247,7 @@ async function loadAvailableProducts(eventId, keyword = '') {
 }
 
 // 添加商品到专场
-async function addProductToEvent(eventId, productId) {
+window.addProductToEvent = async function(eventId, productId) {
     try {
         const response = await apiRequest(`/events/${eventId}/products`, {
             method: 'POST',
@@ -995,11 +1271,11 @@ async function addProductToEvent(eventId, productId) {
 }
 
 // 从专场移除商品
-async function removeProductFromEvent(eventId, productId) {
+window.removeProductFromEvent = async function(eventId, productId) {
     if (!confirm('确定要从专场中移除这个商品吗？')) return;
     
     try {
-        const response = await apiRequest(`/events/${eventId}/products/${productId}`, {
+        const response = await apiRequest(`/admin/events/${eventId}/products/${productId}`, {
             method: 'DELETE'
         });
         
@@ -1459,6 +1735,247 @@ function addCategory() {
 // 新增专场活动
 function addEvent() {
     showEventModal();
+}
+
+// 显示专场活动模态框
+function showEventModal(eventId = null) {
+    const isEdit = eventId !== null;
+    const modalHTML = `
+        <div class="modal fade" id="eventModal" tabindex="-1">
+            <div class="modal-dialog modal-lg">
+                <div class="modal-content">
+                    <div class="modal-header">
+                        <h5 class="modal-title">${isEdit ? '编辑专场活动' : '新建专场活动'}</h5>
+                        <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                    </div>
+                    <div class="modal-body">
+                        <form id="eventForm">
+                            <div class="row">
+                                <div class="col-md-6">
+                                    <div class="mb-3">
+                                        <label for="eventTitle" class="form-label">活动名称 *</label>
+                                        <input type="text" class="form-control" id="eventTitle" required>
+                                    </div>
+                                </div>
+                                <div class="col-md-6">
+                                    <div class="mb-3">
+                                        <label for="eventStatus" class="form-label">状态</label>
+                                        <select class="form-select" id="eventStatus">
+                                            <option value="true">启用</option>
+                                            <option value="false">禁用</option>
+                                        </select>
+                                    </div>
+                                </div>
+                            </div>
+                            
+                            <div class="mb-3">
+                                <label for="eventDescription" class="form-label">活动描述</label>
+                                <textarea class="form-control" id="eventDescription" rows="3"></textarea>
+                            </div>
+                            
+                            <div class="row">
+                                <div class="col-md-6">
+                                    <div class="mb-3">
+                                        <label for="eventStartTime" class="form-label">开始时间 *</label>
+                                        <input type="datetime-local" class="form-control" id="eventStartTime" required>
+                                    </div>
+                                </div>
+                                <div class="col-md-6">
+                                    <div class="mb-3">
+                                        <label for="eventEndTime" class="form-label">结束时间 *</label>
+                                        <input type="datetime-local" class="form-control" id="eventEndTime" required>
+                                    </div>
+                                </div>
+                            </div>
+                            
+                            <div class="mb-3">
+                                <label for="eventBannerImage" class="form-label">活动横幅图片URL</label>
+                                <input type="url" class="form-control" id="eventBannerImage" 
+                                       placeholder="https://example.com/banner.jpg">
+                                <div class="form-text">请输入图片的完整URL地址</div>
+                            </div>
+                            
+                            <div class="mb-3">
+                                <label for="eventSortOrder" class="form-label">排序权重</label>
+                                <input type="number" class="form-control" id="eventSortOrder" value="0" min="0">
+                                <div class="form-text">数值越大排序越靠前</div>
+                            </div>
+                        </form>
+                    </div>
+                    <div class="modal-footer">
+                        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">取消</button>
+                        <button type="button" class="btn btn-primary" onclick="saveEvent(${eventId})">
+                            ${isEdit ? '更新' : '创建'}
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    `;
+
+    // 移除旧的模态框
+    const existingModal = document.getElementById('eventModal');
+    if (existingModal) {
+        existingModal.remove();
+    }
+
+    // 添加新模态框到页面
+    document.body.insertAdjacentHTML('beforeend', modalHTML);
+    
+    // 如果是编辑模式，加载现有数据
+    if (isEdit) {
+        loadEventData(eventId);
+    }
+    
+    // 显示模态框
+    const modal = new bootstrap.Modal(document.getElementById('eventModal'));
+    modal.show();
+    
+    // 清理DOM
+    document.getElementById('eventModal').addEventListener('hidden.bs.modal', function() {
+        this.remove();
+    });
+}
+
+// 保存专场活动
+async function saveEvent(eventId = null) {
+    const title = document.getElementById('eventTitle').value.trim();
+    const description = document.getElementById('eventDescription').value.trim();
+    const startTime = document.getElementById('eventStartTime').value;
+    const endTime = document.getElementById('eventEndTime').value;
+    const bannerImage = document.getElementById('eventBannerImage').value.trim();
+    const isActive = document.getElementById('eventStatus').value === 'true';
+    const sortOrder = parseInt(document.getElementById('eventSortOrder').value) || 0;
+
+    // 验证必填字段
+    if (!title) {
+        showError('请输入活动名称');
+        return;
+    }
+    
+    if (!startTime || !endTime) {
+        showError('请选择开始时间和结束时间');
+        return;
+    }
+    
+    if (new Date(startTime) >= new Date(endTime)) {
+        showError('结束时间必须晚于开始时间');
+        return;
+    }
+
+    const eventData = {
+        title,
+        description,
+        start_time: startTime,
+        end_time: endTime,
+        banner_image: bannerImage || null,
+        is_active: isActive,
+        sort_order: sortOrder
+    };
+
+    try {
+        const url = eventId ? `/admin/events/${eventId}` : '/admin/events';
+        const method = eventId ? 'PUT' : 'POST';
+        
+        const response = await apiRequest(url, {
+            method,
+            body: JSON.stringify(eventData)
+        });
+
+        if (response.success) {
+            showSuccess(response.message || (eventId ? '专场活动更新成功' : '专场活动创建成功'));
+            
+            // 关闭模态框
+            const modal = bootstrap.Modal.getInstance(document.getElementById('eventModal'));
+            if (modal) {
+                modal.hide();
+            }
+            
+            // 重新加载专场活动列表
+            loadEvents();
+        } else {
+            showError(response.message || '操作失败');
+        }
+    } catch (error) {
+        console.error('保存专场活动失败:', error);
+        showError('保存失败: ' + error.message);
+    }
+}
+
+// 加载专场活动数据（用于编辑）
+async function loadEventData(eventId) {
+    try {
+        const response = await apiRequest(`/admin/events/${eventId}`);
+        
+        if (response) {
+            document.getElementById('eventTitle').value = response.title || '';
+            document.getElementById('eventDescription').value = response.description || '';
+            document.getElementById('eventStatus').value = response.is_active ? 'true' : 'false';
+            document.getElementById('eventBannerImage').value = response.banner_image || '';
+            document.getElementById('eventSortOrder').value = response.sort_order || 0;
+            
+            // 处理时间格式
+            if (response.start_time) {
+                const startTime = new Date(response.start_time);
+                document.getElementById('eventStartTime').value = startTime.toISOString().slice(0, 16);
+            }
+            
+            if (response.end_time) {
+                const endTime = new Date(response.end_time);
+                document.getElementById('eventEndTime').value = endTime.toISOString().slice(0, 16);
+            }
+        }
+    } catch (error) {
+        console.error('加载专场活动数据失败:', error);
+        showError('加载数据失败: ' + error.message);
+    }
+}
+
+// 编辑专场活动
+function editEvent(eventId) {
+    showEventModal(eventId);
+}
+
+// 查看专场活动
+function viewEvent(eventId) {
+    // 这里可以实现查看专场活动详情的功能
+    console.log('查看专场活动:', eventId);
+    // 可以跳转到专场活动详情页面或显示详情模态框
+}
+
+// 删除专场活动
+async function deleteEvent(eventId) {
+    if (!confirm('确定要删除这个专场活动吗？删除后将无法恢复！')) {
+        return;
+    }
+    
+    try {
+        const response = await apiRequest(`/admin/events/${eventId}`, {
+            method: 'DELETE'
+        });
+        
+        if (response.success) {
+            showSuccess('专场活动删除成功');
+            loadEvents();
+        } else {
+            showError(response.message || '删除失败');
+        }
+    } catch (error) {
+        console.error('删除专场活动失败:', error);
+        showError('删除失败: ' + error.message);
+    }
+}
+
+// 获取商品状态文本
+function getProductStatusText(status) {
+    const statusMap = {
+        1: '待审核',
+        2: '拍卖中',
+        3: '已成交',
+        4: '流拍',
+        5: '已下架'
+    };
+    return statusMap[status] || '未知';
 }
 
 // 发送系统消息

@@ -136,6 +136,29 @@ class BidService {
     }
   }
 
+  // 获取已中标的竞拍
+  Future<ApiResult<List<Bid>>> getWonBids({
+    int page = 1,
+    int pageSize = 20,
+  }) async {
+    try {
+      final response = await _apiService.get('/bids/won', queryParameters: {
+        'page': page,
+        'page_size': pageSize,
+      });
+
+      if (response.statusCode == 200) {
+        final List<dynamic> bidsJson = response.data['items'] ?? [];
+        final bids = bidsJson.map((json) => Bid.fromJson(json)).toList();
+        return ApiResult.success(bids);
+      } else {
+        return ApiResult.error(response.data['detail'] ?? '获取已中标订单失败');
+      }
+    } on DioException catch (e) {
+      return ApiResult.error(_handleError(e));
+    }
+  }
+
   // 获取我的自动出价设置
   Future<ApiResult<List<AutoBid>>> getMyAutoBids({
     int page = 1,

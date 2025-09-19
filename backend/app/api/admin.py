@@ -150,6 +150,123 @@ async def get_users(
         size=size
     )
 
+@router.get("/users/{user_id}")
+async def get_user_detail(
+    user_id: int,
+    admin: User = Depends(get_admin_user),
+    db: Session = Depends(get_db)
+):
+    """获取用户详细信息"""
+    try:
+        user = db.query(User).filter(User.id == user_id).first()
+        if not user:
+            raise HTTPException(status_code=404, detail="用户不存在")
+        
+        return {
+            "id": user.id,
+            "username": user.username,
+            "phone": user.phone,
+            "email": user.email,
+            "nickname": user.nickname,
+            "real_name": user.real_name,
+            "gender": user.gender,
+            "birth_date": user.birth_date,
+            "location": user.location,
+            "is_seller": user.is_seller,
+            "is_verified": user.is_verified,
+            "is_admin": user.is_admin,
+            "balance": float(user.balance),
+            "credit_score": user.credit_score,
+            "status": user.status,
+            "last_login_at": user.last_login_at,
+            "created_at": user.created_at,
+            "avatar_url": user.avatar_url
+        }
+    except HTTPException:
+        raise
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=f"获取用户详情失败: {str(e)}")
+
+@router.put("/users/{user_id}")
+async def update_user(
+    user_id: int,
+    user_data: dict,
+    admin: User = Depends(get_admin_user),
+    db: Session = Depends(get_db)
+):
+    """更新用户信息"""
+    try:
+        user = db.query(User).filter(User.id == user_id).first()
+        if not user:
+            raise HTTPException(status_code=404, detail="用户不存在")
+        
+        # 更新允许的字段
+        updateable_fields = [
+            'username', 'phone', 'email', 'nickname', 'real_name', 
+            'gender', 'location', 'is_seller', 'is_verified', 'is_admin',
+            'balance', 'credit_score', 'status', 'avatar_url'
+        ]
+        
+        for field in updateable_fields:
+            if field in user_data and user_data[field] is not None:
+                setattr(user, field, user_data[field])
+        
+        db.commit()
+        db.refresh(user)
+        
+        return {
+            "success": True,
+            "message": "用户信息更新成功",
+            "user": {
+                "id": user.id,
+                "username": user.username,
+                "phone": user.phone,
+                "email": user.email,
+                "nickname": user.nickname,
+                "real_name": user.real_name,
+                "balance": float(user.balance),
+                "credit_score": user.credit_score,
+                "status": user.status
+            }
+        }
+    except HTTPException:
+        raise
+    except Exception as e:
+        db.rollback()
+        raise HTTPException(status_code=500, detail=f"更新用户信息失败: {str(e)}")
+
+@router.post("/users/{user_id}/add-balance")
+async def add_user_balance(
+    user_id: int,
+    data: dict,
+    admin: User = Depends(get_admin_user),
+    db: Session = Depends(get_db)
+):
+    """为用户增加余额"""
+    try:
+        user = db.query(User).filter(User.id == user_id).first()
+        if not user:
+            raise HTTPException(status_code=404, detail="用户不存在")
+        
+        amount = float(data.get('amount', 0))
+        if amount <= 0:
+            raise HTTPException(status_code=400, detail="金额必须大于0")
+        
+        user.balance = float(user.balance) + amount
+        db.commit()
+        db.refresh(user)
+        
+        return {
+            "success": True,
+            "message": f"成功为用户增加余额 ¥{amount}",
+            "new_balance": float(user.balance)
+        }
+    except HTTPException:
+        raise
+    except Exception as e:
+        db.rollback()
+        raise HTTPException(status_code=500, detail=f"增加余额失败: {str(e)}")
+
 # 商品管理
 @router.get("/products", response_model=ProductListResponse)
 async def get_products(
@@ -555,6 +672,37 @@ async def remove_product_from_event(
     except Exception as e:
         db.rollback()
         raise HTTPException(status_code=500, detail=f"移除商品失败: {str(e)}")
+
+@router.delete("/events/{event_id}")
+async def delete_event(
+    event_id: int,
+    admin: User = Depends(get_admin_user),
+    db: Session = Depends(get_db)
+):
+    """删除专场活动"""
+    try:
+        # 查找专场活动
+        event = db.query(SpecialEvent).filter(SpecialEvent.id == event_id).first()
+        if not event:
+            raise HTTPException(status_code=404, detail="专场活动不存在")
+        
+        # 先删除关联的商品
+        db.query(EventProduct).filter(EventProduct.event_id == event_id).delete()
+        
+        # 删除专场活动
+        db.delete(event)
+        db.commit()
+        
+        return {
+            "success": True,
+            "message": "专场活动删除成功"
+        }
+        
+    except HTTPException:
+        raise
+    except Exception as e:
+        db.rollback()
+        raise HTTPException(status_code=500, detail=f"删除专场活动失败: {str(e)}")
 
 @router.get("/events/{event_id}/products")
 async def get_event_products_admin(

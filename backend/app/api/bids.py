@@ -70,6 +70,16 @@ async def get_winning_bids(
     """获取我正在领先的竞拍"""
     return await bid_service.get_winning_bids(db, current_user.id, page, page_size)
 
+@router.get("/won", response_model=BidListResponse)
+async def get_won_bids(
+    page: int = Query(1, ge=1),
+    page_size: int = Query(20, ge=1, le=100),
+    db: Session = Depends(get_db),
+    current_user: User = Depends(get_current_user)
+):
+    """获取我已中标的竞拍"""
+    return await bid_service.get_won_bids(db, current_user.id, page, page_size)
+
 @router.get("/history", response_model=BidListResponse)
 async def get_bid_history(
     page: int = Query(1, ge=1),

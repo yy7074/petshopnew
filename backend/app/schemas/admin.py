@@ -175,6 +175,22 @@ class EventInfo(BaseModel):
     class Config:
         from_attributes = True
 
+# 专场活动管理
+class EventInfo(BaseModel):
+    id: int
+    title: str
+    description: Optional[str] = None
+    banner_image: Optional[str] = None
+    start_time: Optional[datetime] = None
+    end_time: Optional[datetime] = None
+    is_active: bool = True
+    sort_order: int = 0
+    created_at: Optional[datetime] = None
+    product_count: Optional[int] = 0
+    
+    class Config:
+        from_attributes = True
+
 class EventListResponse(BaseModel):
     events: List[EventInfo]
     total: int

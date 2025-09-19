@@ -211,6 +211,33 @@ class BidService:
             total_pages=(total + page_size - 1) // page_size
         )
     
+    async def get_won_bids(
+        self, 
+        db: Session, 
+        user_id: int, 
+        page: int = 1, 
+        page_size: int = 20
+    ) -> BidListResponse:
+        """获取用户已中标的竞拍"""
+        query = db.query(Bid).filter(
+            and_(
+                Bid.bidder_id == user_id,
+                Bid.status == "won"
+            )
+        ).order_by(desc(Bid.created_at))
+        
+        total = query.count()
+        offset = (page - 1) * page_size
+        bids = query.offset(offset).limit(page_size).all()
+        
+        return BidListResponse(
+            items=[self._to_bid_response(bid, db) for bid in bids],
+            total=total,
+            page=page,
+            page_size=page_size,
+            total_pages=(total + page_size - 1) // page_size
+        )
+    
     async def get_bid_history(
         self, 
         db: Session, 
