@@ -231,3 +231,60 @@ async def batch_check_expired_auctions(
         
     except Exception as e:
         raise HTTPException(status_code=500, detail="批量处理拍卖失败")
+
+@router.get("/rules")
+async def get_auction_rules():
+    """获取拍卖标准化规则"""
+    try:
+        return await auction_service.get_auction_rules()
+    except Exception as e:
+        raise HTTPException(status_code=500, detail="获取拍卖规则失败")
+
+@router.post("/validate-setup")
+async def validate_auction_setup(
+    auction_data: Dict[str, Any],
+    db: Session = Depends(get_db),
+    current_user: User = Depends(get_current_user)
+):
+    """验证拍卖设置"""
+    try:
+        # 处理日期时间字符串
+        if 'auction_start_time' in auction_data and isinstance(auction_data['auction_start_time'], str):
+            from datetime import datetime
+            auction_data['auction_start_time'] = datetime.fromisoformat(auction_data['auction_start_time'])
+        if 'auction_end_time' in auction_data and isinstance(auction_data['auction_end_time'], str):
+            from datetime import datetime
+            auction_data['auction_end_time'] = datetime.fromisoformat(auction_data['auction_end_time'])
+        
+        result = await auction_service.validate_auction_setup(db, auction_data)
+        return result
+    except ValueError as e:
+        raise HTTPException(status_code=400, detail=str(e))
+    except Exception as e:
+        raise HTTPException(status_code=500, detail="验证拍卖设置失败")
+
+@router.post("/{product_id}/bid-enhanced")
+async def place_enhanced_bid(
+    product_id: int,
+    bid_data: Dict[str, Any],
+    db: Session = Depends(get_db),
+    current_user: User = Depends(get_current_user)
+):
+    """增强出价接口（支持自动延时等功能）"""
+    try:
+        bid_amount = Decimal(str(bid_data.get('bid_amount', 0)))
+        
+        result = await auction_service.process_bid_with_auto_extend(
+            db, product_id, bid_amount, current_user.id
+        )
+        
+        return {
+            "success": True,
+            "message": "出价成功",
+            "data": result
+        }
+        
+    except ValueError as e:
+        raise HTTPException(status_code=400, detail=str(e))
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=f"出价失败: {str(e)}")

@@ -17,6 +17,17 @@ logger = logging.getLogger(__name__)
 class AuctionService:
     """拍卖管理服务"""
     
+    # 拍卖标准化规则
+    AUCTION_RULES = {
+        "min_bid_increment": Decimal("1.00"),  # 最小加价幅度
+        "auto_extend_time": 300,  # 自动延时5分钟（秒）
+        "extend_threshold": 300,  # 结束前5分钟内有出价则延时
+        "max_extensions": 3,  # 最多延时3次
+        "min_auction_duration": 3600,  # 最短拍卖时长1小时
+        "max_auction_duration": 604800,  # 最长拍卖时长7天
+        "deposit_rate": Decimal("0.1"),  # 保证金比例10%
+    }
+    
     def __init__(self):
         self.notification_service = NotificationService()
     
@@ -293,4 +304,200 @@ class AuctionService:
             "hours": hours,
             "minutes": minutes,
             "seconds": seconds
+        }
+    
+    async def validate_auction_setup(
+        self, 
+        db: Session, 
+        auction_data: Dict[str, Any]
+    ) -> Dict[str, Any]:
+        """验证拍卖设置是否符合标准"""
+        errors = []
+        
+        # 验证拍卖时长
+        start_time = auction_data.get('auction_start_time')
+        end_time = auction_data.get('auction_end_time')
+        
+        if start_time and end_time:
+            duration = (end_time - start_time).total_seconds()
+            if duration < self.AUCTION_RULES["min_auction_duration"]:
+                errors.append(f"拍卖时长不能少于{self.AUCTION_RULES['min_auction_duration']//3600}小时")
+            if duration > self.AUCTION_RULES["max_auction_duration"]:
+                errors.append(f"拍卖时长不能超过{self.AUCTION_RULES['max_auction_duration']//86400}天")
+        
+        # 验证起拍价
+        starting_price = auction_data.get('starting_price', 0)
+        if starting_price <= 0:
+            errors.append("起拍价必须大于0")
+        
+        # 验证最小加价幅度
+        min_increment = auction_data.get('min_bid_increment', self.AUCTION_RULES["min_bid_increment"])
+        if min_increment < self.AUCTION_RULES["min_bid_increment"]:
+            errors.append(f"最小加价幅度不能小于{self.AUCTION_RULES['min_bid_increment']}元")
+        
+        return {
+            "is_valid": len(errors) == 0,
+            "errors": errors,
+            "normalized_data": self._normalize_auction_data(auction_data)
+        }
+    
+    def _normalize_auction_data(self, auction_data: Dict[str, Any]) -> Dict[str, Any]:
+        """标准化拍卖数据"""
+        normalized = auction_data.copy()
+        
+        # 设置默认最小加价幅度
+        if 'min_bid_increment' not in normalized:
+            normalized['min_bid_increment'] = self.AUCTION_RULES["min_bid_increment"]
+        
+        # 确保最小加价幅度不低于标准
+        min_increment = max(
+            normalized.get('min_bid_increment', self.AUCTION_RULES["min_bid_increment"]),
+            self.AUCTION_RULES["min_bid_increment"]
+        )
+        normalized['min_bid_increment'] = min_increment
+        
+        # 设置自动延时参数
+        normalized['auto_extend_enabled'] = True
+        normalized['extend_threshold'] = self.AUCTION_RULES["extend_threshold"]
+        normalized['auto_extend_time'] = self.AUCTION_RULES["auto_extend_time"]
+        normalized['max_extensions'] = self.AUCTION_RULES["max_extensions"]
+        
+        return normalized
+    
+    async def process_bid_with_auto_extend(
+        self, 
+        db: Session, 
+        product_id: int, 
+        bid_amount: Decimal,
+        bidder_id: int
+    ) -> Dict[str, Any]:
+        """处理出价并检查是否需要自动延时"""
+        
+        product = db.query(Product).filter(Product.id == product_id).first()
+        if not product:
+            raise ValueError("商品不存在")
+        
+        if product.status != 2:  # 不是拍卖中状态
+            raise ValueError("拍卖已结束或未开始")
+        
+        # 检查出价是否有效
+        current_highest = db.query(Bid).filter(
+            Bid.product_id == product_id
+        ).order_by(desc(Bid.bid_amount)).first()
+        
+        min_required = product.current_price + self.AUCTION_RULES["min_bid_increment"]
+        if current_highest:
+            min_required = current_highest.bid_amount + self.AUCTION_RULES["min_bid_increment"]
+        
+        if bid_amount < min_required:
+            raise ValueError(f"出价不能低于{min_required}元")
+        
+        # 创建出价记录
+        new_bid = Bid(
+            product_id=product_id,
+            bidder_id=bidder_id,
+            bid_amount=bid_amount,
+            status=1
+        )
+        db.add(new_bid)
+        
+        # 更新之前的出价状态
+        if current_highest:
+            current_highest.status = 2  # 被超越
+        
+        # 更新商品当前价格
+        product.current_price = bid_amount
+        product.bid_count = (product.bid_count or 0) + 1
+        
+        # 检查是否需要自动延时
+        auto_extended = False
+        extension_minutes = 0
+        
+        if product.auction_end_time:
+            time_remaining = (product.auction_end_time - datetime.now()).total_seconds()
+            
+            # 如果在结束前阈值时间内有出价，且未超过最大延时次数
+            if (time_remaining <= self.AUCTION_RULES["extend_threshold"] and 
+                time_remaining > 0 and
+                getattr(product, 'extension_count', 0) < self.AUCTION_RULES["max_extensions"]):
+                
+                # 延长拍卖时间
+                product.auction_end_time = product.auction_end_time + timedelta(
+                    seconds=self.AUCTION_RULES["auto_extend_time"]
+                )
+                
+                # 更新延时计数
+                extension_count = getattr(product, 'extension_count', 0) + 1
+                # 这里可能需要在Product模型中添加extension_count字段
+                
+                auto_extended = True
+                extension_minutes = self.AUCTION_RULES["auto_extend_time"] // 60
+                
+                logger.info(f"拍卖{product_id}自动延时{extension_minutes}分钟，第{extension_count}次延时")
+        
+        db.commit()
+        
+        # 发送通知
+        await self._send_bid_notifications(db, product, new_bid, auto_extended)
+        
+        return {
+            "success": True,
+            "bid_id": new_bid.id,
+            "current_price": str(bid_amount),
+            "auto_extended": auto_extended,
+            "extension_minutes": extension_minutes,
+            "new_end_time": product.auction_end_time.isoformat() if product.auction_end_time else None
+        }
+    
+    async def _send_bid_notifications(
+        self, 
+        db: Session, 
+        product: Product, 
+        new_bid: Bid, 
+        auto_extended: bool
+    ):
+        """发送出价相关通知"""
+        try:
+            # 通知卖家有新出价
+            await self.notification_service.send_new_bid_notification(
+                db=db,
+                user_id=product.seller_id,
+                product_title=product.title,
+                bid_amount=str(new_bid.bid_amount),
+                auto_extended=auto_extended
+            )
+            
+            # 通知被超越的竞拍者
+            previous_bidders = db.query(User).join(Bid).filter(
+                and_(
+                    Bid.product_id == product.id,
+                    Bid.bidder_id != new_bid.bidder_id,
+                    Bid.status == 2  # 被超越
+                )
+            ).distinct().all()
+            
+            for bidder in previous_bidders:
+                await self.notification_service.send_bid_outbid_notification(
+                    db=db,
+                    user_id=bidder.id,
+                    product_title=product.title,
+                    new_bid_amount=str(new_bid.bid_amount)
+                )
+                
+        except Exception as e:
+            logger.error(f"发送出价通知失败: {e}")
+    
+    async def get_auction_rules(self) -> Dict[str, Any]:
+        """获取拍卖标准化规则"""
+        return {
+            "rules": self.AUCTION_RULES,
+            "description": {
+                "min_bid_increment": "每次加价不得少于此金额",
+                "auto_extend_time": "自动延时的时长（秒）",
+                "extend_threshold": "结束前多少秒内有出价将触发延时",
+                "max_extensions": "单次拍卖最多可延时次数",
+                "min_auction_duration": "拍卖最短持续时间（秒）",
+                "max_auction_duration": "拍卖最长持续时间（秒）",
+                "deposit_rate": "参与拍卖需要缴纳的保证金比例"
+            }
         }

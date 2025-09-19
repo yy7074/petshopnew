@@ -39,6 +39,8 @@ class Product(Base):
     favorite_count = Column(Integer, default=0)
     status = Column(Integer, default=1, comment="1:待审核,2:拍卖中,3:已结束,4:已下架")
     is_featured = Column(Boolean, default=False)
+    extension_count = Column(Integer, default=0, comment="拍卖延时次数")
+    min_bid_increment = Column(DECIMAL(10, 2), default=1.00, comment="最小加价幅度")
     created_at = Column(DateTime, server_default=func.now())
     updated_at = Column(DateTime, server_default=func.now(), onupdate=func.now())
 

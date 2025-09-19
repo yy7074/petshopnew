@@ -239,3 +239,231 @@ class PaymentService:
             created_at=payment.created_at,
             updated_at=payment.updated_at
         )
+    
+    async def get_payment_statistics(self, db: Session) -> Dict[str, Any]:
+        """获取支付统计数据"""
+        from sqlalchemy import func
+        from datetime import timedelta
+        
+        # 总体统计
+        total_stats = db.query(
+            func.count(Payment.id).label('total_payments'),
+            func.sum(Payment.amount).label('total_amount'),
+            func.count(func.distinct(Payment.user_id)).label('unique_users')
+        ).filter(Payment.payment_type == "payment").first()
+        
+        # 按状态统计
+        status_stats = db.query(
+            Payment.status,
+            func.count(Payment.id).label('count'),
+            func.sum(Payment.amount).label('amount')
+        ).filter(Payment.payment_type == "payment").group_by(Payment.status).all()
+        
+        # 按支付方式统计
+        method_stats = db.query(
+            Payment.payment_method,
+            func.count(Payment.id).label('count'),
+            func.sum(Payment.amount).label('amount')
+        ).filter(Payment.payment_type == "payment").group_by(Payment.payment_method).all()
+        
+        # 最近30天统计
+        thirty_days_ago = datetime.now() - timedelta(days=30)
+        recent_stats = db.query(
+            func.count(Payment.id).label('recent_count'),
+            func.sum(Payment.amount).label('recent_amount')
+        ).filter(
+            Payment.payment_type == "payment",
+            Payment.created_at >= thirty_days_ago
+        ).first()
+        
+        # 退款统计
+        refund_stats = db.query(
+            func.count(Payment.id).label('refund_count'),
+            func.sum(func.abs(Payment.amount)).label('refund_amount')
+        ).filter(Payment.payment_type == "refund").first()
+        
+        return {
+            "total": {
+                "payments": total_stats.total_payments or 0,
+                "amount": float(total_stats.total_amount or 0),
+                "unique_users": total_stats.unique_users or 0
+            },
+            "by_status": [
+                {
+                    "status": stat.status,
+                    "count": stat.count,
+                    "amount": float(stat.amount or 0)
+                }
+                for stat in status_stats
+            ],
+            "by_method": [
+                {
+                    "method": stat.payment_method,
+                    "count": stat.count,
+                    "amount": float(stat.amount or 0)
+                }
+                for stat in method_stats
+            ],
+            "recent_30_days": {
+                "count": recent_stats.recent_count or 0,
+                "amount": float(recent_stats.recent_amount or 0)
+            },
+            "refunds": {
+                "count": refund_stats.refund_count or 0,
+                "amount": float(refund_stats.refund_amount or 0)
+            }
+        }
+    
+    async def process_balance_payment(
+        self,
+        db: Session,
+        order_id: int,
+        user_id: int
+    ) -> Dict[str, Any]:
+        """处理余额支付"""
+        
+        # 获取订单信息
+        order = db.query(Order).filter(Order.id == order_id).first()
+        if not order:
+            raise ValueError("订单不存在")
+        
+        if order.buyer_id != user_id:
+            raise ValueError("无权限支付此订单")
+        
+        if order.payment_status != 1:  # 待支付
+            raise ValueError("订单状态不允许支付")
+        
+        # 获取用户信息
+        user = db.query(User).filter(User.id == user_id).first()
+        if not user:
+            raise ValueError("用户不存在")
+        
+        # 检查余额
+        if user.balance < order.total_amount:
+            raise ValueError("余额不足，请先充值")
+        
+        # 扣除余额
+        user.balance -= order.total_amount
+        
+        # 创建支付记录
+        transaction_id = f"BAL{datetime.now().strftime('%Y%m%d%H%M%S')}{str(uuid.uuid4().int)[:6]}"
+        payment = Payment(
+            order_id=order_id,
+            user_id=user_id,
+            payment_method="balance",
+            amount=order.total_amount,
+            transaction_id=transaction_id,
+            payment_type="payment",
+            status="paid"
+        )
+        
+        # 更新订单状态
+        order.payment_status = 2  # 已支付
+        order.order_status = 2   # 待发货
+        order.paid_at = datetime.now()
+        
+        # 创建钱包交易记录
+        from ..models.wallet import WalletTransaction
+        wallet_transaction = WalletTransaction(
+            user_id=user_id,
+            type="consumption",
+            amount=order.total_amount,
+            balance_after=user.balance,
+            description=f"支付订单 {order.order_no}",
+            status="completed"
+        )
+        
+        db.add(payment)
+        db.add(wallet_transaction)
+        db.commit()
+        db.refresh(payment)
+        
+        return {
+            "payment_id": payment.id,
+            "transaction_id": transaction_id,
+            "amount": float(order.total_amount),
+            "balance_after": float(user.balance),
+            "message": "余额支付成功"
+        }
+    
+    async def validate_payment_amount(
+        self,
+        db: Session,
+        order_id: int,
+        amount: Decimal
+    ) -> Dict[str, Any]:
+        """验证支付金额"""
+        
+        order = db.query(Order).filter(Order.id == order_id).first()
+        if not order:
+            raise ValueError("订单不存在")
+        
+        is_valid = abs(amount - order.total_amount) < Decimal("0.01")  # 允许1分钱误差
+        
+        return {
+            "is_valid": is_valid,
+            "order_amount": float(order.total_amount),
+            "payment_amount": float(amount),
+            "difference": float(abs(amount - order.total_amount)),
+            "message": "金额验证通过" if is_valid else "支付金额与订单金额不符"
+        }
+    
+    async def get_payment_methods(self) -> Dict[str, Any]:
+        """获取支持的支付方式"""
+        
+        methods = [
+            {
+                "code": "balance",
+                "name": "余额支付",
+                "description": "使用账户余额支付",
+                "icon": "wallet",
+                "enabled": True,
+                "fee_rate": 0.0
+            },
+            {
+                "code": "alipay",
+                "name": "支付宝",
+                "description": "支付宝快捷支付",
+                "icon": "alipay",
+                "enabled": True,
+                "fee_rate": 0.006  # 0.6%手续费
+            },
+            {
+                "code": "wechat",
+                "name": "微信支付",
+                "description": "微信快捷支付",
+                "icon": "wechat",
+                "enabled": False,  # 暂未开通
+                "fee_rate": 0.006
+            }
+        ]
+        
+        return {
+            "methods": methods,
+            "default_method": "balance"
+        }
+    
+    async def calculate_payment_fee(
+        self,
+        amount: Decimal,
+        payment_method: str
+    ) -> Dict[str, Any]:
+        """计算支付手续费"""
+        
+        fee_rates = {
+            "balance": Decimal("0.00"),
+            "alipay": Decimal("0.006"),
+            "wechat": Decimal("0.006")
+        }
+        
+        fee_rate = fee_rates.get(payment_method, Decimal("0.00"))
+        fee_amount = amount * fee_rate
+        total_amount = amount + fee_amount
+        
+        return {
+            "original_amount": float(amount),
+            "fee_rate": float(fee_rate),
+            "fee_amount": float(fee_amount),
+            "total_amount": float(total_amount),
+            "payment_method": payment_method
+        }
