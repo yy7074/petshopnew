@@ -24,30 +24,35 @@ class Bid {
       id: json['id'] ?? 0,
       productId: json['product_id'] ?? 0,
       userId: json['user_id'] ?? 0,
-      bidAmount: double.tryParse(json['amount']?.toString() ?? json['bid_amount']?.toString() ?? '0') ?? 0,
-      bidTime: DateTime.parse(json['created_at'] ?? json['bid_time'] ?? DateTime.now().toIso8601String()),
+      bidAmount: double.tryParse(json['amount']?.toString() ??
+              json['bid_amount']?.toString() ??
+              '0') ??
+          0,
+      bidTime: DateTime.parse(json['created_at'] ??
+          json['bid_time'] ??
+          DateTime.now().toIso8601String()),
       status: _convertStatus(json['status']),
-      user: json['user_info'] != null ? User.fromJson(json['user_info']) : 
-           (json['user'] != null ? User.fromJson(json['user']) : null),
+      user: json['user_info'] != null
+          ? User.fromJson(json['user_info'])
+          : (json['user'] != null ? User.fromJson(json['user']) : null),
     );
   }
 
   static String _convertStatus(dynamic status) {
     if (status == null) return 'active';
-    
+
     // 如果已经是字符串，直接返回
     if (status is String) return status;
-    
+
     // 如果是数字，转换为对应的字符串状态
+    // 根据后端数据库实际含义：1:有效/领先, 2:被超越, 3:撤销
     switch (status) {
       case 1:
-        return 'active';   // 进行中
+        return 'active'; // 有效/领先
       case 2:
-        return 'won';      // 已中标
+        return 'lost'; // 被超越
       case 3:
-        return 'lost';     // 已失标
-      case 4:
-        return 'cancelled'; // 已取消
+        return 'cancelled'; // 撤销
       default:
         return 'active';
     }

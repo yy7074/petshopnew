@@ -219,11 +219,17 @@ class BidService:
         page_size: int = 20
     ) -> BidListResponse:
         """获取用户已中标的竞拍"""
+        # 查询用户在已结束拍卖中的最高出价（即中标）
+        # 这里我们需要找到拍卖已结束且用户是最高出价者的记录
+        from sqlalchemy import text
+        
         query = db.query(Bid).filter(
             and_(
                 Bid.bidder_id == user_id,
-                Bid.status == "won"
+                Bid.status == 1  # 有效状态的出价
             )
+        ).join(Product, Bid.product_id == Product.id).filter(
+            Product.status == 3  # 3:已结束的商品
         ).order_by(desc(Bid.created_at))
         
         total = query.count()
