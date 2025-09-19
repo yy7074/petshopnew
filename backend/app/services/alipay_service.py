@@ -86,7 +86,7 @@ class AlipayService:
             "body": body,
             "timeout_express": "30m"
         }
-        request.biz_content = biz_content  # 直接传递字典，不需要json.dumps
+        request.biz_content = biz_content  # 直接传递字典对象
         request.notify_url = notify_url or f"https://catdog.dachaonet.com/api/orders/payments/{payment.id}/alipay/notify"
         
         # 执行请求
@@ -152,7 +152,7 @@ class AlipayService:
             "subject": subject,
             "timeout_express": "30m"
         }
-        request.biz_content = json.dumps(biz_content)
+        request.biz_content = biz_content
         request.return_url = return_url
         request.notify_url = notify_url or f"https://catdog.dachaonet.com/api/orders/payments/{payment.id}/alipay/notify"
         
@@ -239,7 +239,7 @@ class AlipayService:
         try:
             request = AlipayTradeQueryRequest()
             biz_content = {"out_trade_no": out_trade_no}
-            request.biz_content = json.dumps(biz_content)
+            request.biz_content = biz_content
             
             response = self.alipay_client.execute(request)
             return json.loads(response) if response else {}
@@ -252,7 +252,7 @@ class AlipayService:
         try:
             request = AlipayTradeCloseRequest()
             biz_content = {"out_trade_no": out_trade_no}
-            request.biz_content = json.dumps(biz_content)
+            request.biz_content = biz_content
             
             response = self.alipay_client.execute(request)
             result = json.loads(response) if response else {}
@@ -292,7 +292,7 @@ class AlipayService:
                 "out_request_no": out_refund_no,
                 "refund_reason": refund_reason
             }
-            request.biz_content = json.dumps(biz_content)
+            request.biz_content = biz_content
             
             response = self.alipay_client.execute(request)
             result = json.loads(response) if response else {}

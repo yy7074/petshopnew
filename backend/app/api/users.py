@@ -74,3 +74,61 @@ async def update_seller_status(
         "message": f"已切换到{'卖家' if is_seller else '买家'}模式",
         "is_seller": current_user.is_seller
     }
+
+# 兼容性端点：为Flutter应用提供用户中标拍卖接口
+@router.get("/auctions/winning")
+async def get_user_winning_auctions(
+    page: int = 1,
+    page_size: int = 20,
+    current_user: User = Depends(get_current_user),
+    db: Session = Depends(get_db)
+):
+    """获取用户中标的拍卖（兼容性端点）"""
+    try:
+        from ..models.product import Product, Bid
+        from ..models.order import Order
+        from sqlalchemy import and_, desc
+        
+        # 查找我获胜的出价
+        winning_bids_query = db.query(Bid).filter(
+            and_(
+                Bid.bidder_id == current_user.id,
+                Bid.status == 1  # 获胜
+            )
+        ).order_by(desc(Bid.created_at))
+        
+        total = winning_bids_query.count()
+        winning_bids = winning_bids_query.offset((page - 1) * page_size).limit(page_size).all()
+        
+        results = []
+        for bid in winning_bids:
+            product = db.query(Product).filter(Product.id == bid.product_id).first()
+            order = db.query(Order).filter(
+                and_(
+                    Order.product_id == bid.product_id,
+                    Order.buyer_id == current_user.id
+                )
+            ).first()
+            
+            results.append({
+                "product_id": product.id,
+                "product_title": product.title,
+                "product_images": product.images,
+                "winning_amount": str(bid.bid_amount),
+                "bid_time": bid.created_at.isoformat(),
+                "order_id": order.id if order else None,
+                "order_no": order.order_no if order else None,
+                "payment_status": order.payment_status if order else None,
+                "order_status": order.order_status if order else None
+            })
+        
+        return {
+            "items": results,
+            "total": total,
+            "page": page,
+            "page_size": page_size,
+            "total_pages": (total + page_size - 1) // page_size
+        }
+        
+    except Exception as e:
+        raise HTTPException(status_code=500, detail="获取中标记录失败")

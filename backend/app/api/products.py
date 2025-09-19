@@ -192,3 +192,19 @@ async def get_recent_products(
 ):
     """获取最新商品"""
     return await product_service.get_recent_products(db, page, page_size)
+
+# 兼容性端点：为Flutter应用提供拍卖状态接口
+@router.get("/{product_id}/auction/status")
+async def get_product_auction_status(
+    product_id: int,
+    db: Session = Depends(get_db)
+):
+    """获取商品拍卖状态（兼容性端点）"""
+    try:
+        from ..services.auction_service import AuctionService
+        auction_service = AuctionService()
+        return await auction_service.get_auction_status(db, product_id)
+    except ValueError as e:
+        raise HTTPException(status_code=404, detail=str(e))
+    except Exception as e:
+        raise HTTPException(status_code=500, detail="获取拍卖状态失败")

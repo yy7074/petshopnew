@@ -60,6 +60,8 @@ app.include_router(store_applications.router, prefix="/api/v1/store-applications
 app.include_router(chat.router, prefix="/api/v1/chat", tags=["聊天"])
 app.include_router(messages.router, prefix="/api/v1/messages", tags=["消息"])
 app.include_router(users.router, prefix="/api/v1/users", tags=["用户"])
+# 兼容性路由：为Flutter应用提供 /api/v1/user 路径
+app.include_router(users.router, prefix="/api/v1/user", tags=["用户-兼容"])
 app.include_router(admin.router, prefix="/api/v1/admin", tags=["后台管理"])
 app.include_router(local_services.router, prefix="/api/v1/local-services", tags=["同城服务"])
 # app.include_router(search.router, prefix="/api/v1/search", tags=["搜索"])

@@ -18,12 +18,11 @@ router = APIRouter()
 security = HTTPBearer()
 
 # 管理员认证依赖
-async def get_admin_user(token: str = Depends(security), db: Session = Depends(get_db)):
+async def get_admin_user(current_user: User = Depends(get_current_user)):
     """验证管理员权限"""
-    user = get_current_user(token.credentials)
-    if not user or not user.is_admin:  # 假设用户表有is_admin字段
+    if not current_user or not current_user.is_admin:
         raise HTTPException(status_code=403, detail="管理员权限不足")
-    return user
+    return current_user
 
 # 管理员登录
 @router.post("/login", response_model=AdminLoginResponse)
@@ -340,6 +339,374 @@ async def get_events(
         page=page,
         size=size
     )
+
+@router.get("/events/{event_id}")
+async def get_event_by_id(
+    event_id: int,
+    admin: User = Depends(get_admin_user),
+    db: Session = Depends(get_db)
+):
+    """获取单个专场活动详情"""
+    try:
+        # 查询专场活动
+        event = db.query(SpecialEvent).filter(SpecialEvent.id == event_id).first()
+        if not event:
+            raise HTTPException(status_code=404, detail="专场活动不存在")
+        
+        # 获取商品数量
+        product_count = db.query(EventProduct).filter(
+            EventProduct.event_id == event_id
+        ).count()
+        
+        # 转换为响应格式
+        event_info = EventInfo.from_orm(event)
+        event_info.product_count = product_count
+        
+        return event_info
+        
+    except HTTPException:
+        raise
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=f"获取专场活动失败: {str(e)}")
+
+@router.post("/events")
+async def create_event(
+    event_data: dict,
+    admin: User = Depends(get_admin_user),
+    db: Session = Depends(get_db)
+):
+    """创建专场活动"""
+    try:
+        from datetime import datetime
+        
+        # 创建专场活动
+        event = SpecialEvent(
+            title=event_data.get("title"),
+            description=event_data.get("description"),
+            banner_image=event_data.get("banner_image"),
+            start_time=datetime.fromisoformat(event_data.get("start_time")) if event_data.get("start_time") else None,
+            end_time=datetime.fromisoformat(event_data.get("end_time")) if event_data.get("end_time") else None,
+            is_active=event_data.get("is_active", True)
+        )
+        
+        db.add(event)
+        db.commit()
+        db.refresh(event)
+        
+        return {
+            "success": True,
+            "message": "专场活动创建成功",
+            "data": {
+                "id": event.id,
+                "title": event.title,
+                "description": event.description,
+                "start_time": event.start_time.isoformat() if event.start_time else None,
+                "end_time": event.end_time.isoformat() if event.end_time else None,
+                "is_active": event.is_active
+            }
+        }
+        
+    except Exception as e:
+        db.rollback()
+        raise HTTPException(status_code=500, detail=f"创建专场活动失败: {str(e)}")
+
+@router.put("/events/{event_id}")
+async def update_event(
+    event_id: int,
+    event_data: dict,
+    admin: User = Depends(get_admin_user),
+    db: Session = Depends(get_db)
+):
+    """更新专场活动"""
+    try:
+        from datetime import datetime
+        
+        # 查找专场活动
+        event = db.query(SpecialEvent).filter(SpecialEvent.id == event_id).first()
+        if not event:
+            raise HTTPException(status_code=404, detail="专场活动不存在")
+        
+        # 更新字段
+        if 'title' in event_data:
+            event.title = event_data['title']
+        if 'description' in event_data:
+            event.description = event_data['description']
+        if 'start_time' in event_data:
+            event.start_time = datetime.fromisoformat(event_data['start_time'].replace('T', ' '))
+        if 'end_time' in event_data:
+            event.end_time = datetime.fromisoformat(event_data['end_time'].replace('T', ' '))
+        if 'is_active' in event_data:
+            event.is_active = event_data['is_active']
+        if 'sort_order' in event_data:
+            event.sort_order = event_data['sort_order']
+        
+        db.commit()
+        
+        return {
+            "success": True,
+            "message": "专场活动更新成功",
+            "data": {
+                "id": event.id,
+                "title": event.title,
+                "description": event.description,
+                "start_time": event.start_time.isoformat() if event.start_time else None,
+                "end_time": event.end_time.isoformat() if event.end_time else None,
+                "is_active": event.is_active,
+                "sort_order": event.sort_order
+            }
+        }
+        
+    except HTTPException:
+        raise
+    except Exception as e:
+        db.rollback()
+        raise HTTPException(status_code=500, detail=f"更新专场活动失败: {str(e)}")
+
+@router.post("/events/{event_id}/products")
+async def add_products_to_event(
+    event_id: int,
+    product_data: dict,
+    admin: User = Depends(get_admin_user),
+    db: Session = Depends(get_db)
+):
+    """添加商品到专场活动"""
+    try:
+        # 验证专场活动是否存在
+        event = db.query(SpecialEvent).filter(SpecialEvent.id == event_id).first()
+        if not event:
+            raise HTTPException(status_code=404, detail="专场活动不存在")
+        
+        product_ids = product_data.get("product_ids", [])
+        if not product_ids:
+            raise HTTPException(status_code=400, detail="请选择要添加的商品")
+        
+        added_count = 0
+        for product_id in product_ids:
+            # 验证商品是否存在
+            product = db.query(Product).filter(Product.id == product_id).first()
+            if not product:
+                continue
+            
+            # 检查商品是否已经在专场中
+            existing = db.query(EventProduct).filter(
+                EventProduct.event_id == event_id,
+                EventProduct.product_id == product_id
+            ).first()
+            
+            if existing:
+                continue
+            
+            # 添加商品到专场
+            event_product = EventProduct(
+                event_id=event_id,
+                product_id=product_id,
+                sort_order=product_data.get("sort_order", 0)
+            )
+            
+            db.add(event_product)
+            added_count += 1
+        
+        db.commit()
+        
+        return {
+            "success": True,
+            "message": f"成功添加 {added_count} 个商品到专场",
+            "data": {
+                "added_count": added_count,
+                "event_id": event_id,
+                "event_title": event.title
+            }
+        }
+        
+    except HTTPException:
+        raise
+    except Exception as e:
+        db.rollback()
+        raise HTTPException(status_code=500, detail=f"添加商品到专场失败: {str(e)}")
+
+@router.delete("/events/{event_id}/products/{product_id}")
+async def remove_product_from_event(
+    event_id: int,
+    product_id: int,
+    admin: User = Depends(get_admin_user),
+    db: Session = Depends(get_db)
+):
+    """从专场活动中移除商品"""
+    try:
+        # 查找专场商品关联
+        event_product = db.query(EventProduct).filter(
+            EventProduct.event_id == event_id,
+            EventProduct.product_id == product_id
+        ).first()
+        
+        if not event_product:
+            raise HTTPException(status_code=404, detail="商品不在该专场中")
+        
+        db.delete(event_product)
+        db.commit()
+        
+        return {
+            "success": True,
+            "message": "商品已从专场中移除"
+        }
+        
+    except HTTPException:
+        raise
+    except Exception as e:
+        db.rollback()
+        raise HTTPException(status_code=500, detail=f"移除商品失败: {str(e)}")
+
+@router.get("/events/{event_id}/products")
+async def get_event_products_admin(
+    event_id: int,
+    page: int = Query(1, ge=1),
+    size: int = Query(20, ge=1, le=100),
+    admin: User = Depends(get_admin_user),
+    db: Session = Depends(get_db)
+):
+    """获取专场活动中的商品(管理端)"""
+    try:
+        # 验证专场活动是否存在
+        event = db.query(SpecialEvent).filter(SpecialEvent.id == event_id).first()
+        if not event:
+            raise HTTPException(status_code=404, detail="专场活动不存在")
+        
+        # 查询专场中的商品
+        query = db.query(Product).join(
+            EventProduct, Product.id == EventProduct.product_id
+        ).filter(EventProduct.event_id == event_id)
+        
+        total = query.count()
+        products = query.order_by(EventProduct.sort_order, Product.created_at.desc()).offset((page - 1) * size).limit(size).all()
+        
+        # 转换为响应格式
+        product_list = []
+        for product in products:
+            # 获取分类名称
+            category = db.query(Category).filter(Category.id == product.category_id).first()
+            category_name = category.name if category else "未分类"
+            
+            # 获取卖家名称
+            seller = db.query(User).filter(User.id == product.seller_id).first()
+            seller_name = seller.username if seller else "未知卖家"
+            
+            product_info = ProductInfo(
+                id=product.id,
+                title=product.title,
+                description=product.description,
+                starting_price=float(product.starting_price),
+                current_price=float(product.current_price),
+                buy_now_price=float(product.buy_now_price) if product.buy_now_price else None,
+                auction_type=product.auction_type,
+                auction_start_time=product.auction_start_time,
+                auction_end_time=product.auction_end_time,
+                location=product.location,
+                shipping_fee=float(product.shipping_fee),
+                is_free_shipping=product.is_free_shipping,
+                condition_type=product.condition_type,
+                view_count=product.view_count,
+                bid_count=product.bid_count,
+                favorite_count=product.favorite_count,
+                status=product.status,
+                is_featured=product.is_featured,
+                created_at=product.created_at,
+                seller_name=seller_name,
+                category_name=category_name
+            )
+            product_list.append(product_info)
+        
+        return ProductListResponse(
+            products=product_list,
+            total=total,
+            page=page,
+            size=size
+        )
+        
+    except HTTPException:
+        raise
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=f"获取专场商品失败: {str(e)}")
+
+@router.get("/products/available-for-event")
+async def get_available_products_for_event(
+    event_id: Optional[int] = None,
+    page: int = Query(1, ge=1),
+    size: int = Query(20, ge=1, le=100),
+    keyword: Optional[str] = None,
+    category_id: Optional[int] = None,
+    admin: User = Depends(get_admin_user),
+    db: Session = Depends(get_db)
+):
+    """获取可添加到专场的商品列表"""
+    try:
+        # 查询拍卖商品
+        query = db.query(Product).filter(
+            Product.auction_type == 1,  # 只有拍卖商品
+            Product.status.in_([1, 2])  # 待审核或拍卖中
+        )
+        
+        # 如果指定了专场ID，排除已在该专场中的商品
+        if event_id:
+            existing_product_ids = db.query(EventProduct.product_id).filter(
+                EventProduct.event_id == event_id
+            ).subquery()
+            query = query.filter(~Product.id.in_(existing_product_ids))
+        
+        # 搜索过滤
+        if keyword:
+            query = query.filter(Product.title.contains(keyword))
+        
+        if category_id:
+            query = query.filter(Product.category_id == category_id)
+        
+        total = query.count()
+        products = query.order_by(desc(Product.created_at)).offset((page - 1) * size).limit(size).all()
+        
+        # 转换为响应格式
+        product_list = []
+        for product in products:
+            # 获取分类名称
+            category = db.query(Category).filter(Category.id == product.category_id).first()
+            category_name = category.name if category else "未分类"
+            
+            # 获取卖家名称
+            seller = db.query(User).filter(User.id == product.seller_id).first()
+            seller_name = seller.username if seller else "未知卖家"
+            
+            product_info = ProductInfo(
+                id=product.id,
+                title=product.title,
+                description=product.description,
+                starting_price=float(product.starting_price),
+                current_price=float(product.current_price),
+                buy_now_price=float(product.buy_now_price) if product.buy_now_price else None,
+                auction_type=product.auction_type,
+                auction_start_time=product.auction_start_time,
+                auction_end_time=product.auction_end_time,
+                location=product.location,
+                shipping_fee=float(product.shipping_fee),
+                is_free_shipping=product.is_free_shipping,
+                condition_type=product.condition_type,
+                view_count=product.view_count,
+                bid_count=product.bid_count,
+                favorite_count=product.favorite_count,
+                status=product.status,
+                is_featured=product.is_featured,
+                created_at=product.created_at,
+                seller_name=seller_name,
+                category_name=category_name
+            )
+            product_list.append(product_info)
+        
+        return ProductListResponse(
+            products=product_list,
+            total=total,
+            page=page,
+            size=size
+        )
+        
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=f"获取可选商品失败: {str(e)}")
 
 # 消息管理
 @router.get("/messages", response_model=MessageListResponse)

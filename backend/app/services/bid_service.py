@@ -34,7 +34,8 @@ class BidService:
             raise ValueError("一口价商品无需竞拍")
         
         if product.auction_end_time and product.auction_end_time <= datetime.now():
-            raise ValueError("拍卖已结束")
+            end_time_str = product.auction_end_time.strftime("%Y-%m-%d %H:%M:%S")
+            raise ValueError(f"拍卖已于 {end_time_str} 结束，无法继续出价")
         
         # 检查出价金额
         if bid_data.amount <= product.current_price:

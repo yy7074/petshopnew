@@ -528,9 +528,9 @@ class OrderService:
             final_price=order.final_price,
             shipping_fee=order.shipping_fee or Decimal('0.00'),
             total_amount=order.total_amount,
-            payment_method=order.payment_method,
-            payment_status=order.payment_status,
-            order_status=order.order_status,
+            payment_method=order.payment_method or 1,  # 默认支付宝
+            payment_status=order.payment_status or 1,  # 默认待支付
+            order_status=order.order_status or 1,  # 默认待支付
             shipping_address=order.shipping_address,
             tracking_number=order.tracking_number,
             shipped_at=order.shipped_at,
@@ -554,19 +554,19 @@ class OrderService:
                 "id": buyer.id,
                 "username": buyer.username,
                 "nickname": getattr(buyer, 'nickname', buyer.username),
-                "avatar": buyer.avatar
+                "avatar": getattr(buyer, 'avatar_url', None)
             } if buyer else None,
             seller_info={
                 "id": seller.id,
                 "username": seller.username,
                 "nickname": getattr(seller, 'nickname', seller.username),
-                "avatar": getattr(seller, 'avatar', None)
+                "avatar": getattr(seller, 'avatar_url', None)
             } if seller else None,
             product_info={
                 "id": product.id,
                 "title": product.title,
                 "images": product.images or [],
-                "category": product.category,
+                "category_id": product.category_id,
                 "seller_id": product.seller_id
             } if product else None,
             payment_info={

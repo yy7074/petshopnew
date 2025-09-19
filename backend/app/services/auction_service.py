@@ -274,6 +274,10 @@ class AuctionService:
         # 检查是否已结束
         is_ended = product.auction_end_time and product.auction_end_time <= datetime.now()
         
+        # 如果拍卖已结束但状态还是拍卖中，自动更新状态
+        if is_ended and product.status == 2:  # 2表示拍卖中
+            await self._auto_end_auction(db, product)
+        
         return {
             "product_id": product_id,
             "status": product.status,
@@ -306,6 +310,85 @@ class AuctionService:
             "minutes": minutes,
             "seconds": seconds
         }
+    
+    async def _auto_end_auction(self, db: Session, product: Product):
+        """自动结束拍卖并设置获胜者"""
+        try:
+            logger.info(f"自动结束拍卖: 商品ID {product.id}")
+            
+            # 更新商品状态为已结束
+            product.status = 3  # 已结束
+            
+            # 查找最高出价
+            highest_bid = db.query(Bid).filter(
+                Bid.product_id == product.id
+            ).order_by(desc(Bid.bid_amount)).first()
+            
+            if highest_bid:
+                # 设置获胜出价
+                highest_bid.status = 1  # 获胜
+                
+                # 将其他出价设置为失败
+                other_bids = db.query(Bid).filter(
+                    Bid.product_id == product.id,
+                    Bid.id != highest_bid.id
+                ).all()
+                
+                for bid in other_bids:
+                    bid.status = 2  # 失败
+                
+                logger.info(f"拍卖结束: 商品 {product.id}, 获胜者 {highest_bid.bidder_id}, 成交价 ¥{highest_bid.bid_amount}")
+                
+                # 创建订单（如果需要）
+                await self._create_winner_order(db, product, highest_bid)
+            else:
+                logger.info(f"拍卖流拍: 商品 {product.id}, 无人出价")
+            
+            db.commit()
+            
+        except Exception as e:
+            logger.error(f"自动结束拍卖失败: 商品 {product.id}, 错误: {str(e)}")
+            db.rollback()
+            raise
+    
+    async def _create_winner_order(self, db: Session, product: Product, winning_bid: Bid):
+        """为获胜者创建订单"""
+        try:
+            # 检查是否已存在订单
+            existing_order = db.query(Order).filter(
+                and_(
+                    Order.product_id == product.id,
+                    Order.buyer_id == winning_bid.bidder_id
+                )
+            ).first()
+            
+            if existing_order:
+                logger.info(f"订单已存在: {existing_order.order_no}")
+                return
+            
+            # 生成订单号
+            import uuid
+            order_no = f"A{datetime.now().strftime('%Y%m%d%H%M%S')}{str(uuid.uuid4())[:6].upper()}"
+            
+            # 创建新订单
+            order = Order(
+                order_no=order_no,
+                buyer_id=winning_bid.bidder_id,
+                seller_id=product.seller_id,
+                product_id=product.id,
+                total_amount=winning_bid.bid_amount,
+                payment_status=1,  # 待支付
+                order_status=1,    # 待支付
+                order_type=2,      # 拍卖订单
+                created_at=datetime.now()
+            )
+            
+            db.add(order)
+            logger.info(f"创建拍卖订单: {order_no}, 金额: ¥{winning_bid.bid_amount}")
+            
+        except Exception as e:
+            logger.error(f"创建获胜者订单失败: {str(e)}")
+            # 不抛出异常，因为订单创建失败不应该影响拍卖结束
     
     async def validate_auction_setup(
         self, 
