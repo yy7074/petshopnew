@@ -5,8 +5,18 @@ from decimal import Decimal
 
 class RecognitionRequest(BaseModel):
     """识别请求"""
-    image_data: str = Field(..., description="Base64编码的图片数据")
-    image_format: str = Field(..., description="图片格式 (jpg, png, webp等)")
+    image_data: Optional[str] = Field(None, description="Base64编码的图片数据")
+    image_format: Optional[str] = Field(None, description="图片格式 (jpg, png, webp等)")
+    image_url: Optional[str] = Field(None, description="图片URL地址")
+    
+    class Config:
+        schema_extra = {
+            "example": {
+                "image_data": "base64编码的图片数据",
+                "image_format": "jpg",
+                "image_url": "https://example.com/pet.jpg"
+            }
+        }
 
 class PetEstimatedValue(BaseModel):
     """宠物估价"""

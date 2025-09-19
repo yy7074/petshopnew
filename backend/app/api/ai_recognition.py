@@ -23,12 +23,17 @@ async def recognize_pet_image(
 ):
     """识别宠物图片"""
     try:
+        # 验证请求参数
+        if not request.image_data and not request.image_url:
+            raise HTTPException(status_code=400, detail="必须提供image_data或image_url其中之一")
+        
         ai_service = AIRecognitionService()
         result = await ai_service.recognize_pet_image(
             db=db,
             user_id=current_user.id,
             image_data=request.image_data,
-            image_format=request.image_format
+            image_format=request.image_format,
+            image_url=request.image_url
         )
         
         return RecognitionResponse(**result)
@@ -295,6 +300,32 @@ async def get_recognition_feedback(
         
     except Exception as e:
         raise HTTPException(status_code=500, detail=f"获取反馈失败: {str(e)}")
+
+@router.post("/test")
+async def test_recognition_api(
+    db: Session = Depends(get_db),
+    current_user: User = Depends(get_current_user)
+):
+    """测试AI识别API"""
+    try:
+        # 使用一个测试图片URL
+        test_image_url = "https://picsum.photos/400/400?random=1"
+        
+        ai_service = AIRecognitionService()
+        result = await ai_service.recognize_pet_image(
+            db=db,
+            user_id=current_user.id,
+            image_url=test_image_url
+        )
+        
+        return {
+            "success": True,
+            "message": "测试完成",
+            "result": result
+        }
+        
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=f"测试失败: {str(e)}")
 
 @router.get("/config")
 async def get_recognition_config():
