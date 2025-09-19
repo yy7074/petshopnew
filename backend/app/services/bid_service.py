@@ -193,7 +193,7 @@ class BidService:
         """获取用户正在领先的竞拍"""
         query = db.query(Bid).filter(
             and_(
-                Bid.user_id == user_id,
+                Bid.bidder_id == user_id,
                 Bid.status == "winning"
             )
         ).order_by(desc(Bid.created_at))

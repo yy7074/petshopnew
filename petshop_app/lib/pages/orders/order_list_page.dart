@@ -28,48 +28,7 @@ class _OrderListPageState extends State<OrderListPage>
   int _currentPage = 1;
   String? _errorMessage;
 
-  // 原来的静态数据作为备用
-  List<Map<String, dynamic>> _fallbackOrders = [
-    {
-      'id': '20251178012308012',
-      'status': '待付款',
-      'statusText': '待付款',
-      'storeName': '店铺名称',
-      'productImage': 'https://picsum.photos/200/200?random=1',
-      'productTitle': '产品标题产品标题产品标题标题产品标题产品标题',
-      'price': 199.99,
-      'quantity': 1,
-      'totalAmount': 199.99,
-      'orderTime': '2025-11-17 10:12:09',
-      'actions': ['取消订单', '继续付款'],
-    },
-    {
-      'id': '20251178012308013',
-      'status': '待收货',
-      'statusText': '待收货',
-      'storeName': '店铺名称',
-      'productImage': 'https://picsum.photos/200/200?random=2',
-      'productTitle': '产品标题产品标题产品标题标题产品标题产品标题',
-      'price': 199.99,
-      'quantity': 1,
-      'totalAmount': 199.99,
-      'orderTime': '2025-11-17 10:12:09',
-      'actions': ['查看物流', '确认收货'],
-    },
-    {
-      'id': '20251178012308014',
-      'status': '已完成',
-      'statusText': '已完成',
-      'storeName': '店铺名称',
-      'productImage': 'https://picsum.photos/200/200?random=3',
-      'productTitle': '产品标题产品标题产品标题标题产品标题产品标题',
-      'price': 199.99,
-      'quantity': 1,
-      'totalAmount': 199.99,
-      'orderTime': '2025-11-17 10:12:09',
-      'actions': ['申请退款', '再次购买'],
-    },
-  ];
+  // 移除假数据，只显示真实API数据
 
   @override
   void initState() {
@@ -124,10 +83,7 @@ class _OrderListPageState extends State<OrderListPage>
       setState(() {
         _isLoading = false;
         _errorMessage = e.toString();
-        // 如果是首次加载失败，使用备用数据
-        if (_orders.isEmpty) {
-          _orders = _fallbackOrders;
-        }
+        // 不再使用假数据，显示空列表和错误信息
       });
 
       if (mounted) {
@@ -217,7 +173,25 @@ class _OrderListPageState extends State<OrderListPage>
               textAlign: TextAlign.center,
             ),
           ),
-          SizedBox(width: 52.w), // 占位，保持标题居中
+
+          // 测试按钮
+          GestureDetector(
+            onTap: _createTestOrders,
+            child: Container(
+              padding: EdgeInsets.symmetric(horizontal: 8.w, vertical: 4.h),
+              decoration: BoxDecoration(
+                color: const Color(0xFF9C4DFF),
+                borderRadius: BorderRadius.circular(4.r),
+              ),
+              child: Text(
+                '测试数据',
+                style: TextStyle(
+                  fontSize: 10.sp,
+                  color: Colors.white,
+                ),
+              ),
+            ),
+          ),
         ],
       ),
     );
@@ -750,5 +724,27 @@ class _OrderListPageState extends State<OrderListPage>
     ScaffoldMessenger.of(context).showSnackBar(
       const SnackBar(content: Text('跳转到商品页面')),
     );
+  }
+
+  // 创建测试订单数据
+  void _createTestOrders() async {
+    try {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text('正在创建测试订单...')),
+      );
+
+      final result = await OrderService.createTestOrders();
+
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text(result['message'] ?? '测试订单创建成功')),
+      );
+
+      // 刷新订单列表
+      _refreshOrders();
+    } catch (e) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text('创建测试订单失败: $e')),
+      );
+    }
   }
 }

@@ -2,7 +2,7 @@ from sqlalchemy import Column, Integer, String, Text, DateTime, Float, Boolean, 
 from sqlalchemy.orm import relationship
 from sqlalchemy.sql import func
 import enum
-from .base import Base
+from app.core.database import Base
 
 class ServiceType(enum.Enum):
     PET_SOCIAL = "pet_social"        # 宠物交流

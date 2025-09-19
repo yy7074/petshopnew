@@ -3,13 +3,8 @@ import 'package:flutter/foundation.dart';
 class ApiConstants {
   // 基础配置 - 根据环境动态设置
   static String get baseUrl {
-    if (kDebugMode) {
-      // Debug模式：本地开发服务器
-      return 'http://localhost:3000/api/v1';
-    } else {
-      // Release模式：生产服务器
-      return 'https://catdog.dachaonet.com/api/v1';
-    }
+    // 统一使用内网穿透域名，映射到本地3000端口
+    return 'https://catdog.dachaonet.com/api/v1';
   }
 
   static const String version = '';
@@ -26,18 +21,18 @@ class ApiConstants {
   static const String userProfile = '$version/auth/profile';
 
   // 商品相关
-  static const String products = '$version/products';
+  static const String products = '$version/products/';
   static const String productDetail = '$version/products';
-  static const String categories = '$version/categories';
-  static const String banners = '$version/banners';
+  static const String categories = '$version/categories/';
+  static const String banners = '$version/banners/';
 
   // 竞拍相关
-  static const String bids = '$version/bids';
+  static const String bids = '$version/bids/';
   static const String auctionResults = '$version/auctions/results';
   static const String autoBid = '$version/auctions/auto-bid';
 
   // 订单相关
-  static const String orders = '$version/orders';
+  static const String orders = '$version/orders/';
   static const String payments = '$version/payments';
   static const String logistics = '$version/logistics';
 

@@ -416,6 +416,80 @@ async def create_test_order(
         traceback.print_exc()
         raise HTTPException(status_code=500, detail=f"创建测试订单失败: {str(e)}")
 
+@router.post("/test/create-multiple")
+async def create_multiple_test_orders(
+    db: Session = Depends(get_db),
+    current_user: User = Depends(get_current_user)
+):
+    """创建多个不同状态的测试订单"""
+    try:
+        from ..models.order import OrderItem
+        import uuid
+        from datetime import datetime
+        
+        # 订单状态配置
+        order_configs = [
+            (1, "待付款", 1, "待支付"),
+            (2, "待发货", 2, "已支付"),
+            (3, "待收货", 2, "已发货"),
+            (4, "已完成", 2, "已收货"),
+            (6, "已取消", 3, "已取消"),
+        ]
+        
+        created_orders = []
+        
+        for i, (order_status, status_desc, payment_status, payment_desc) in enumerate(order_configs, 1):
+            # 创建测试订单
+            order = Order(
+                order_no=f"PET{datetime.now().strftime('%Y%m%d%H%M%S')}{str(uuid.uuid4().int)[:4]}{i}",
+                buyer_id=current_user.id,
+                seller_id=1,  # 测试卖家
+                product_id=i,  # 不同的测试商品ID
+                final_price=Decimal('99.99') + i * 10,
+                total_amount=Decimal('109.99') + i * 10,
+                shipping_fee=Decimal('10.00'),
+                payment_method=1,  # 1:支付宝
+                payment_status=payment_status,
+                order_status=order_status,
+            )
+            
+            db.add(order)
+            db.flush()  # 获取order.id
+            
+            # 创建订单项
+            order_item = OrderItem(
+                order_id=order.id,
+                product_id=i,
+                product_title=f"测试商品{i} - {status_desc}",
+                product_image=f"https://picsum.photos/200/200?random={i}",
+                quantity=1,
+                unit_price=Decimal('99.99') + i * 10,
+                total_price=Decimal('99.99') + i * 10
+            )
+            
+            db.add(order_item)
+            
+            created_orders.append({
+                "order_no": order.order_no,
+                "status": status_desc,
+                "payment_status": payment_desc,
+                "total_amount": str(order.total_amount)
+            })
+        
+        db.commit()
+        
+        return {
+            "success": True,
+            "message": f"成功创建{len(order_configs)}个测试订单",
+            "data": created_orders
+        }
+    except Exception as e:
+        db.rollback()
+        print(f"创建测试订单失败: {e}")
+        import traceback
+        traceback.print_exc()
+        raise HTTPException(status_code=500, detail=f"创建测试订单失败: {str(e)}")
+
 @router.post("/{order_id}/alipay/app")
 async def create_alipay_app_payment(
     order_id: int,

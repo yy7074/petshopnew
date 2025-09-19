@@ -37,7 +37,7 @@ class OrderService:
             winning_bid = db.query(Bid).filter(
                 and_(
                     Bid.product_id == order_data.product_id,
-                    Bid.user_id == user_id,
+                    Bid.bidder_id == user_id,
                     Bid.status == "won"
                 )
             ).first()
@@ -45,7 +45,7 @@ class OrderService:
             if not winning_bid:
                 raise ValueError("您没有中标该商品")
             
-            total_amount = winning_bid.amount
+            total_amount = winning_bid.bid_amount
         
         elif order_data.order_type == "buy_now":
             # 一口价购买

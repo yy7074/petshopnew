@@ -385,4 +385,32 @@ class OrderService {
         return [];
     }
   }
+
+  // 创建测试订单数据
+  static Future<Map<String, dynamic>> createTestOrders() async {
+    try {
+      final token = StorageService.getUserToken();
+      if (token == null || token.isEmpty) {
+        throw Exception('请先登录');
+      }
+
+      final response = await http.post(
+        Uri.parse('$baseUrl${ApiConstants.orders}/test/create-multiple'),
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': 'Bearer $token',
+        },
+      );
+
+      if (response.statusCode == 200) {
+        return json.decode(response.body);
+      } else {
+        final error = json.decode(response.body);
+        throw Exception(error['detail'] ?? '创建测试订单失败');
+      }
+    } catch (e) {
+      print('创建测试订单错误: $e');
+      throw Exception('网络错误: $e');
+    }
+  }
 }
