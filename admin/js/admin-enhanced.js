@@ -795,6 +795,26 @@ function showProfile() {
     showInfo('管理员资料功能开发中...');
 }
 
+// 显示信息提示
+function showInfo(message) {
+    const toast = document.createElement('div');
+    toast.className = 'toast align-items-center text-white bg-info border-0';
+    toast.innerHTML = `
+        <div class="d-flex">
+            <div class="toast-body">${message}</div>
+            <button type="button" class="btn-close btn-close-white me-2 m-auto" data-bs-dismiss="toast"></button>
+        </div>
+    `;
+    document.body.appendChild(toast);
+    const bsToast = new bootstrap.Toast(toast);
+    bsToast.show();
+    
+    // 清理DOM
+    toast.addEventListener('hidden.bs.toast', () => {
+        toast.remove();
+    });
+}
+
 function viewProduct(productId) {
     // TODO: 实现商品详情查看
     console.log('查看商品:', productId);
