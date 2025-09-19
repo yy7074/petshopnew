@@ -270,3 +270,49 @@ async def forfeit_deposit(
         raise
     except Exception as e:
         raise HTTPException(status_code=500, detail=f"没收保证金失败: {str(e)}")
+
+@router.get("/admin/security-monitor")
+async def get_security_monitor(
+    db: Session = Depends(get_db),
+    current_user: User = Depends(get_admin_user)
+):
+    """获取保证金安全监控信息（管理员功能）"""
+    try:
+        deposit_service = DepositService()
+        monitor_data = await deposit_service.monitor_suspicious_activities(db)
+        
+        return {
+            "success": True,
+            "data": monitor_data
+        }
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=f"获取监控信息失败: {str(e)}")
+
+@router.get("/security-config")
+async def get_security_config():
+    """获取保证金安全配置"""
+    try:
+        deposit_service = DepositService()
+        config = deposit_service.SECURITY_CONFIG.copy()
+        
+        # 将Decimal转换为float用于JSON序列化
+        for key, value in config.items():
+            if isinstance(value, Decimal):
+                config[key] = float(value)
+        
+        return {
+            "success": True,
+            "data": {
+                "config": config,
+                "description": {
+                    "max_daily_deposit": "每日最大保证金缴纳金额",
+                    "max_single_deposit": "单笔最大保证金金额",
+                    "min_single_deposit": "单笔最小保证金金额",
+                    "daily_operation_limit": "每日最大操作次数",
+                    "fraud_check_threshold": "触发风控检查的金额阈值",
+                    "refund_cooling_period": "退还冷却期（小时）"
+                }
+            }
+        }
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=f"获取安全配置失败: {str(e)}")

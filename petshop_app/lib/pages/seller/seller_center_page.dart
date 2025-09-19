@@ -2,6 +2,9 @@ import 'package:flutter/material.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import '../../services/user_role_service.dart';
 import '../../services/storage_service.dart';
+import '../../services/seller_service.dart';
+import '../../constants/app_colors.dart';
+import '../../widgets/custom_app_bar.dart';
 import '../profile/profile_page.dart';
 
 class SellerCenterPage extends StatefulWidget {
@@ -13,6 +16,29 @@ class SellerCenterPage extends StatefulWidget {
 
 class _SellerCenterPageState extends State<SellerCenterPage> {
   final UserRoleService _userRoleService = UserRoleService();
+  final SellerService _sellerService = SellerService();
+  Map<String, dynamic>? _dashboardData;
+  bool _isLoading = true;
+
+  @override
+  void initState() {
+    super.initState();
+    _loadDashboard();
+  }
+
+  Future<void> _loadDashboard() async {
+    try {
+      final result = await _sellerService.getSellerDashboard();
+      if (result.success && result.data != null) {
+        setState(() {
+          _dashboardData = result.data;
+          _isLoading = false;
+        });
+      }
+    } catch (e) {
+      setState(() => _isLoading = false);
+    }
+  }
 
   @override
   Widget build(BuildContext context) {

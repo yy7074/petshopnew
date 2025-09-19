@@ -175,6 +175,22 @@ async def mark_payment_completed(
     except Exception as e:
         raise HTTPException(status_code=500, detail=str(e))
 
+@router.post("/auto-process")
+async def auto_process_applications(
+    db: Session = Depends(get_db),
+    current_user: User = Depends(get_admin_user)
+):
+    """自动处理店铺申请（管理员功能）"""
+    try:
+        result = await application_service.auto_process_applications(db)
+        return {
+            "success": True,
+            "message": f"自动处理完成，共处理 {result['processed_count']} 个申请，通过 {result['approved_count']} 个",
+            "data": result
+        }
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=f"自动处理失败: {str(e)}")
+
 @router.post("/upload-image")
 async def upload_image(
     file: UploadFile = File(...),

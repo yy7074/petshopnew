@@ -288,3 +288,95 @@ async def place_enhanced_bid(
         raise HTTPException(status_code=400, detail=str(e))
     except Exception as e:
         raise HTTPException(status_code=500, detail=f"出价失败: {str(e)}")
+
+@router.post("/{product_id}/normalize")
+async def normalize_auction_settings(
+    product_id: int,
+    db: Session = Depends(get_db),
+    current_user: User = Depends(get_current_user)
+):
+    """标准化拍卖设置（卖家或管理员操作）"""
+    try:
+        # 验证权限：商品所有者或管理员
+        from ..models.product import Product
+        product = db.query(Product).filter(Product.id == product_id).first()
+        if not product:
+            raise HTTPException(status_code=404, detail="商品不存在")
+        
+        if product.seller_id != current_user.id and not current_user.is_admin:
+            raise HTTPException(status_code=403, detail="无权限操作")
+        
+        result = await auction_service.normalize_auction_settings(db, product_id)
+        
+        return {
+            "success": True,
+            "message": "拍卖设置标准化完成",
+            "data": result
+        }
+        
+    except HTTPException:
+        raise
+    except ValueError as e:
+        raise HTTPException(status_code=400, detail=str(e))
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=f"标准化设置失败: {str(e)}")
+
+@router.post("/batch/normalize")
+async def batch_normalize_auctions(
+    seller_id: Optional[int] = None,
+    db: Session = Depends(get_db),
+    current_user: User = Depends(get_current_user)
+):
+    """批量标准化拍卖设置（管理员功能）"""
+    try:
+        if not current_user.is_admin:
+            raise HTTPException(status_code=403, detail="需要管理员权限")
+        
+        from ..models.product import Product
+        from sqlalchemy import and_
+        
+        # 查找需要标准化的拍卖商品
+        query = db.query(Product).filter(Product.auction_type == 1)  # 拍卖商品
+        
+        if seller_id:
+            query = query.filter(Product.seller_id == seller_id)
+        
+        products = query.filter(Product.status.in_([1, 2])).all()  # 待审核或拍卖中
+        
+        results = []
+        success_count = 0
+        
+        for product in products:
+            try:
+                result = await auction_service.normalize_auction_settings(db, product.id)
+                if result["normalized_count"] > 0:
+                    success_count += 1
+                    results.append({
+                        "product_id": product.id,
+                        "product_title": product.title,
+                        "success": True,
+                        "normalized_count": result["normalized_count"],
+                        "updates": result["updates"]
+                    })
+            except Exception as e:
+                results.append({
+                    "product_id": product.id,
+                    "product_title": product.title,
+                    "success": False,
+                    "error": str(e)
+                })
+        
+        return {
+            "success": True,
+            "message": f"批量标准化完成，成功处理 {success_count} 个拍卖",
+            "data": {
+                "total_processed": len(products),
+                "success_count": success_count,
+                "results": results
+            }
+        }
+        
+    except HTTPException:
+        raise
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=f"批量标准化失败: {str(e)}")

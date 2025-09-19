@@ -9,6 +9,7 @@ import logging
 from ..models.product import Product, Bid
 from ..models.order import Order, OrderItem
 from ..models.user import User
+from ..models.deposit import Deposit
 from ..core.database import get_db
 from .notification_service import NotificationService
 
@@ -380,14 +381,24 @@ class AuctionService:
         if product.status != 2:  # 不是拍卖中状态
             raise ValueError("拍卖已结束或未开始")
         
+        # 检查拍卖是否实际已过期
+        if product.auction_end_time and product.auction_end_time <= datetime.now():
+            raise ValueError("拍卖已结束，无法出价")
+        
+        # 检查保证金（如果需要）
+        await self._check_bidder_deposit(db, bidder_id, product_id)
+        
         # 检查出价是否有效
         current_highest = db.query(Bid).filter(
             Bid.product_id == product_id
         ).order_by(desc(Bid.bid_amount)).first()
         
-        min_required = product.current_price + self.AUCTION_RULES["min_bid_increment"]
+        # 使用商品设置的最小加价幅度或全局规则
+        min_increment = product.min_bid_increment or self.AUCTION_RULES["min_bid_increment"]
+        min_required = product.current_price + min_increment
+        
         if current_highest:
-            min_required = current_highest.bid_amount + self.AUCTION_RULES["min_bid_increment"]
+            min_required = current_highest.bid_amount + min_increment
         
         if bid_amount < min_required:
             raise ValueError(f"出价不能低于{min_required}元")
@@ -419,7 +430,7 @@ class AuctionService:
             # 如果在结束前阈值时间内有出价，且未超过最大延时次数
             if (time_remaining <= self.AUCTION_RULES["extend_threshold"] and 
                 time_remaining > 0 and
-                getattr(product, 'extension_count', 0) < self.AUCTION_RULES["max_extensions"]):
+                (product.extension_count or 0) < self.AUCTION_RULES["max_extensions"]):
                 
                 # 延长拍卖时间
                 product.auction_end_time = product.auction_end_time + timedelta(
@@ -427,13 +438,12 @@ class AuctionService:
                 )
                 
                 # 更新延时计数
-                extension_count = getattr(product, 'extension_count', 0) + 1
-                # 这里可能需要在Product模型中添加extension_count字段
+                product.extension_count = (product.extension_count or 0) + 1
                 
                 auto_extended = True
                 extension_minutes = self.AUCTION_RULES["auto_extend_time"] // 60
                 
-                logger.info(f"拍卖{product_id}自动延时{extension_minutes}分钟，第{extension_count}次延时")
+                logger.info(f"拍卖{product_id}自动延时{extension_minutes}分钟，第{product.extension_count}次延时")
         
         db.commit()
         
@@ -446,6 +456,7 @@ class AuctionService:
             "current_price": str(bid_amount),
             "auto_extended": auto_extended,
             "extension_minutes": extension_minutes,
+            "extension_count": product.extension_count,
             "new_end_time": product.auction_end_time.isoformat() if product.auction_end_time else None
         }
     
@@ -500,4 +511,92 @@ class AuctionService:
                 "max_auction_duration": "拍卖最长持续时间（秒）",
                 "deposit_rate": "参与拍卖需要缴纳的保证金比例"
             }
+        }
+    
+    async def _check_bidder_deposit(self, db: Session, bidder_id: int, product_id: int):
+        """检查竞拍者保证金状态"""
+        try:
+            # 查找该用户在此拍卖的保证金
+            deposit = db.query(Deposit).filter(
+                and_(
+                    Deposit.user_id == bidder_id,
+                    Deposit.auction_id == product_id,
+                    Deposit.status == "active"
+                )
+            ).first()
+            
+            # 如果没有专门的拍卖保证金，检查通用保证金
+            if not deposit:
+                general_deposit = db.query(Deposit).filter(
+                    and_(
+                        Deposit.user_id == bidder_id,
+                        Deposit.type == "general",
+                        Deposit.status == "active"
+                    )
+                ).first()
+                
+                if not general_deposit:
+                    raise ValueError("参与拍卖需要先缴纳保证金")
+                
+                # 检查通用保证金余额是否足够
+                product = db.query(Product).filter(Product.id == product_id).first()
+                required_deposit = product.current_price * self.AUCTION_RULES["deposit_rate"]
+                
+                if general_deposit.amount < required_deposit:
+                    raise ValueError(f"保证金余额不足，需要至少{required_deposit}元")
+            
+        except Exception as e:
+            if "保证金" in str(e):
+                raise e
+            logger.error(f"检查保证金失败: {e}")
+            # 暂时允许继续出价，但记录错误
+    
+    async def normalize_auction_settings(self, db: Session, product_id: int) -> Dict[str, Any]:
+        """标准化拍卖设置"""
+        product = db.query(Product).filter(Product.id == product_id).first()
+        if not product:
+            raise ValueError("商品不存在")
+        
+        updates = {}
+        normalized_count = 0
+        
+        # 标准化最小加价幅度
+        if not product.min_bid_increment or product.min_bid_increment < self.AUCTION_RULES["min_bid_increment"]:
+            updates["min_bid_increment"] = self.AUCTION_RULES["min_bid_increment"]
+            normalized_count += 1
+        
+        # 标准化拍卖时长
+        if product.auction_start_time and product.auction_end_time:
+            duration = (product.auction_end_time - product.auction_start_time).total_seconds()
+            
+            if duration < self.AUCTION_RULES["min_auction_duration"]:
+                new_end_time = product.auction_start_time + timedelta(
+                    seconds=self.AUCTION_RULES["min_auction_duration"]
+                )
+                updates["auction_end_time"] = new_end_time
+                normalized_count += 1
+            
+            elif duration > self.AUCTION_RULES["max_auction_duration"]:
+                new_end_time = product.auction_start_time + timedelta(
+                    seconds=self.AUCTION_RULES["max_auction_duration"]
+                )
+                updates["auction_end_time"] = new_end_time
+                normalized_count += 1
+        
+        # 重置延时计数
+        if product.extension_count and product.extension_count > 0:
+            updates["extension_count"] = 0
+            normalized_count += 1
+        
+        # 应用更新
+        if updates:
+            for key, value in updates.items():
+                setattr(product, key, value)
+            db.commit()
+        
+        return {
+            "success": True,
+            "normalized_count": normalized_count,
+            "updates": updates,
+            "message": f"已标准化 {normalized_count} 项设置"
         }

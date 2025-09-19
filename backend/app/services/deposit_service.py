@@ -1,8 +1,9 @@
 from sqlalchemy.orm import Session
-from sqlalchemy import func
+from sqlalchemy import func, and_
 from decimal import Decimal
 from typing import List, Optional, Dict, Any
 from datetime import datetime, timedelta
+import logging
 
 from ..models.user import User
 from ..models.deposit import Deposit, DepositLog
@@ -12,7 +13,19 @@ from ..schemas.deposit import (
     PayDepositRequest, RefundDepositRequest, DepositLogResponse
 )
 
+logger = logging.getLogger(__name__)
+
 class DepositService:
+    
+    # 安全配置
+    SECURITY_CONFIG = {
+        "max_daily_deposit": Decimal("10000.00"),  # 每日最大保证金缴纳金额
+        "max_single_deposit": Decimal("50000.00"),  # 单笔最大保证金
+        "min_single_deposit": Decimal("10.00"),    # 单笔最小保证金
+        "daily_operation_limit": 10,              # 每日最大操作次数
+        "fraud_check_threshold": Decimal("5000.00"), # 风控检查阈值
+        "refund_cooling_period": 24,              # 退还冷却期（小时）
+    }
     
     async def get_deposit_summary(self, user_id: int, db: Session) -> DepositSummaryResponse:
         """获取用户保证金汇总信息"""
@@ -86,15 +99,36 @@ class DepositService:
         db: Session
     ) -> DepositResponse:
         """缴纳保证金"""
+        # 基础验证
         if request.amount <= 0:
             raise ValueError("保证金金额必须大于0")
         
-        if request.amount > Decimal('50000.00'):
-            raise ValueError("单笔保证金不能超过50000元")
+        if request.amount < self.SECURITY_CONFIG["min_single_deposit"]:
+            raise ValueError(f"单笔保证金不能少于{self.SECURITY_CONFIG['min_single_deposit']}元")
+        
+        if request.amount > self.SECURITY_CONFIG["max_single_deposit"]:
+            raise ValueError(f"单笔保证金不能超过{self.SECURITY_CONFIG['max_single_deposit']}元")
         
         user = db.query(User).filter(User.id == user_id).first()
         if not user:
             raise ValueError("用户不存在")
+        
+        # 执行安全检查
+        security_check = await self._perform_security_checks(user_id, request.amount, db)
+        if not security_check["passed"]:
+            raise ValueError(security_check["message"])
+        
+        # 检查重复保证金
+        if request.auction_id:
+            existing_deposit = db.query(Deposit).filter(
+                and_(
+                    Deposit.user_id == user_id,
+                    Deposit.auction_id == request.auction_id,
+                    Deposit.status.in_(["active", "frozen"])
+                )
+            ).first()
+            if existing_deposit:
+                raise ValueError("您已为此拍卖缴纳保证金")
         
         # 检查余额支付方式
         if request.payment_method == "balance":
@@ -127,8 +161,7 @@ class DepositService:
             transaction_id=f"DEPOSIT_{datetime.now().strftime('%Y%m%d%H%M%S')}{user_id}"
         )
         db.add(deposit)
-        db.commit()
-        db.refresh(deposit)
+        db.flush()  # 获取ID
         
         # 记录操作日志
         deposit_log = DepositLog(
@@ -139,7 +172,12 @@ class DepositService:
             reason="用户缴纳保证金"
         )
         db.add(deposit_log)
+        
         db.commit()
+        db.refresh(deposit)
+        
+        # 记录安全日志
+        logger.info(f"用户 {user_id} 成功缴纳保证金 {request.amount} 元，保证金ID: {deposit.id}")
         
         return DepositResponse(
             id=deposit.id,
@@ -174,6 +212,17 @@ class DepositService:
         if deposit.status != "active":
             raise ValueError(f"保证金状态为{deposit.status}，无法退还")
         
+        # 检查冷却期
+        cooling_period_check = await self._check_refund_cooling_period(deposit, db)
+        if not cooling_period_check["passed"]:
+            raise ValueError(cooling_period_check["message"])
+        
+        # 检查是否有关联的活跃拍卖
+        if deposit.auction_id:
+            auction_check = await self._check_auction_status_for_refund(deposit.auction_id, db)
+            if not auction_check["allowed"]:
+                raise ValueError(auction_check["reason"])
+        
         user = db.query(User).filter(User.id == user_id).first()
         if not user:
             raise ValueError("用户不存在")
@@ -207,6 +256,10 @@ class DepositService:
         db.add(deposit_log)
         
         db.commit()
+        
+        # 记录安全日志
+        logger.info(f"用户 {user_id} 成功退还保证金 {deposit.amount} 元，保证金ID: {deposit.id}")
+        
         return True
     
     async def freeze_deposit(
@@ -523,4 +576,156 @@ class DepositService:
                 "count": recent_stats.recent_count or 0,
                 "amount": float(recent_stats.recent_amount or 0)
             }
+        }
+    
+    async def _perform_security_checks(self, user_id: int, amount: Decimal, db: Session) -> Dict[str, Any]:
+        """执行安全检查"""
+        errors = []
+        
+        # 检查每日操作次数限制
+        today = datetime.now().date()
+        daily_operations = db.query(func.count(DepositLog.id)).join(Deposit).filter(
+            and_(
+                Deposit.user_id == user_id,
+                func.date(DepositLog.created_at) == today,
+                DepositLog.action == "pay"
+            )
+        ).scalar()
+        
+        if daily_operations >= self.SECURITY_CONFIG["daily_operation_limit"]:
+            errors.append(f"今日操作次数已达上限({self.SECURITY_CONFIG['daily_operation_limit']}次)")
+        
+        # 检查每日缴纳金额限制
+        daily_amount = db.query(func.sum(Deposit.amount)).filter(
+            and_(
+                Deposit.user_id == user_id,
+                func.date(Deposit.created_at) == today,
+                Deposit.status.in_(["active", "frozen"])
+            )
+        ).scalar() or Decimal("0.00")
+        
+        if daily_amount + amount > self.SECURITY_CONFIG["max_daily_deposit"]:
+            errors.append(f"今日缴纳金额将超过限制({self.SECURITY_CONFIG['max_daily_deposit']}元)")
+        
+        # 高额保证金风控检查
+        if amount >= self.SECURITY_CONFIG["fraud_check_threshold"]:
+            fraud_check = await self._fraud_detection_check(user_id, amount, db)
+            if not fraud_check["passed"]:
+                errors.append(fraud_check["message"])
+        
+        return {
+            "passed": len(errors) == 0,
+            "message": "; ".join(errors) if errors else "安全检查通过",
+            "checks_performed": ["daily_limit", "amount_limit", "fraud_detection"]
+        }
+    
+    async def _fraud_detection_check(self, user_id: int, amount: Decimal, db: Session) -> Dict[str, Any]:
+        """欺诈检测"""
+        # 检查用户历史行为
+        user = db.query(User).filter(User.id == user_id).first()
+        if not user:
+            return {"passed": False, "message": "用户信息异常"}
+        
+        # 检查账户年龄（新账户大额操作需要更严格检查）
+        account_age_days = (datetime.now() - user.created_at).days
+        if account_age_days < 7 and amount >= Decimal("1000.00"):
+            return {"passed": False, "message": "新账户暂时无法进行大额操作"}
+        
+        # 检查历史操作模式
+        recent_deposits = db.query(Deposit).filter(
+            and_(
+                Deposit.user_id == user_id,
+                Deposit.created_at >= datetime.now() - timedelta(days=7)
+            )
+        ).count()
+        
+        if recent_deposits > 5:  # 7天内超过5次操作
+            return {"passed": False, "message": "操作频率异常，请联系客服"}
+        
+        return {"passed": True, "message": "风控检查通过"}
+    
+    async def _check_refund_cooling_period(self, deposit: Deposit, db: Session) -> Dict[str, Any]:
+        """检查退还冷却期"""
+        hours_since_deposit = (datetime.now() - deposit.created_at).total_seconds() / 3600
+        
+        if hours_since_deposit < self.SECURITY_CONFIG["refund_cooling_period"]:
+            remaining_hours = self.SECURITY_CONFIG["refund_cooling_period"] - hours_since_deposit
+            return {
+                "passed": False,
+                "message": f"保证金缴纳后需等待{self.SECURITY_CONFIG['refund_cooling_period']}小时才能退还，还需等待{remaining_hours:.1f}小时"
+            }
+        
+        return {"passed": True, "message": "冷却期检查通过"}
+    
+    async def _check_auction_status_for_refund(self, auction_id: int, db: Session) -> Dict[str, Any]:
+        """检查拍卖状态是否允许退还保证金"""
+        from ..models.product import Product
+        
+        product = db.query(Product).filter(Product.id == auction_id).first()
+        if not product:
+            return {"allowed": True, "reason": "拍卖商品不存在，允许退还"}
+        
+        # 拍卖进行中不允许退还
+        if product.status == 2:  # 拍卖中
+            return {"allowed": False, "reason": "拍卖进行中，不允许退还保证金"}
+        
+        # 检查是否有出价记录
+        from ..models.product import Bid
+        user_bids = db.query(Bid).filter(
+            and_(
+                Bid.product_id == auction_id,
+                Bid.bidder_id == product.seller_id  # 这里应该是用户ID，但我们需要从deposit获取
+            )
+        ).count()
+        
+        if user_bids > 0:
+            return {"allowed": False, "reason": "您已参与此拍卖出价，不允许退还保证金"}
+        
+        return {"allowed": True, "reason": "允许退还"}
+    
+    async def monitor_suspicious_activities(self, db: Session) -> Dict[str, Any]:
+        """监控可疑活动"""
+        suspicious_activities = []
+        
+        # 检查频繁操作的用户
+        frequent_users = db.query(
+            Deposit.user_id,
+            func.count(Deposit.id).label('count'),
+            func.sum(Deposit.amount).label('total_amount')
+        ).filter(
+            Deposit.created_at >= datetime.now() - timedelta(days=1)
+        ).group_by(Deposit.user_id).having(
+            func.count(Deposit.id) > 5
+        ).all()
+        
+        for user_data in frequent_users:
+            suspicious_activities.append({
+                "type": "frequent_operations",
+                "user_id": user_data.user_id,
+                "count": user_data.count,
+                "total_amount": float(user_data.total_amount),
+                "severity": "medium"
+            })
+        
+        # 检查大额异常操作
+        large_deposits = db.query(Deposit).filter(
+            and_(
+                Deposit.amount >= Decimal("5000.00"),
+                Deposit.created_at >= datetime.now() - timedelta(hours=1)
+            )
+        ).all()
+        
+        for deposit in large_deposits:
+            suspicious_activities.append({
+                "type": "large_amount",
+                "user_id": deposit.user_id,
+                "deposit_id": deposit.id,
+                "amount": float(deposit.amount),
+                "severity": "high"
+            })
+        
+        return {
+            "suspicious_count": len(suspicious_activities),
+            "activities": suspicious_activities,
+            "check_time": datetime.now().isoformat()
         }

@@ -467,3 +467,286 @@ class PaymentService:
             "total_amount": float(total_amount),
             "payment_method": payment_method
         }
+    
+    async def generate_payment_report(
+        self,
+        db: Session,
+        start_date: datetime,
+        end_date: datetime,
+        group_by: str = "day"
+    ) -> Dict[str, Any]:
+        """生成支付报表"""
+        from sqlalchemy import func, extract, case
+        
+        # 构建时间分组函数
+        if group_by == "day":
+            time_group = func.date(Payment.created_at)
+        elif group_by == "week":
+            time_group = func.date_trunc('week', Payment.created_at)
+        elif group_by == "month":
+            time_group = func.date_trunc('month', Payment.created_at)
+        else:
+            time_group = func.date(Payment.created_at)
+        
+        # 支付数据统计
+        payment_stats = db.query(
+            time_group.label('time_period'),
+            func.count(Payment.id).label('total_payments'),
+            func.sum(case([(Payment.status == 'paid', Payment.amount)], else_=0)).label('paid_amount'),
+            func.sum(case([(Payment.status == 'pending', Payment.amount)], else_=0)).label('pending_amount'),
+            func.sum(case([(Payment.status == 'failed', Payment.amount)], else_=0)).label('failed_amount'),
+            func.count(case([(Payment.status == 'paid', 1)])).label('paid_count'),
+            func.count(case([(Payment.status == 'pending', 1)])).label('pending_count'),
+            func.count(case([(Payment.status == 'failed', 1)])).label('failed_count')
+        ).filter(
+            Payment.payment_type == "payment",
+            Payment.created_at >= start_date,
+            Payment.created_at <= end_date
+        ).group_by(time_group).order_by(time_group).all()
+        
+        # 退款数据统计
+        refund_stats = db.query(
+            time_group.label('time_period'),
+            func.count(Payment.id).label('refund_count'),
+            func.sum(func.abs(Payment.amount)).label('refund_amount')
+        ).filter(
+            Payment.payment_type == "refund",
+            Payment.created_at >= start_date,
+            Payment.created_at <= end_date
+        ).group_by(time_group).order_by(time_group).all()
+        
+        # 转换为字典以便合并
+        refund_dict = {str(stat.time_period): stat for stat in refund_stats}
+        
+        # 合并数据
+        report_data = []
+        for payment_stat in payment_stats:
+            period_str = str(payment_stat.time_period)
+            refund_stat = refund_dict.get(period_str)
+            
+            report_data.append({
+                "time_period": period_str,
+                "payments": {
+                    "total_count": payment_stat.total_payments,
+                    "paid_count": payment_stat.paid_count,
+                    "pending_count": payment_stat.pending_count,
+                    "failed_count": payment_stat.failed_count,
+                    "paid_amount": float(payment_stat.paid_amount or 0),
+                    "pending_amount": float(payment_stat.pending_amount or 0),
+                    "failed_amount": float(payment_stat.failed_amount or 0),
+                    "success_rate": round(
+                        (payment_stat.paid_count / payment_stat.total_payments * 100) 
+                        if payment_stat.total_payments > 0 else 0, 2
+                    )
+                },
+                "refunds": {
+                    "count": refund_stat.refund_count if refund_stat else 0,
+                    "amount": float(refund_stat.refund_amount or 0) if refund_stat else 0
+                }
+            })
+        
+        # 计算汇总数据
+        total_paid_amount = sum(item["payments"]["paid_amount"] for item in report_data)
+        total_refund_amount = sum(item["refunds"]["amount"] for item in report_data)
+        total_payments = sum(item["payments"]["total_count"] for item in report_data)
+        total_paid_count = sum(item["payments"]["paid_count"] for item in report_data)
+        
+        return {
+            "summary": {
+                "total_payments": total_payments,
+                "total_paid_count": total_paid_count,
+                "total_paid_amount": total_paid_amount,
+                "total_refund_amount": total_refund_amount,
+                "overall_success_rate": round(
+                    (total_paid_count / total_payments * 100) if total_payments > 0 else 0, 2
+                ),
+                "net_amount": total_paid_amount - total_refund_amount
+            },
+            "data": report_data,
+            "period": {
+                "start_date": start_date.isoformat(),
+                "end_date": end_date.isoformat(),
+                "group_by": group_by
+            }
+        }
+    
+    async def detect_payment_anomalies(self, db: Session) -> Dict[str, Any]:
+        """检测支付异常"""
+        from sqlalchemy import func, and_
+        from datetime import timedelta
+        
+        anomalies = []
+        
+        # 检测高失败率的支付方式
+        failure_rate_stats = db.query(
+            Payment.payment_method,
+            func.count(Payment.id).label('total'),
+            func.count(case([(Payment.status == 'failed', 1)])).label('failed'),
+            (func.count(case([(Payment.status == 'failed', 1)])) * 100.0 / func.count(Payment.id)).label('failure_rate')
+        ).filter(
+            Payment.payment_type == "payment",
+            Payment.created_at >= datetime.now() - timedelta(days=7)
+        ).group_by(Payment.payment_method).having(
+            func.count(Payment.id) > 10  # 至少10笔交易
+        ).all()
+        
+        for stat in failure_rate_stats:
+            if stat.failure_rate > 20:  # 失败率超过20%
+                anomalies.append({
+                    "type": "high_failure_rate",
+                    "payment_method": stat.payment_method,
+                    "failure_rate": round(stat.failure_rate, 2),
+                    "total_count": stat.total,
+                    "failed_count": stat.failed,
+                    "severity": "high" if stat.failure_rate > 50 else "medium"
+                })
+        
+        # 检测异常大额支付
+        large_payments = db.query(Payment).filter(
+            and_(
+                Payment.payment_type == "payment",
+                Payment.amount >= Decimal("10000.00"),
+                Payment.created_at >= datetime.now() - timedelta(hours=24)
+            )
+        ).all()
+        
+        for payment in large_payments:
+            anomalies.append({
+                "type": "large_amount",
+                "payment_id": payment.id,
+                "user_id": payment.user_id,
+                "amount": float(payment.amount),
+                "payment_method": payment.payment_method,
+                "created_at": payment.created_at.isoformat(),
+                "severity": "high" if payment.amount >= Decimal("50000.00") else "medium"
+            })
+        
+        # 检测频繁退款用户
+        frequent_refund_users = db.query(
+            Payment.user_id,
+            func.count(Payment.id).label('refund_count'),
+            func.sum(func.abs(Payment.amount)).label('refund_amount')
+        ).filter(
+            and_(
+                Payment.payment_type == "refund",
+                Payment.created_at >= datetime.now() - timedelta(days=30)
+            )
+        ).group_by(Payment.user_id).having(
+            func.count(Payment.id) > 5  # 30天内超过5次退款
+        ).all()
+        
+        for user_stat in frequent_refund_users:
+            anomalies.append({
+                "type": "frequent_refunds",
+                "user_id": user_stat.user_id,
+                "refund_count": user_stat.refund_count,
+                "refund_amount": float(user_stat.refund_amount),
+                "severity": "medium"
+            })
+        
+        return {
+            "anomaly_count": len(anomalies),
+            "anomalies": anomalies,
+            "check_time": datetime.now().isoformat()
+        }
+    
+    async def get_revenue_analytics(self, db: Session, days: int = 30) -> Dict[str, Any]:
+        """获取收入分析"""
+        from sqlalchemy import func
+        
+        start_date = datetime.now() - timedelta(days=days)
+        
+        # 收入趋势
+        daily_revenue = db.query(
+            func.date(Payment.created_at).label('date'),
+            func.sum(Payment.amount).label('revenue'),
+            func.count(Payment.id).label('transaction_count')
+        ).filter(
+            and_(
+                Payment.payment_type == "payment",
+                Payment.status == "paid",
+                Payment.created_at >= start_date
+            )
+        ).group_by(func.date(Payment.created_at)).order_by(func.date(Payment.created_at)).all()
+        
+        # 按支付方式分析
+        method_revenue = db.query(
+            Payment.payment_method,
+            func.sum(Payment.amount).label('revenue'),
+            func.count(Payment.id).label('transaction_count'),
+            func.avg(Payment.amount).label('avg_amount')
+        ).filter(
+            and_(
+                Payment.payment_type == "payment",
+                Payment.status == "paid",
+                Payment.created_at >= start_date
+            )
+        ).group_by(Payment.payment_method).all()
+        
+        # 用户支付行为分析
+        user_behavior = db.query(
+            func.count(func.distinct(Payment.user_id)).label('active_users'),
+            func.avg(Payment.amount).label('avg_payment'),
+            func.percentile_cont(0.5).within_group(Payment.amount).label('median_payment'),
+            func.max(Payment.amount).label('max_payment'),
+            func.min(Payment.amount).label('min_payment')
+        ).filter(
+            and_(
+                Payment.payment_type == "payment",
+                Payment.status == "paid",
+                Payment.created_at >= start_date
+            )
+        ).first()
+        
+        # 计算增长率
+        previous_period_revenue = db.query(
+            func.sum(Payment.amount)
+        ).filter(
+            and_(
+                Payment.payment_type == "payment",
+                Payment.status == "paid",
+                Payment.created_at >= start_date - timedelta(days=days),
+                Payment.created_at < start_date
+            )
+        ).scalar() or Decimal("0.00")
+        
+        current_period_revenue = sum(day.revenue for day in daily_revenue)
+        
+        growth_rate = 0
+        if previous_period_revenue > 0:
+            growth_rate = ((current_period_revenue - previous_period_revenue) / previous_period_revenue) * 100
+        
+        return {
+            "period": {
+                "days": days,
+                "start_date": start_date.isoformat(),
+                "end_date": datetime.now().isoformat()
+            },
+            "summary": {
+                "total_revenue": float(current_period_revenue),
+                "previous_period_revenue": float(previous_period_revenue),
+                "growth_rate": round(growth_rate, 2),
+                "active_users": user_behavior.active_users or 0,
+                "avg_payment": float(user_behavior.avg_payment or 0),
+                "median_payment": float(user_behavior.median_payment or 0),
+                "max_payment": float(user_behavior.max_payment or 0),
+                "min_payment": float(user_behavior.min_payment or 0)
+            },
+            "daily_trend": [
+                {
+                    "date": str(day.date),
+                    "revenue": float(day.revenue),
+                    "transaction_count": day.transaction_count
+                }
+                for day in daily_revenue
+            ],
+            "by_payment_method": [
+                {
+                    "method": method.payment_method,
+                    "revenue": float(method.revenue),
+                    "transaction_count": method.transaction_count,
+                    "avg_amount": float(method.avg_amount)
+                }
+                for method in method_revenue
+            ]
+        }
