@@ -144,6 +144,35 @@ async def clear_browse_history(
     return {"message": "清空成功"}
 
 
+# 用户统计信息接口
+@router.get("/user/stats")
+async def get_user_stats(
+    current_user: User = Depends(get_current_user),
+    db: Session = Depends(get_db)
+):
+    """获取用户统计信息（关注数、粉丝数、浏览历史数）"""
+    try:
+        # 关注数
+        following_count = db.query(UserFollow).filter(UserFollow.follower_id == current_user.id).count()
+        
+        # 粉丝数
+        follower_count = db.query(UserFollow).filter(UserFollow.following_id == current_user.id).count()
+        
+        # 浏览历史数
+        browse_history_count = db.query(BrowseHistory).filter(BrowseHistory.user_id == current_user.id).count()
+        
+        return {
+            "success": True,
+            "data": {
+                "following_count": following_count,
+                "follower_count": follower_count,
+                "browse_history_count": browse_history_count
+            }
+        }
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=f"获取用户统计失败: {str(e)}")
+
+
 # 用户信息相关接口
 @router.get("/user/detail", response_model=UserDetailResponse)
 async def get_user_detail(

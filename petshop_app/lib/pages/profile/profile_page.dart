@@ -11,7 +11,10 @@ import '../../services/store_application_service.dart';
 import '../../services/storage_service.dart';
 import '../../services/user_role_service.dart';
 import '../../services/order_service.dart';
+import '../../services/user_info_service.dart';
+import '../../services/deposit_service.dart';
 import '../../models/user.dart';
+import '../../models/deposit.dart';
 import '../auth/login_page.dart';
 import '../wallet/wallet_page.dart';
 import '../deposit/deposit_page.dart';
@@ -32,6 +35,8 @@ class _ProfilePageState extends State<ProfilePage>
   User? _currentUser;
   bool _isLoggedIn = false;
   final UserRoleService _userRoleService = UserRoleService();
+  final UserInfoService _userInfoService = UserInfoService();
+  final DepositService _depositService = DepositService();
 
   // 订单数量统计
   Map<String, int> _orderCounts = {
@@ -40,6 +45,16 @@ class _ProfilePageState extends State<ProfilePage>
     'shipped': 0, // 待收货
     'refunded': 0, // 退款售后
   };
+
+  // 用户统计信息
+  Map<String, int> _userStats = {
+    'following_count': 0,
+    'follower_count': 0,
+    'browse_history_count': 0,
+  };
+
+  // 保证金信息
+  DepositInfo? _depositInfo;
 
   @override
   void initState() {
@@ -60,9 +75,11 @@ class _ProfilePageState extends State<ProfilePage>
       _isLoggedIn = token != null && token.isNotEmpty;
     });
 
-    // 如果已登录，加载订单统计
+    // 如果已登录，加载各种统计信息
     if (_isLoggedIn) {
       _loadOrderCounts();
+      _loadUserStats();
+      _loadDepositInfo();
     }
   }
 
@@ -77,6 +94,38 @@ class _ProfilePageState extends State<ProfilePage>
       }
     } catch (e) {
       print('加载订单统计失败: $e');
+    }
+  }
+
+  // 加载用户统计信息
+  void _loadUserStats() async {
+    try {
+      final result = await _userInfoService.getUserStats();
+      if (result.success && result.data != null && mounted) {
+        setState(() {
+          _userStats = result.data!;
+        });
+      } else {
+        print('获取用户统计失败: ${result.message}');
+      }
+    } catch (e) {
+      print('加载用户统计失败: $e');
+    }
+  }
+
+  // 加载保证金信息
+  void _loadDepositInfo() async {
+    try {
+      final result = await _depositService.getDepositSummary();
+      if (result.success && result.data != null && mounted) {
+        setState(() {
+          _depositInfo = result.data!;
+        });
+      } else {
+        print('获取保证金信息失败: ${result.message}');
+      }
+    } catch (e) {
+      print('加载保证金信息失败: $e');
     }
   }
 
@@ -117,8 +166,10 @@ class _ProfilePageState extends State<ProfilePage>
         builder: (context) => OrderListPage(initialTabIndex: initialTabIndex),
       ),
     ).then((_) {
-      // 从订单页面返回后刷新订单统计
+      // 从订单页面返回后刷新统计数据
       _loadOrderCounts();
+      _loadUserStats();
+      _loadDepositInfo();
     });
   }
 
@@ -453,7 +504,8 @@ class _ProfilePageState extends State<ProfilePage>
                               SizedBox(width: 8.w),
                               if (_isLoggedIn)
                                 GestureDetector(
-                                  onTap: () => Get.toNamed(AppRoutes.personalInfo),
+                                  onTap: () =>
+                                      Get.toNamed(AppRoutes.personalInfo),
                                   child: Icon(
                                     Icons.edit,
                                     size: 18.w,
@@ -557,15 +609,18 @@ class _ProfilePageState extends State<ProfilePage>
                   children: [
                     GestureDetector(
                       onTap: () => Get.toNamed(AppRoutes.following),
-                      child: _buildStatColumn('35', '关注'),
+                      child: _buildStatColumn(
+                          '${_userStats['following_count'] ?? 0}', '关注'),
                     ),
                     GestureDetector(
                       onTap: () => Get.toNamed(AppRoutes.followers),
-                      child: _buildStatColumn('35', '粉丝'),
+                      child: _buildStatColumn(
+                          '${_userStats['follower_count'] ?? 0}', '粉丝'),
                     ),
                     GestureDetector(
                       onTap: () => Get.toNamed(AppRoutes.browseHistory),
-                      child: _buildStatColumn('42', '历史浏览'),
+                      child: _buildStatColumn(
+                          '${_userStats['browse_history_count'] ?? 0}', '历史浏览'),
                     ),
                   ],
                 ),
@@ -972,7 +1027,7 @@ class _ProfilePageState extends State<ProfilePage>
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
                     Text(
-                      '0元',
+                      '${_depositInfo?.totalDeposit.toStringAsFixed(0) ?? 0}元',
                       style: TextStyle(
                         fontSize: 22.sp,
                         fontWeight: FontWeight.w600,
@@ -995,7 +1050,7 @@ class _ProfilePageState extends State<ProfilePage>
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
                     Text(
-                      '0元',
+                      '${(_depositInfo?.availableForRefund ?? 0).toStringAsFixed(0)}元',
                       style: TextStyle(
                         fontSize: 22.sp,
                         fontWeight: FontWeight.w600,
