@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:cached_network_image/cached_network_image.dart';
+import '../../services/checkin_service.dart';
 
 class CheckinPage extends StatefulWidget {
   const CheckinPage({super.key});
@@ -10,17 +11,58 @@ class CheckinPage extends StatefulWidget {
 }
 
 class _CheckinPageState extends State<CheckinPage> {
-  int _consecutiveDays = 1; // 连续签到天数
-  int _diamondBalance = 23400; // 钻石余额
-  bool _todayChecked = false; // 今天是否已签到
-  bool _yesterdayChecked = true; // 昨天是否已签到
-  bool _dayBeforeYesterdayChecked = false; // 前天是否已签到
+  final CheckinService _checkinService = CheckinService();
+  
+  int _consecutiveDays = 0;
+  int _diamondBalance = 0;
+  bool _todayChecked = false;
+  bool _yesterdayChecked = false;
+  bool _dayBeforeYesterdayChecked = false;
+  bool _isLoading = false;
+  CheckinStatus? _checkinStatus;
+
+  @override
+  void initState() {
+    super.initState();
+    _loadCheckinStatus();
+  }
+
+  Future<void> _loadCheckinStatus() async {
+    setState(() {
+      _isLoading = true;
+    });
+
+    final result = await _checkinService.getCheckinStatus();
+    if (result.success && result.data != null) {
+      setState(() {
+        _checkinStatus = result.data!;
+        _consecutiveDays = result.data!.consecutiveDays;
+        _todayChecked = result.data!.isCheckedToday;
+        _diamondBalance = 23400; // 这里应该从用户信息API获取
+        _isLoading = false;
+      });
+    } else {
+      setState(() {
+        _isLoading = false;
+      });
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text(result.message),
+            backgroundColor: Colors.red,
+          ),
+        );
+      }
+    }
+  }
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
       backgroundColor: const Color(0xFFF5F5F5),
-      body: SafeArea(
+      body: _isLoading
+          ? const Center(child: CircularProgressIndicator())
+          : SafeArea(
         child: SingleChildScrollView(
           physics: const BouncingScrollPhysics(),
           child: Column(
@@ -257,13 +299,13 @@ class _CheckinPageState extends State<CheckinPage> {
             ),
           ),
           SizedBox(width: 8.w),
-          // 今天（第二个）
+          // 明天
           Expanded(
             child: _buildDayCard(
-              '今天',
-              _todayChecked,
-              _todayChecked ? '+1' : '签到',
-              !_todayChecked,
+              '明天',
+              false,
+              '未开放',
+              false,
             ),
           ),
         ],
@@ -425,17 +467,192 @@ class _CheckinPageState extends State<CheckinPage> {
   }
 
   // 执行签到
-  void _performCheckin() {
+  void _performCheckin() async {
+    if (_isLoading) return;
+
+    // 如果已签到，显示已签到提示
+    if (_todayChecked) {
+      _showAlreadyCheckedDialog();
+      return;
+    }
+
     setState(() {
-      if (!_todayChecked) {
-        _todayChecked = true;
-        _consecutiveDays++;
-        _diamondBalance += 10; // 今日签到奖励
-      }
+      _isLoading = true;
     });
 
-    // 显示签到成功弹窗
-    _showSuccessDialog();
+    final result = await _checkinService.dailyCheckin();
+    
+    setState(() {
+      _isLoading = false;
+    });
+
+    if (result.success && result.data != null) {
+      setState(() {
+        _todayChecked = true;
+        _consecutiveDays = result.data!.checkinInfo.consecutiveDays;
+        _diamondBalance += result.data!.checkinInfo.rewardPoints;
+      });
+      
+      _showSuccessDialog(result.data!.checkinInfo);
+    } else {
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text(result.message),
+            backgroundColor: Colors.red,
+          ),
+        );
+      }
+    }
+  }
+
+  // 显示已签到提示弹窗
+  void _showAlreadyCheckedDialog() {
+    showDialog(
+      context: context,
+      builder: (context) => AlertDialog(
+        shape: RoundedRectangleBorder(
+          borderRadius: BorderRadius.circular(20.r),
+        ),
+        contentPadding: EdgeInsets.zero,
+        content: Container(
+          width: 280.w,
+          decoration: BoxDecoration(
+            color: Colors.white,
+            borderRadius: BorderRadius.circular(20.r),
+          ),
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              // 顶部插图区域
+              Container(
+                width: double.infinity,
+                height: 120.h,
+                decoration: BoxDecoration(
+                  color: const Color(0xFFF8F9FA),
+                  borderRadius: BorderRadius.only(
+                    topLeft: Radius.circular(20.r),
+                    topRight: Radius.circular(20.r),
+                  ),
+                ),
+                child: Stack(
+                  alignment: Alignment.center,
+                  children: [
+                    Container(
+                      width: 80.w,
+                      height: 80.w,
+                      decoration: BoxDecoration(
+                        color: Colors.white,
+                        borderRadius: BorderRadius.circular(40.r),
+                        boxShadow: [
+                          BoxShadow(
+                            color: Colors.black.withOpacity(0.1),
+                            blurRadius: 15,
+                            offset: const Offset(0, 5),
+                          ),
+                        ],
+                      ),
+                      child: Icon(
+                        Icons.check_circle,
+                        size: 45.w,
+                        color: const Color(0xFF4CAF50),
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+
+              // 内容区域
+              Padding(
+                padding: EdgeInsets.all(24.w),
+                child: Column(
+                  children: [
+                    // 标题
+                    Text(
+                      '今日已签到',
+                      style: TextStyle(
+                        fontSize: 22.sp,
+                        color: const Color(0xFF333333),
+                        fontWeight: FontWeight.w700,
+                      ),
+                    ),
+                    SizedBox(height: 16.h),
+
+                    // 签到信息
+                    Container(
+                      width: double.infinity,
+                      padding: EdgeInsets.symmetric(
+                          horizontal: 16.w, vertical: 16.h),
+                      decoration: BoxDecoration(
+                        color: const Color(0xFFF8F9FA),
+                        borderRadius: BorderRadius.circular(12.r),
+                        border: Border.all(
+                          color: const Color(0xFFE0E0E0),
+                          width: 1,
+                        ),
+                      ),
+                      child: Column(
+                        children: [
+                          Text(
+                            '您今天已经完成签到了',
+                            style: TextStyle(
+                              fontSize: 16.sp,
+                              color: const Color(0xFF666666),
+                              fontWeight: FontWeight.w500,
+                            ),
+                          ),
+                          SizedBox(height: 8.h),
+                          Text(
+                            '已连续签到${_consecutiveDays}天',
+                            style: TextStyle(
+                              fontSize: 14.sp,
+                              color: const Color(0xFF666666),
+                              fontWeight: FontWeight.w500,
+                            ),
+                          ),
+                        ],
+                      ),
+                    ),
+                    SizedBox(height: 24.h),
+
+                    // 确定按钮
+                    GestureDetector(
+                      onTap: () {
+                        Navigator.pop(context);
+                      },
+                      child: Container(
+                        width: double.infinity,
+                        padding: EdgeInsets.symmetric(vertical: 16.h),
+                        decoration: BoxDecoration(
+                          color: const Color(0xFF9C4DFF),
+                          borderRadius: BorderRadius.circular(12.r),
+                          boxShadow: [
+                            BoxShadow(
+                              color: const Color(0xFF9C4DFF).withOpacity(0.3),
+                              blurRadius: 8,
+                              offset: const Offset(0, 4),
+                            ),
+                          ],
+                        ),
+                        child: Text(
+                          '确定',
+                          style: TextStyle(
+                            fontSize: 16.sp,
+                            color: Colors.white,
+                            fontWeight: FontWeight.w600,
+                          ),
+                          textAlign: TextAlign.center,
+                        ),
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+            ],
+          ),
+        ),
+      ),
+    );
   }
 
   // 显示签到规则弹窗
@@ -511,7 +728,7 @@ class _CheckinPageState extends State<CheckinPage> {
   }
 
   // 显示签到成功弹窗
-  void _showSuccessDialog() {
+  void _showSuccessDialog(CheckinInfo checkinInfo) {
     showDialog(
       context: context,
       barrierDismissible: false,
@@ -629,7 +846,7 @@ class _CheckinPageState extends State<CheckinPage> {
                               ),
                               SizedBox(width: 6.w),
                               Text(
-                                '今日签到 +10 钻石',
+                                '今日签到 +${checkinInfo.rewardPoints} 钻石',
                                 style: TextStyle(
                                   fontSize: 16.sp,
                                   color: const Color(0xFF333333),
@@ -641,7 +858,7 @@ class _CheckinPageState extends State<CheckinPage> {
                           SizedBox(height: 12.h),
                           // 连续签到天数
                           Text(
-                            '已连续签到${_consecutiveDays}天',
+                            '已连续签到${checkinInfo.consecutiveDays}天',
                             style: TextStyle(
                               fontSize: 14.sp,
                               color: const Color(0xFF666666),
