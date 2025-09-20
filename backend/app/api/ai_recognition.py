@@ -4,7 +4,7 @@ from typing import Optional
 import base64
 
 from ..core.database import get_db
-from ..core.auth import get_current_user, get_admin_user
+from ..core.security import get_current_user, get_admin_user
 from ..models.user import User
 from ..services.ai_recognition_service import AIRecognitionService
 from ..schemas.ai_recognition import (

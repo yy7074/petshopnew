@@ -19,6 +19,8 @@ import '../pages/bids/bid_records_page.dart';
 import '../pages/seller/seller_products_page.dart';
 import '../pages/publish/publish_product_page.dart';
 import '../pages/ai_recognition/ai_pet_recognition_page.dart';
+import '../pages/lottery/lottery_wheel_page.dart';
+import '../pages/lottery/lottery_history_page.dart';
 import '../pages/auction/limited_auction_page.dart';
 import '../pages/brand/brand_zone_page.dart';
 import '../pages/fixed_price/fixed_price_zone_page.dart';
@@ -69,6 +71,8 @@ class AppRoutes {
   static const String sellerOrders = '/seller-orders';
   static const String sellerShopSettings = '/seller-shop-settings';
   static const String sellerAnalytics = '/seller-analytics';
+  static const String lottery = '/lottery';
+  static const String lotteryHistory = '/lottery/history';
 
   static List<GetPage> routes = [
     GetPage(
@@ -227,6 +231,14 @@ class AppRoutes {
     GetPage(
       name: sellerAnalytics,
       page: () => const SellerAnalyticsPage(),
+    ),
+    GetPage(
+      name: lottery,
+      page: () => const LotteryWheelPage(),
+    ),
+    GetPage(
+      name: lotteryHistory,
+      page: () => const LotteryHistoryPage(),
     ),
   ];
 }

@@ -30,6 +30,7 @@ class User(Base):
     # 关联关系
     # wallet_transactions = relationship("WalletTransaction", back_populates="user")
     # deposits = relationship("Deposit", back_populates="user")
+    # lottery_records = relationship("LotteryRecord", back_populates="user")
     # 暂时注释掉所有关系，避免错误
 
 class UserFollow(Base):

@@ -1060,7 +1060,9 @@ class _ProfilePageState extends State<ProfilePage>
                       ),
                       SizedBox(height: 16.h),
                       GestureDetector(
-                        onTap: () {},
+                        onTap: () {
+                          Navigator.pushNamed(context, '/lottery');
+                        },
                         child: Container(
                           padding: EdgeInsets.symmetric(
                             horizontal: 24.w,

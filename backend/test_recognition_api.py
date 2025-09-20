@@ -32,6 +32,11 @@ async def test_recognition_api():
             "name": "测试猫咪图片URL", 
             "image_url": "https://cataas.com/cat",
             "expected_type": "猫"
+q        },
+        {
+            "name": "测试狗狗图片URL2",
+            "image_url": "https://dog.ceo/api/breeds/image/random",
+            "expected_type": "狗"
         }
     ]
     

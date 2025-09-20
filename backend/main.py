@@ -10,7 +10,7 @@ from app.core.database import engine, Base
 from app.api import auth
 
 # 导入所有模型以确保数据库表被创建
-from app.models import user, product, order, wallet, deposit, store, store_application, message, local_service
+from app.models import user, product, order, wallet, deposit, store, store_application, message, local_service, lottery
 
 # 创建数据库表
 Base.metadata.create_all(bind=engine)
@@ -44,7 +44,7 @@ if os.path.exists(admin_path):
     app.mount("/admin", StaticFiles(directory=admin_path, html=True), name="admin")
 
 # 注册路由
-from app.api import auth, products, bids, orders, auctions, events, home, wallet, deposit, stores, store_applications, chat, messages, users, admin, local_services  # search
+from app.api import auth, products, bids, orders, auctions, events, home, wallet, deposit, stores, store_applications, chat, messages, users, admin, local_services, ai_recognition, lottery  # search
 
 app.include_router(auth.router, prefix="/api/v1/auth", tags=["认证"])
 app.include_router(products.router, prefix="/api/v1/products", tags=["商品"])
@@ -64,6 +64,8 @@ app.include_router(users.router, prefix="/api/v1/users", tags=["用户"])
 app.include_router(users.router, prefix="/api/v1/user", tags=["用户-兼容"])
 app.include_router(admin.router, prefix="/api/v1/admin", tags=["后台管理"])
 app.include_router(local_services.router, prefix="/api/v1/local-services", tags=["同城服务"])
+app.include_router(ai_recognition.router, prefix="/api/v1", tags=["AI识别"])
+app.include_router(lottery.router, prefix="/api/v1", tags=["抽奖"])
 # app.include_router(search.router, prefix="/api/v1/search", tags=["搜索"])
 
 # 根路径

@@ -130,13 +130,29 @@ class AIRecognitionService:
         if image_data:
             validation_result = await self._validate_image(image_data, image_format)
             if not validation_result["valid"]:
-                raise ValueError(validation_result["message"])
+                # 对于小图片，只输出警告而不阻止识别
+                if "过小" in validation_result["message"]:
+                    logger.warning(f"图片质量警告: {validation_result['message']}")
+                else:
+                    raise ValueError(validation_result["message"])
         
         try:
             # 调用阿里云AI识别接口
             recognition_result = await self._perform_ai_recognition(image_data, image_url)
             
-            # 增强识别结果
+            # 检查是否是真实API结果
+            api_source = recognition_result.get("api_source", "unknown")
+            if api_source in ["fallback_simulation", "fallback", "aliyun_error", "aliyun_http_error", "aliyun_exception", "aliyun_parse_error"]:
+                error_message = recognition_result.get("error", "API调用失败")
+                return {
+                    "success": False,
+                    "message": f"识别失败: {error_message}",
+                    "data": None,
+                    "error_details": f"API源: {api_source}",
+                    "api_source": api_source
+                }
+            
+            # 只有真实API结果才进行增强处理
             enhanced_result = await self._enhance_recognition_result(recognition_result)
             
             # 记录识别历史
@@ -227,6 +243,9 @@ class AIRecognitionService:
     async def _perform_ai_recognition(self, image_data: str, image_url: str = None) -> Dict[str, Any]:
         """执行阿里云AI宠物识别"""
         
+        # 首先记录调用信息
+        logger.info(f"开始AI识别 - 使用图片URL: {bool(image_url)}, 使用图片数据: {bool(image_data)}")
+        
         try:
             # 准备API请求
             url = self.ALIYUN_API_CONFIG["host"] + self.ALIYUN_API_CONFIG["path"]
@@ -237,18 +256,23 @@ class AIRecognitionService:
                 'Authorization': 'APPCODE ' + self.ALIYUN_API_CONFIG["app_code"]
             }
             
-            # 请求体 - 根据API文档格式
+            # 请求体 - 根据阿里云API官方文档格式
             body_data = {}
             
-            # 图片参数（优先使用imageUrl）
+            # 图片参数（按照官方示例格式）
             if image_url:
                 body_data['imageUrl'] = image_url
+                # 如果使用URL，清空base64参数
+                body_data['imageBase64'] = ''
             elif image_data:
                 body_data['imageBase64'] = image_data
+                # 如果使用base64，清空URL参数
+                body_data['imageUrl'] = ''
+            else:
+                raise ValueError("必须提供imageUrl或imageBase64参数")
             
-            # petType是必填参数：0为狗，1为猫
-            # 先尝试狗类识别，如果失败再尝试猫
-            body_data['petType'] = 0  # 默认识别狗
+            # petType是必填参数：0为狗，1为猫，按照官方示例格式
+            body_data['petType'] = '0'  # 先尝试识别狗（字符串格式）
             
             # 编码请求体
             post_data = urllib.parse.urlencode(body_data).encode('utf-8')
@@ -256,91 +280,184 @@ class AIRecognitionService:
             # 创建HTTP连接池
             http = urllib3.PoolManager()
             
+            logger.info(f"发送请求到: {url}")
+            logger.info(f"请求参数: petType={body_data.get('petType')}, 有图片数据: {bool(image_data)}, 有图片URL: {bool(image_url)}")
+            
             # 发送请求
             response = http.request('POST', url, body=post_data, headers=headers)
             
             # 解析响应
             content = response.data.decode('utf-8')
-            logger.info(f"阿里云API响应: {content}")
+            logger.info(f"阿里云API响应状态: {response.status}")
+            logger.info(f"阿里云API响应内容: {content}")
             
             if response.status == 200:
-                # 解析JSON响应
-                result = json.loads(content)
-                
-                # 检查API响应状态
-                if self._is_aliyun_success(result):
-                    return self._parse_aliyun_response(result)
-                else:
-                    # 如果狗类识别失败，尝试猫类识别
-                    if body_data.get('petType') == 0:
-                        logger.info("狗类识别失败，尝试猫类识别")
-                        body_data['petType'] = 1
-                        post_data = urllib.parse.urlencode(body_data).encode('utf-8')
-                        
-                        response = http.request('POST', url, body=post_data, headers=headers)
-                        content = response.data.decode('utf-8')
-                        logger.info(f"阿里云API响应(猫类): {content}")
-                        
-                        if response.status == 200:
-                            result = json.loads(content)
-                            if self._is_aliyun_success(result):
-                                return self._parse_aliyun_response(result)
+                try:
+                    # 解析JSON响应
+                    result = json.loads(content)
                     
-                    logger.error(f"阿里云API返回错误: {result}")
-                    return await self._fallback_recognition()
+                    # 检查API响应状态
+                    if self._is_aliyun_success(result):
+                        logger.info("阿里云API识别成功")
+                        return self._parse_aliyun_response(result)
+                    else:
+                        # 如果狗类识别失败，尝试猫类识别
+                        if body_data.get('petType') == '0':
+                            logger.info("狗类识别失败，尝试猫类识别")
+                            body_data['petType'] = '1'  # 字符串格式
+                            post_data = urllib.parse.urlencode(body_data).encode('utf-8')
+                            
+                            response = http.request('POST', url, body=post_data, headers=headers)
+                            content = response.data.decode('utf-8')
+                            logger.info(f"阿里云API响应(猫类状态): {response.status}")
+                            logger.info(f"阿里云API响应(猫类内容): {content}")
+                            
+                            if response.status == 200:
+                                try:
+                                    result = json.loads(content)
+                                    if self._is_aliyun_success(result):
+                                        logger.info("阿里云API猫类识别成功")
+                                        return self._parse_aliyun_response(result)
+                                except json.JSONDecodeError as e:
+                                    logger.error(f"猫类识别响应JSON解析失败: {e}")
+                        
+                        logger.error(f"阿里云API返回错误: {result}")
+                        return {
+                            "pet_type": "unknown",
+                            "breed": "识别失败", 
+                            "confidence": 0.0,
+                            "raw_predictions": [],
+                            "api_source": "aliyun_error",
+                            "error": result.get("message", "API返回错误")
+                        }
+                        
+                except json.JSONDecodeError as e:
+                    logger.error(f"阿里云API响应JSON解析失败: {e}")
+                    logger.error(f"原始响应内容: {content}")
+                    return {
+                        "pet_type": "unknown",
+                        "breed": "响应解析失败", 
+                        "confidence": 0.0,
+                        "raw_predictions": [],
+                        "api_source": "aliyun_parse_error",
+                        "error": f"JSON解析失败: {str(e)}"
+                    }
             else:
-                logger.error(f"阿里云API请求失败，状态码: {response.status}")
-                return await self._fallback_recognition()
+                logger.error(f"阿里云API请求失败，状态码: {response.status}, 响应: {content}")
+                return {
+                    "pet_type": "unknown",
+                    "breed": "API请求失败", 
+                    "confidence": 0.0,
+                    "raw_predictions": [],
+                    "api_source": "aliyun_http_error",
+                    "error": f"HTTP状态码: {response.status}"
+                }
                 
         except Exception as e:
-            logger.error(f"调用阿里云API异常: {e}")
-            # 发生异常时回退到模拟数据
-            return await self._fallback_recognition()
+            logger.error(f"调用阿里云API异常: {e}", exc_info=True)
+            return {
+                "pet_type": "unknown",
+                "breed": "API调用异常", 
+                "confidence": 0.0,
+                "raw_predictions": [],
+                "api_source": "aliyun_exception",
+                "error": str(e)
+            }
     
     def _is_aliyun_success(self, result: Dict[str, Any]) -> bool:
         """检查阿里云API调用是否成功"""
-        # 根据阿里云API文档，成功的响应格式可能包含不同的字段
+        # 根据API文档，成功的条件是：
+        # code: 0 表示成功，status: 200 表示HTTP成功，且有data字段
         return (
-            result.get('code') == 200 or 
-            result.get('success') == True or
-            result.get('status') == 'success' or
-            'data' in result
+            result.get('code') == 0 and
+            result.get('status') == 200 and
+            'data' in result and
+            result['data'] is not None
         )
     
     def _parse_aliyun_response(self, api_result: Dict[str, Any]) -> Dict[str, Any]:
         """解析阿里云API响应"""
         try:
-            # 根据阿里云宠物识别API的实际响应格式解析
-            # 通常阿里云API会返回包含识别结果的数据结构
+            # 根据API文档的响应格式解析
+            # 成功响应格式: {"code": 0, "data": {"pet": [{"identification": [...]}], "petType": "dog"}, "status": 200}
             
-            # 尝试从不同可能的字段中提取数据
-            data = api_result.get('data', api_result)
+            data = api_result.get('data', {})
+            pet_list = data.get('pet', [])
             
-            # 提取宠物类型（0为狗，1为猫）
-            pet_type_code = data.get('petType', 0)
-            pet_type = "狗" if pet_type_code == 0 else "猫"
+            logger.info(f"解析API响应 - 完整响应: {api_result}")
             
-            # 提取品种信息
-            breed = data.get('breed', data.get('petBreed', '未知品种'))
+            if not pet_list:
+                logger.warning("API响应中没有宠物识别结果")
+                return {
+                    "pet_type": "unknown",
+                    "breed": "未检测到宠物", 
+                    "confidence": 0.0,
+                    "raw_predictions": [],
+                    "api_source": "aliyun_no_results",
+                    "original_response": api_result
+                }
+            
+            # 获取第一个宠物的识别结果
+            first_pet = pet_list[0]
+            identifications = first_pet.get('identification', [])
+            
+            logger.info(f"解析详情 - 宠物数量: {len(pet_list)}, 识别结果数量: {len(identifications)}")
+            logger.info(f"识别结果: {identifications}")
+            
+            if not identifications:
+                logger.warning("API响应中没有品种识别结果")
+                return {
+                    "pet_type": "unknown",
+                    "breed": "无法识别品种", 
+                    "confidence": 0.0,
+                    "raw_predictions": [],
+                    "api_source": "aliyun_no_identification",
+                    "original_response": api_result
+                }
+            
+            # 获取置信度最高的结果（第一个就是最高的）
+            best_result = identifications[0]
+            
+            # 提取宠物类型
+            pet_type_code = data.get('petType', 'unknown')
+            pet_type_map = {
+                'cat': '猫',
+                'dog': '狗',
+                'bird': '鸟',
+                'fish': '鱼'
+            }
+            pet_type = pet_type_map.get(pet_type_code, pet_type_code)
+            
+            # 提取品种信息（优先中文名）
+            breed_chinese = best_result.get('chinese_name', '')
+            breed_english = best_result.get('english_name', '')
+            breed = breed_chinese if breed_chinese else breed_english
+            if not breed:
+                breed = '未知品种'
             
             # 提取置信度
-            confidence = data.get('confidence', data.get('score', 0.0))
+            confidence = best_result.get('confidence', 0.0)
             if isinstance(confidence, str):
                 try:
                     confidence = float(confidence)
                 except:
                     confidence = 0.0
             
-            # 提取详细信息（如果有）
-            details = data.get('details', {})
-            characteristics = details.get('characteristics', [])
-            
-            # 构建预测结果列表
+            # 构建所有预测结果列表
             predictions = []
-            if 'predictions' in data:
-                predictions = data['predictions']
-            elif breed != '未知品种':
-                predictions = [{'breed': breed, 'confidence': confidence}]
+            for identification in identifications:
+                chinese_name = identification.get('chinese_name', '')
+                english_name = identification.get('english_name', '')
+                pred_confidence = identification.get('confidence', 0.0)
+                
+                predictions.append({
+                    'breed': chinese_name if chinese_name else english_name,
+                    'chinese_name': chinese_name,
+                    'english_name': english_name,
+                    'confidence': pred_confidence
+                })
+            
+            logger.info(f"解析成功 - 宠物类型: {pet_type}, 品种: {breed}, 置信度: {confidence}")
             
             return {
                 "pet_type": pet_type,
@@ -348,19 +465,21 @@ class AIRecognitionService:
                 "confidence": float(confidence),
                 "raw_predictions": predictions,
                 "api_source": "aliyun",
-                "original_response": api_result  # 保留原始响应用于调试
+                "original_response": api_result
             }
             
         except Exception as e:
             logger.error(f"解析阿里云API响应失败: {e}")
             logger.error(f"原始响应: {api_result}")
-            # 解析失败时不调用_fallback_recognition，而是返回一个基础结果
+            # 解析失败时返回错误结果
             return {
                 "pet_type": "unknown",
-                "breed": "unknown", 
+                "breed": "解析失败", 
                 "confidence": 0.0,
                 "raw_predictions": [],
-                "api_source": "aliyun_parse_error"
+                "api_source": "aliyun_parse_error",
+                "error": str(e),
+                "original_response": api_result
             }
     
     async def _fallback_recognition(self) -> Dict[str, Any]:
@@ -368,6 +487,7 @@ class AIRecognitionService:
         import asyncio
         import random
         
+        logger.warning("使用回退识别机制 - 阿里云API不可用")
         await asyncio.sleep(random.uniform(0.5, 1.5))
         
         # 模拟识别结果
@@ -377,8 +497,8 @@ class AIRecognitionService:
         breeds = list(self.PET_DATABASE[selected_type]["breeds"].keys())
         selected_breed = random.choice(breeds)
         
-        # 生成置信度
-        confidence = random.uniform(0.6, 0.98)
+        # 生成置信度 (降低置信度以表明这是模拟结果)
+        confidence = random.uniform(0.3, 0.7)
         
         return {
             "pet_type": selected_type,
@@ -389,47 +509,30 @@ class AIRecognitionService:
                 {"breed": random.choice(breeds), "confidence": confidence - 0.1},
                 {"breed": random.choice(breeds), "confidence": confidence - 0.2}
             ],
-            "api_source": "fallback"
+            "api_source": "fallback_simulation",
+            "warning": "此结果为模拟数据，真实API暂不可用"
         }
     
     async def _enhance_recognition_result(self, raw_result: Dict[str, Any]) -> Dict[str, Any]:
         """增强识别结果，添加详细信息"""
         
         pet_type = raw_result["pet_type"]
-        breed_key = raw_result["breed"]
+        breed_name = raw_result["breed"]
         confidence = raw_result["confidence"]
         
-        # 获取品种详细信息
-        breed_info = self.PET_DATABASE.get(pet_type, {}).get("breeds", {}).get(breed_key, {})
-        
-        if not breed_info:
-            # 如果没有找到品种信息，返回基础结果
-            return {
-                "pet_type": self._translate_pet_type(pet_type),
-                "breed": "未知品种",
-                "confidence": confidence,
-                "characteristics": [],
-                "care_advice": [],
-                "health_tips": [],
-                "feeding_guide": [],
-                "estimated_value": None
-            }
-        
-        # 构建完整结果
-        result = {
+        # 直接返回API识别的品种名，不再依赖本地数据库匹配
+        # 因为API返回的品种信息已经很准确了
+        return {
             "pet_type": self._translate_pet_type(pet_type),
-            "breed": breed_info["name"],
+            "breed": breed_name,  # 直接使用API返回的品种名
             "confidence": confidence,
-            "characteristics": breed_info.get("characteristics", []),
-            "care_advice": breed_info.get("care_tips", []),
-            "health_tips": breed_info.get("health_tips", []),
-            "feeding_guide": breed_info.get("feeding_guide", []),
-            "estimated_value": self._calculate_estimated_value(breed_info),
-            "popularity_score": breed_info.get("popularity", 0.0),
-            "alternative_breeds": self._get_alternative_breeds(pet_type, breed_key)
+            "characteristics": self._get_generic_characteristics(pet_type),
+            "care_advice": self._get_generic_care_advice(pet_type),
+            "health_tips": self._get_generic_health_tips(pet_type),
+            "feeding_guide": self._get_generic_feeding_guide(pet_type),
+            "estimated_value": self._get_generic_estimated_value(pet_type, breed_name),
+            "raw_predictions": raw_result.get("raw_predictions", [])
         }
-        
-        return result
     
     def _translate_pet_type(self, pet_type: str) -> str:
         """翻译宠物类型"""
@@ -442,6 +545,71 @@ class AIRecognitionService:
             "hamster": "仓鼠"
         }
         return translations.get(pet_type, pet_type)
+    
+    def _get_generic_characteristics(self, pet_type: str) -> List[str]:
+        """获取通用特征"""
+        characteristics_map = {
+            "猫": ["独立", "优雅", "敏捷", "聪明"],
+            "狗": ["忠诚", "友善", "活泼", "聪明"],
+            "鸟": ["活泼", "聪明", "善于模仿", "社交性强"],
+            "鱼": ["安静", "观赏性强", "易养护", "色彩丰富"]
+        }
+        return characteristics_map.get(pet_type, ["温驯", "可爱"])
+    
+    def _get_generic_care_advice(self, pet_type: str) -> List[str]:
+        """获取通用饲养建议"""
+        care_map = {
+            "猫": ["提供猫砂盆", "定期梳毛", "注意口腔健康", "提供抓板"],
+            "狗": ["每天需要运动", "定期梳毛", "注意饮食营养", "定期疫苗接种"],
+            "鸟": ["提供宽敞鸟笼", "多样化饮食", "定期清洁", "适当社交"],
+            "鱼": ["保持水质清洁", "适宜水温", "充足氧气", "定期换水"]
+        }
+        return care_map.get(pet_type, ["定期护理", "注意卫生"])
+    
+    def _get_generic_health_tips(self, pet_type: str) -> List[str]:
+        """获取通用健康建议"""
+        health_map = {
+            "猫": ["预防泌尿系统疾病", "定期驱虫", "关注眼部健康", "预防肥胖"],
+            "狗": ["关注关节健康", "预防皮肤病", "定期体检", "注意体重控制"],
+            "鸟": ["注意呼吸道健康", "预防羽毛病", "定期检查爪子", "避免温差过大"],
+            "鱼": ["预防白点病", "注意水质变化", "避免过度喂食", "观察游泳状态"]
+        }
+        return health_map.get(pet_type, ["定期健康检查", "注意环境卫生"])
+    
+    def _get_generic_feeding_guide(self, pet_type: str) -> List[str]:
+        """获取通用喂养指南"""
+        feeding_map = {
+            "猫": ["高蛋白猫粮", "适量湿粮", "避免牛奶", "控制零食量"],
+            "狗": ["优质狗粮为主", "适量肉类", "避免巧克力等有害食物", "充足饮水"],
+            "鸟": ["专用鸟粮", "新鲜蔬果", "适量种子", "清洁饮水"],
+            "鱼": ["专用鱼食", "控制喂食量", "多样化饮食", "定时定量"]
+        }
+        return feeding_map.get(pet_type, ["营养均衡", "定时喂养"])
+    
+    def _get_generic_estimated_value(self, pet_type: str, breed_name: str) -> Dict[str, Any]:
+        """获取通用估价信息"""
+        base_values = {
+            "猫": {"min": 500, "max": 5000},
+            "狗": {"min": 800, "max": 8000},
+            "鸟": {"min": 200, "max": 1500},
+            "鱼": {"min": 50, "max": 800}
+        }
+        
+        base = base_values.get(pet_type, {"min": 100, "max": 1000})
+        
+        return {
+            "min_price": base["min"],
+            "max_price": base["max"],
+            "currency": "CNY",
+            "factors": [
+                "年龄和健康状况",
+                "血统和证书",
+                "外观和品相",
+                "训练程度",
+                "地区市场差异"
+            ],
+            "note": f"价格仅供参考，{breed_name}的实际价格受多种因素影响"
+        }
     
     def _calculate_estimated_value(self, breed_info: Dict[str, Any]) -> Dict[str, Any]:
         """计算估价"""
