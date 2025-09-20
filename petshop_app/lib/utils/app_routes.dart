@@ -19,8 +19,8 @@ import '../pages/bids/bid_records_page.dart';
 import '../pages/seller/seller_products_page.dart';
 import '../pages/publish/publish_product_page.dart';
 import '../pages/ai_recognition/ai_pet_recognition_page.dart';
-import '../pages/lottery/lottery_wheel_page.dart';
-import '../pages/lottery/lottery_history_page.dart';
+import '../pages/lottery/simple_lottery_wheel_page.dart';
+import '../pages/lottery/simple_lottery_history_page.dart';
 import '../pages/auction/limited_auction_page.dart';
 import '../pages/brand/brand_zone_page.dart';
 import '../pages/fixed_price/fixed_price_zone_page.dart';
@@ -234,11 +234,11 @@ class AppRoutes {
     ),
     GetPage(
       name: lottery,
-      page: () => const LotteryWheelPage(),
+      page: () => const SimpleLotteryWheelPage(),
     ),
     GetPage(
       name: lotteryHistory,
-      page: () => const LotteryHistoryPage(),
+      page: () => const SimpleLotteryHistoryPage(),
     ),
   ];
 }

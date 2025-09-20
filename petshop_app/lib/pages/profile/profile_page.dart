@@ -1051,7 +1051,7 @@ class _ProfilePageState extends State<ProfilePage>
                     mainAxisAlignment: MainAxisAlignment.center,
                     children: [
                       Text(
-                        '幸运抽奖',
+                        '钻石抽奖',
                         style: TextStyle(
                           fontSize: 20.sp,
                           fontWeight: FontWeight.w600,
@@ -1061,7 +1061,7 @@ class _ProfilePageState extends State<ProfilePage>
                       SizedBox(height: 16.h),
                       GestureDetector(
                         onTap: () {
-                          Navigator.pushNamed(context, '/lottery');
+                          Get.toNamed(AppRoutes.lottery);
                         },
                         child: Container(
                           padding: EdgeInsets.symmetric(
