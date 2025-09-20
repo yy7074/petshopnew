@@ -35,6 +35,10 @@ import '../pages/nearby_discovery/nearby_discovery_page.dart';
 import '../pages/seller/seller_orders_page.dart';
 import '../pages/seller/seller_shop_settings_page.dart';
 import '../pages/seller/seller_analytics_page.dart';
+import '../pages/profile/following_page.dart';
+import '../pages/profile/followers_page.dart';
+import '../pages/profile/browse_history_page.dart';
+import '../pages/profile/personal_info_page.dart';
 
 class AppRoutes {
   static const String splash = '/splash';
@@ -73,6 +77,10 @@ class AppRoutes {
   static const String sellerAnalytics = '/seller-analytics';
   static const String lottery = '/lottery';
   static const String lotteryHistory = '/lottery/history';
+  static const String following = '/following';
+  static const String followers = '/followers';
+  static const String browseHistory = '/browse-history';
+  static const String personalInfo = '/personal-info';
 
   static List<GetPage> routes = [
     GetPage(
@@ -239,6 +247,22 @@ class AppRoutes {
     GetPage(
       name: lotteryHistory,
       page: () => const SimpleLotteryHistoryPage(),
+    ),
+    GetPage(
+      name: following,
+      page: () => const FollowingPage(),
+    ),
+    GetPage(
+      name: followers,
+      page: () => const FollowersPage(),
+    ),
+    GetPage(
+      name: browseHistory,
+      page: () => const BrowseHistoryPage(),
+    ),
+    GetPage(
+      name: personalInfo,
+      page: () => const PersonalInfoPage(),
     ),
   ];
 }

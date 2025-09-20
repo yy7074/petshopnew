@@ -1,4 +1,4 @@
-from sqlalchemy import Column, Integer, String, Boolean, DateTime, Text, DECIMAL, Date
+from sqlalchemy import Column, Integer, String, Boolean, DateTime, Text, DECIMAL, Date, ForeignKey
 from sqlalchemy.orm import relationship
 from sqlalchemy.sql import func
 from app.core.database import Base
@@ -17,6 +17,7 @@ class User(Base):
     gender = Column(Integer, default=0, comment="0:未知,1:男,2:女")
     birth_date = Column(Date)
     location = Column(String(100))
+    bio = Column(Text, comment="个人简介")
     is_seller = Column(Boolean, default=False)
     is_verified = Column(Boolean, default=False)
     is_admin = Column(Boolean, default=False)
@@ -28,18 +29,15 @@ class User(Base):
     updated_at = Column(DateTime, server_default=func.now(), onupdate=func.now())
     
     # 关联关系
+    following = relationship("UserFollow", foreign_keys="UserFollow.follower_id", back_populates="follower")
+    followers = relationship("UserFollow", foreign_keys="UserFollow.following_id", back_populates="following")
+    browse_histories = relationship("BrowseHistory", back_populates="user")
+    checkins = relationship("UserCheckin", back_populates="user")
     # wallet_transactions = relationship("WalletTransaction", back_populates="user")
     # deposits = relationship("Deposit", back_populates="user")
     # lottery_records = relationship("LotteryRecord", back_populates="user")
-    # 暂时注释掉所有关系，避免错误
 
-class UserFollow(Base):
-    __tablename__ = "user_follows"
-
-    id = Column(Integer, primary_key=True, index=True, autoincrement=True)
-    follower_id = Column(Integer, nullable=False, index=True)
-    following_id = Column(Integer, nullable=False, index=True)
-    created_at = Column(DateTime, server_default=func.now())
+# UserFollow 类移动到 follow.py 文件中
 
 class UserAddress(Base):
     __tablename__ = "user_addresses"
@@ -61,11 +59,14 @@ class UserCheckin(Base):
     __tablename__ = "user_checkins"
 
     id = Column(Integer, primary_key=True, index=True, autoincrement=True)
-    user_id = Column(Integer, nullable=False, index=True)
+    user_id = Column(Integer, ForeignKey('users.id'), nullable=False, index=True)
     checkin_date = Column(Date, nullable=False)
     consecutive_days = Column(Integer, default=1)
     reward_points = Column(Integer, default=0)
     created_at = Column(DateTime, server_default=func.now())
+    
+    # 关联关系
+    user = relationship("User", back_populates="checkins")
 
 class KeywordSubscription(Base):
     __tablename__ = "keyword_subscriptions"

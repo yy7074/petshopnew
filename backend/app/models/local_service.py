@@ -57,8 +57,8 @@ class PetSocialComment(Base):
     # 关联关系
     post = relationship("PetSocialPost", back_populates="comments")
     user = relationship("User")
-    parent = relationship("PetSocialComment", remote_side=[id])
-    replies = relationship("PetSocialComment", remote_side=[parent_id])
+    parent = relationship("PetSocialComment", remote_side=[id], back_populates="replies")
+    replies = relationship("PetSocialComment", remote_side=[parent_id], back_populates="parent")
 
 # 宠物配种信息
 class PetBreedingInfo(Base):

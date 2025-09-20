@@ -440,13 +440,27 @@ class _ProfilePageState extends State<ProfilePage>
                       child: Column(
                         crossAxisAlignment: CrossAxisAlignment.start,
                         children: [
-                          Text(
-                            _currentUser?.nickname ?? '未登录',
-                            style: TextStyle(
-                              fontSize: 24.sp,
-                              color: Colors.white,
-                              fontWeight: FontWeight.w600,
-                            ),
+                          Row(
+                            children: [
+                              Text(
+                                _currentUser?.nickname ?? '未登录',
+                                style: TextStyle(
+                                  fontSize: 24.sp,
+                                  color: Colors.white,
+                                  fontWeight: FontWeight.w600,
+                                ),
+                              ),
+                              SizedBox(width: 8.w),
+                              if (_isLoggedIn)
+                                GestureDetector(
+                                  onTap: () => Get.toNamed(AppRoutes.personalInfo),
+                                  child: Icon(
+                                    Icons.edit,
+                                    size: 18.w,
+                                    color: Colors.white.withOpacity(0.8),
+                                  ),
+                                ),
+                            ],
                           ),
                           if (_currentUser?.phone != null)
                             Text(
@@ -541,9 +555,18 @@ class _ProfilePageState extends State<ProfilePage>
                 child: Row(
                   mainAxisAlignment: MainAxisAlignment.spaceAround,
                   children: [
-                    _buildStatColumn('35', '关注'),
-                    _buildStatColumn('35', '粉丝'),
-                    _buildStatColumn('42', '历史浏览'),
+                    GestureDetector(
+                      onTap: () => Get.toNamed(AppRoutes.following),
+                      child: _buildStatColumn('35', '关注'),
+                    ),
+                    GestureDetector(
+                      onTap: () => Get.toNamed(AppRoutes.followers),
+                      child: _buildStatColumn('35', '粉丝'),
+                    ),
+                    GestureDetector(
+                      onTap: () => Get.toNamed(AppRoutes.browseHistory),
+                      child: _buildStatColumn('42', '历史浏览'),
+                    ),
                   ],
                 ),
               ),
