@@ -73,3 +73,4 @@ class LotteryConfigResponse(BaseModel):
     remaining_draws: int
     prizes: List[LotteryPrize]
     description: Optional[str] = None
+

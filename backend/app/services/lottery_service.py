@@ -335,3 +335,4 @@ class LotteryService:
             logger.error(f"初始化默认奖品失败: {e}")
             db.rollback()
             return False
+

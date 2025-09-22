@@ -28,7 +28,7 @@ class AppTheme {
         selectedLabelStyle: TextStyle(fontSize: 12.sp),
         unselectedLabelStyle: TextStyle(fontSize: 12.sp),
       ),
-      cardTheme: CardTheme(
+      cardTheme: CardThemeData(
         color: AppColors.cardBackground,
         elevation: 2,
         shape: RoundedRectangleBorder(
@@ -162,6 +162,3 @@ class AppTheme {
     );
   }
 }
-
-
-

@@ -131,3 +131,4 @@ async def init_default_prizes(
         
     except Exception as e:
         raise HTTPException(status_code=500, detail=f"初始化奖品失败: {str(e)}")
+
