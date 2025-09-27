@@ -44,8 +44,6 @@ class _AquariumDesignPageState extends State<AquariumDesignPage>
   }
 
   Future<void> _loadDesignServices({bool refresh = false}) async {
-    if (!refresh && _isLoading) return;
-
     setState(() {
       if (refresh) {
         _isLoading = true;
@@ -347,20 +345,63 @@ class _AquariumDesignPageState extends State<AquariumDesignPage>
   }
 
   Widget _buildRewardTab() {
-    return GridView.builder(
-      controller: _scrollController,
-      padding: EdgeInsets.all(12.w),
-      gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
-        crossAxisCount: 2,
-        crossAxisSpacing: 12.w,
-        mainAxisSpacing: 12.h,
-        childAspectRatio: 0.75,
+    if (_isLoading && _designServices.isEmpty) {
+      return const Center(child: CircularProgressIndicator());
+    }
+
+    if (_errorMessage != null && _designServices.isEmpty) {
+      return Center(
+        child: Padding(
+          padding: EdgeInsets.all(24.w),
+          child: Column(
+            mainAxisAlignment: MainAxisAlignment.center,
+            children: [
+              const Icon(Icons.error_outline, color: Colors.redAccent, size: 48),
+              SizedBox(height: 12.h),
+              Text(
+                _errorMessage!,
+                textAlign: TextAlign.center,
+                style: TextStyle(fontSize: 14.sp, color: Colors.redAccent),
+              ),
+              SizedBox(height: 12.h),
+              ElevatedButton(
+                onPressed: () => _loadDesignServices(refresh: true),
+                child: const Text('重新加载'),
+              ),
+            ],
+          ),
+        ),
+      );
+    }
+
+    final items = _displayRewardItems;
+
+    if (items.isEmpty) {
+      return Center(
+        child: Text(
+          '暂无造景悬赏，稍后再来看看吧～',
+          style: TextStyle(fontSize: 14.sp, color: Colors.grey[600]),
+        ),
+      );
+    }
+
+    return RefreshIndicator(
+      onRefresh: () => _loadDesignServices(refresh: true),
+      child: GridView.builder(
+        controller: _scrollController,
+        padding: EdgeInsets.all(12.w),
+        gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
+          crossAxisCount: 2,
+          crossAxisSpacing: 12.w,
+          mainAxisSpacing: 12.h,
+          childAspectRatio: 0.75,
+        ),
+        itemCount: items.length,
+        itemBuilder: (context, index) {
+          final item = items[index];
+          return _buildAquariumItem(item, true);
+        },
       ),
-      itemCount: _rewardItems.length,
-      itemBuilder: (context, index) {
-        final item = _rewardItems[index];
-        return _buildAquariumItem(item, true);
-      },
     );
   }
 
@@ -383,6 +424,12 @@ class _AquariumDesignPageState extends State<AquariumDesignPage>
   }
 
   Widget _buildAquariumItem(Map<String, dynamic> item, bool isReward) {
+    final imageUrl = _resolveImage(item);
+    final title = _resolveTitle(item);
+    final shopName = _resolveShopName(item);
+    final shopAvatar = _resolveShopAvatar(item);
+    final priceText = _formatPrice(item);
+
     return GestureDetector(
       onTap: () {
         Navigator.push(
@@ -418,11 +465,21 @@ class _AquariumDesignPageState extends State<AquariumDesignPage>
                 decoration: BoxDecoration(
                   borderRadius:
                       BorderRadius.vertical(top: Radius.circular(12.r)),
-                  image: DecorationImage(
-                    image: NetworkImage(item['image']),
-                    fit: BoxFit.cover,
-                  ),
+                  image: imageUrl != null
+                      ? DecorationImage(
+                          image: NetworkImage(imageUrl),
+                          fit: BoxFit.cover,
+                        )
+                      : null,
+                  color: Colors.grey[200],
                 ),
+                child: imageUrl == null
+                    ? Icon(
+                        Icons.image_outlined,
+                        color: Colors.grey[400],
+                        size: 36.w,
+                      )
+                    : null,
               ),
             ),
 
@@ -436,7 +493,7 @@ class _AquariumDesignPageState extends State<AquariumDesignPage>
                   children: [
                     // 产品标题
                     Text(
-                      item['title'],
+                      title,
                       style: TextStyle(
                         fontSize: 14.sp,
                         color: Colors.black87,
@@ -452,15 +509,15 @@ class _AquariumDesignPageState extends State<AquariumDesignPage>
                     Row(
                       children: [
                         Text(
-                          isReward ? '当前悬赏' : '',
+                          isReward ? '当前悬赏' : '服务价格',
                           style: TextStyle(
                             fontSize: 10.sp,
                             color: Colors.grey[500],
                           ),
                         ),
-                        if (isReward) SizedBox(width: 4.w),
+                        SizedBox(width: 4.w),
                         Text(
-                          '¥${item['currentPrice']}',
+                          priceText,
                           style: TextStyle(
                             fontSize: 14.sp,
                             fontWeight: FontWeight.w600,
@@ -477,12 +534,22 @@ class _AquariumDesignPageState extends State<AquariumDesignPage>
                       children: [
                         CircleAvatar(
                           radius: 10.r,
-                          backgroundImage: NetworkImage(item['shopAvatar']),
+                          backgroundColor: Colors.grey[300],
+                          backgroundImage: shopAvatar != null
+                              ? NetworkImage(shopAvatar)
+                              : null,
+                          child: shopAvatar == null
+                              ? Icon(
+                                  Icons.storefront,
+                                  size: 12.sp,
+                                  color: Colors.white,
+                                )
+                              : null,
                         ),
                         SizedBox(width: 6.w),
                         Expanded(
                           child: Text(
-                            item['shopName'],
+                            shopName,
                             style: TextStyle(
                               fontSize: 12.sp,
                               color: Colors.grey[600],
