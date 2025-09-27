@@ -75,7 +75,9 @@ class ProductService {
       });
 
       if (response.statusCode == 200) {
-        final List<dynamic> productsJson = response.data['data'] ?? [];
+        // API可能返回不同格式，尝试兼容处理
+        final List<dynamic> productsJson =
+            response.data['items'] ?? response.data['data'] ?? response.data;
         final products =
             productsJson.map((json) => Product.fromJson(json)).toList();
         return ApiResult.success(products);
@@ -97,7 +99,9 @@ class ProductService {
       });
 
       if (response.statusCode == 200) {
-        final List<dynamic> productsJson = response.data['data'] ?? [];
+        // API可能返回不同格式，尝试兼容处理
+        final List<dynamic> productsJson =
+            response.data['items'] ?? response.data['data'] ?? response.data;
         final products =
             productsJson.map((json) => Product.fromJson(json)).toList();
         return ApiResult.success(products);
@@ -190,9 +194,21 @@ class ProductService {
       });
 
       if (response.statusCode == 200) {
-        final List<dynamic> productsJson = response.data['data']['items'] ?? [];
+        // 收藏列表可能有不同格式，尝试兼容处理
+        final responseData = response.data;
+        List<dynamic> productsJson = [];
+
+        if (responseData['items'] != null) {
+          // 直接返回items格式
+          productsJson = responseData['items'];
+        } else if (responseData['data'] != null &&
+            responseData['data']['items'] != null) {
+          // 嵌套data.items格式
+          productsJson = responseData['data']['items'];
+        }
+
         final products = productsJson
-            .map((json) => Product.fromJson(json['product']))
+            .map((json) => Product.fromJson(json['product'] ?? json))
             .toList();
         return ApiResult.success(products);
       } else {

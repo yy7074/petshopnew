@@ -44,7 +44,7 @@ if os.path.exists(admin_path):
     app.mount("/admin", StaticFiles(directory=admin_path, html=True), name="admin")
 
 # 注册路由
-from app.api import auth, products, bids, orders, auctions, events, home, wallet, deposit, stores, store_applications, chat, messages, users, admin, local_services, ai_recognition, lottery, checkin, follow  # search
+from app.api import auth, products, bids, orders, auctions, events, home, wallet, deposit, stores, store_applications, chat, messages, users, admin, local_services, ai_recognition, lottery, checkin, follow, search
 
 app.include_router(auth.router, prefix="/api/v1/auth", tags=["认证"])
 app.include_router(products.router, prefix="/api/v1/products", tags=["商品"])
@@ -68,7 +68,7 @@ app.include_router(ai_recognition.router, prefix="/api/v1", tags=["AI识别"])
 app.include_router(lottery.router, prefix="/api/v1", tags=["抽奖"])
 app.include_router(checkin.router, prefix="/api/v1/checkin", tags=["签到"])
 app.include_router(follow.router, prefix="/api/v1", tags=["关注粉丝"])
-# app.include_router(search.router, prefix="/api/v1/search", tags=["搜索"])
+app.include_router(search.router, prefix="/api/v1/search", tags=["搜索"])
 
 # 根路径
 @app.get("/")

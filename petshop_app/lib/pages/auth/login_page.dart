@@ -15,9 +15,13 @@ class LoginPage extends StatefulWidget {
 
 class _LoginPageState extends State<LoginPage> {
   final _authService = AuthService();
-  bool _isWechatLoading = false;
+  final _phoneController = TextEditingController();
+  final _passwordController = TextEditingController();
+  bool _isTestAccountMode = false;
   bool _isPhoneLoading = false;
+  bool _isPasswordLoading = false;
   bool _agreedToTerms = true; // 默认已同意
+  bool _passwordVisible = false;
 
   @override
   void initState() {
@@ -32,8 +36,15 @@ class _LoginPageState extends State<LoginPage> {
     );
   }
 
-  // 微信登录
-  void _wechatLogin() async {
+  @override
+  void dispose() {
+    _phoneController.dispose();
+    _passwordController.dispose();
+    super.dispose();
+  }
+
+  // 测试账号密码登录
+  void _passwordLogin() async {
     if (!_agreedToTerms) {
       Get.snackbar(
         '提示',
@@ -45,27 +56,50 @@ class _LoginPageState extends State<LoginPage> {
       return;
     }
 
+    final phone = _phoneController.text.trim();
+    final password = _passwordController.text.trim();
+
+    if (phone.isEmpty || password.isEmpty) {
+      Get.snackbar(
+        '提示',
+        '请输入手机号和密码',
+        snackPosition: SnackPosition.TOP,
+        backgroundColor: Colors.orange,
+        colorText: Colors.white,
+      );
+      return;
+    }
+
     setState(() {
-      _isWechatLoading = true;
+      _isPasswordLoading = true;
     });
 
     try {
-      // TODO: 实现微信登录逻辑
-      await Future.delayed(const Duration(seconds: 2)); // 模拟登录过程
+      final result = await _authService.login(phone: phone, password: password);
 
-      // 登录成功，跳转到主页
-      Get.offAllNamed(AppRoutes.main);
-      Get.snackbar(
-        '登录成功',
-        '欢迎使用拍宠有道！',
-        snackPosition: SnackPosition.TOP,
-        backgroundColor: Colors.green,
-        colorText: Colors.white,
-      );
+      if (result.success) {
+        // 登录成功，跳转到主页
+        Get.offAllNamed(AppRoutes.main);
+        Get.snackbar(
+          '登录成功',
+          '欢迎使用拍宠有道！',
+          snackPosition: SnackPosition.TOP,
+          backgroundColor: Colors.green,
+          colorText: Colors.white,
+        );
+      } else {
+        Get.snackbar(
+          '登录失败',
+          result.message,
+          snackPosition: SnackPosition.TOP,
+          backgroundColor: Colors.red,
+          colorText: Colors.white,
+        );
+      }
     } catch (e) {
       Get.snackbar(
         '登录失败',
-        '微信登录失败，请重试',
+        '登录过程中发生错误，请重试',
         snackPosition: SnackPosition.TOP,
         backgroundColor: Colors.red,
         colorText: Colors.white,
@@ -73,7 +107,7 @@ class _LoginPageState extends State<LoginPage> {
     } finally {
       if (mounted) {
         setState(() {
-          _isWechatLoading = false;
+          _isPasswordLoading = false;
         });
       }
     }
@@ -206,104 +240,248 @@ class _LoginPageState extends State<LoginPage> {
 
                 SizedBox(height: 120.h),
 
-                // 登录按钮区域
-                Column(
+                // 登录方式选择
+                Row(
                   children: [
-                    // 微信一键登录按钮
-                    Container(
-                      width: double.infinity,
-                      height: 50.h,
-                      child: ElevatedButton(
-                        onPressed: _isWechatLoading ? null : _wechatLogin,
-                        style: ElevatedButton.styleFrom(
-                          backgroundColor: const Color(0xFF9C4DFF),
-                          foregroundColor: Colors.white,
-                          elevation: 0,
-                          shadowColor: Colors.transparent,
-                          shape: RoundedRectangleBorder(
-                            borderRadius: BorderRadius.circular(25.r),
+                    Expanded(
+                      child: GestureDetector(
+                        onTap: () {
+                          setState(() {
+                            _isTestAccountMode = false;
+                          });
+                        },
+                        child: Container(
+                          padding: EdgeInsets.symmetric(vertical: 12.h),
+                          decoration: BoxDecoration(
+                            border: Border(
+                              bottom: BorderSide(
+                                color: !_isTestAccountMode
+                                    ? const Color(0xFF9C4DFF)
+                                    : Colors.transparent,
+                                width: 2,
+                              ),
+                            ),
+                          ),
+                          child: Text(
+                            '手机验证码登录',
+                            textAlign: TextAlign.center,
+                            style: TextStyle(
+                              fontSize: 16.sp,
+                              color: !_isTestAccountMode
+                                  ? const Color(0xFF9C4DFF)
+                                  : const Color(0xFF999999),
+                              fontWeight: !_isTestAccountMode
+                                  ? FontWeight.w600
+                                  : FontWeight.normal,
+                            ),
                           ),
                         ),
-                        child: _isWechatLoading
-                            ? SizedBox(
-                                width: 20.w,
-                                height: 20.w,
-                                child: const CircularProgressIndicator(
-                                  strokeWidth: 2,
-                                  valueColor: AlwaysStoppedAnimation<Color>(
-                                      Colors.white),
-                                ),
-                              )
-                            : Row(
-                                mainAxisAlignment: MainAxisAlignment.center,
-                                children: [
-                                  Icon(
-                                    Icons.wechat,
-                                    size: 20.w,
-                                    color: Colors.white,
-                                  ),
-                                  SizedBox(width: 8.w),
-                                  Text(
-                                    '微信一键登录',
-                                    style: TextStyle(
-                                      fontSize: 16.sp,
-                                      fontWeight: FontWeight.w500,
-                                    ),
-                                  ),
-                                ],
-                              ),
                       ),
                     ),
-
-                    SizedBox(height: 16.h),
-
-                    // 手机号登录按钮
-                    Container(
-                      width: double.infinity,
-                      height: 50.h,
-                      child: ElevatedButton(
-                        onPressed: _isPhoneLoading ? null : _phoneLogin,
-                        style: ElevatedButton.styleFrom(
-                          backgroundColor: const Color(0xFFF5F5F5),
-                          foregroundColor: const Color(0xFF333333),
-                          elevation: 0,
-                          shadowColor: Colors.transparent,
-                          shape: RoundedRectangleBorder(
-                            borderRadius: BorderRadius.circular(25.r),
+                    Expanded(
+                      child: GestureDetector(
+                        onTap: () {
+                          setState(() {
+                            _isTestAccountMode = true;
+                          });
+                        },
+                        child: Container(
+                          padding: EdgeInsets.symmetric(vertical: 12.h),
+                          decoration: BoxDecoration(
+                            border: Border(
+                              bottom: BorderSide(
+                                color: _isTestAccountMode
+                                    ? const Color(0xFF9C4DFF)
+                                    : Colors.transparent,
+                                width: 2,
+                              ),
+                            ),
+                          ),
+                          child: Text(
+                            '测试账号登录',
+                            textAlign: TextAlign.center,
+                            style: TextStyle(
+                              fontSize: 16.sp,
+                              color: _isTestAccountMode
+                                  ? const Color(0xFF9C4DFF)
+                                  : const Color(0xFF999999),
+                              fontWeight: _isTestAccountMode
+                                  ? FontWeight.w600
+                                  : FontWeight.normal,
+                            ),
                           ),
                         ),
-                        child: _isPhoneLoading
-                            ? SizedBox(
-                                width: 20.w,
-                                height: 20.w,
-                                child: const CircularProgressIndicator(
-                                  strokeWidth: 2,
-                                  valueColor: AlwaysStoppedAnimation<Color>(
-                                      Color(0xFF333333)),
-                                ),
-                              )
-                            : Row(
-                                mainAxisAlignment: MainAxisAlignment.center,
-                                children: [
-                                  Icon(
-                                    Icons.phone_android,
-                                    size: 20.w,
-                                    color: const Color(0xFF333333),
-                                  ),
-                                  SizedBox(width: 8.w),
-                                  Text(
-                                    '手机号登录',
-                                    style: TextStyle(
-                                      fontSize: 16.sp,
-                                      fontWeight: FontWeight.w500,
-                                    ),
-                                  ),
-                                ],
-                              ),
                       ),
                     ),
                   ],
                 ),
+
+                SizedBox(height: 32.h),
+
+                // 登录表单
+                if (_isTestAccountMode) ...[
+                  // 测试账号登录表单
+                  Column(
+                    children: [
+                      // 手机号输入框
+                      Container(
+                        decoration: BoxDecoration(
+                          color: const Color(0xFFF8F8F8),
+                          borderRadius: BorderRadius.circular(12.r),
+                        ),
+                        child: TextField(
+                          controller: _phoneController,
+                          keyboardType: TextInputType.phone,
+                          decoration: InputDecoration(
+                            hintText: '请输入手机号（测试：18888888888）',
+                            hintStyle: TextStyle(
+                              color: const Color(0xFF999999),
+                              fontSize: 14.sp,
+                            ),
+                            border: InputBorder.none,
+                            contentPadding: EdgeInsets.symmetric(
+                              horizontal: 16.w,
+                              vertical: 16.h,
+                            ),
+                            prefixIcon: Icon(
+                              Icons.phone_android,
+                              color: const Color(0xFF666666),
+                              size: 20.w,
+                            ),
+                          ),
+                        ),
+                      ),
+
+                      SizedBox(height: 16.h),
+
+                      // 密码输入框
+                      Container(
+                        decoration: BoxDecoration(
+                          color: const Color(0xFFF8F8F8),
+                          borderRadius: BorderRadius.circular(12.r),
+                        ),
+                        child: TextField(
+                          controller: _passwordController,
+                          obscureText: !_passwordVisible,
+                          decoration: InputDecoration(
+                            hintText: '请输入密码（测试：111111）',
+                            hintStyle: TextStyle(
+                              color: const Color(0xFF999999),
+                              fontSize: 14.sp,
+                            ),
+                            border: InputBorder.none,
+                            contentPadding: EdgeInsets.symmetric(
+                              horizontal: 16.w,
+                              vertical: 16.h,
+                            ),
+                            prefixIcon: Icon(
+                              Icons.lock_outline,
+                              color: const Color(0xFF666666),
+                              size: 20.w,
+                            ),
+                            suffixIcon: GestureDetector(
+                              onTap: () {
+                                setState(() {
+                                  _passwordVisible = !_passwordVisible;
+                                });
+                              },
+                              child: Icon(
+                                _passwordVisible
+                                    ? Icons.visibility
+                                    : Icons.visibility_off,
+                                color: const Color(0xFF666666),
+                                size: 20.w,
+                              ),
+                            ),
+                          ),
+                        ),
+                      ),
+
+                      SizedBox(height: 24.h),
+
+                      // 登录按钮
+                      Container(
+                        width: double.infinity,
+                        height: 50.h,
+                        child: ElevatedButton(
+                          onPressed: _isPasswordLoading ? null : _passwordLogin,
+                          style: ElevatedButton.styleFrom(
+                            backgroundColor: const Color(0xFF9C4DFF),
+                            foregroundColor: Colors.white,
+                            elevation: 0,
+                            shadowColor: Colors.transparent,
+                            shape: RoundedRectangleBorder(
+                              borderRadius: BorderRadius.circular(25.r),
+                            ),
+                          ),
+                          child: _isPasswordLoading
+                              ? SizedBox(
+                                  width: 20.w,
+                                  height: 20.w,
+                                  child: const CircularProgressIndicator(
+                                    strokeWidth: 2,
+                                    valueColor: AlwaysStoppedAnimation<Color>(
+                                        Colors.white),
+                                  ),
+                                )
+                              : Text(
+                                  '登录',
+                                  style: TextStyle(
+                                    fontSize: 16.sp,
+                                    fontWeight: FontWeight.w500,
+                                  ),
+                                ),
+                        ),
+                      ),
+                    ],
+                  ),
+                ] else ...[
+                  // 手机号登录按钮
+                  Container(
+                    width: double.infinity,
+                    height: 50.h,
+                    child: ElevatedButton(
+                      onPressed: _isPhoneLoading ? null : _phoneLogin,
+                      style: ElevatedButton.styleFrom(
+                        backgroundColor: const Color(0xFF9C4DFF),
+                        foregroundColor: Colors.white,
+                        elevation: 0,
+                        shadowColor: Colors.transparent,
+                        shape: RoundedRectangleBorder(
+                          borderRadius: BorderRadius.circular(25.r),
+                        ),
+                      ),
+                      child: _isPhoneLoading
+                          ? SizedBox(
+                              width: 20.w,
+                              height: 20.w,
+                              child: const CircularProgressIndicator(
+                                strokeWidth: 2,
+                                valueColor:
+                                    AlwaysStoppedAnimation<Color>(Colors.white),
+                              ),
+                            )
+                          : Row(
+                              mainAxisAlignment: MainAxisAlignment.center,
+                              children: [
+                                Icon(
+                                  Icons.phone_android,
+                                  size: 20.w,
+                                  color: Colors.white,
+                                ),
+                                SizedBox(width: 8.w),
+                                Text(
+                                  '手机号登录',
+                                  style: TextStyle(
+                                    fontSize: 16.sp,
+                                    fontWeight: FontWeight.w500,
+                                  ),
+                                ),
+                              ],
+                            ),
+                    ),
+                  ),
+                ],
 
                 SizedBox(height: 80.h),
 

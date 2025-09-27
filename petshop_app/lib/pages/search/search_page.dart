@@ -2,6 +2,10 @@ import 'package:flutter/material.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import '../../constants/app_colors.dart';
 import '../../widgets/auction_card.dart';
+import '../../widgets/error_view.dart';
+import '../../models/product.dart';
+import '../../services/search_service.dart';
+import '../../utils/network_helper.dart';
 import '../product/product_detail_page.dart';
 
 class SearchPage extends StatefulWidget {
@@ -524,7 +528,8 @@ class _SearchPageState extends State<SearchPage> {
                     Navigator.push(
                       context,
                       MaterialPageRoute(
-                        builder: (context) => ProductDetailPage(productData: product),
+                        builder: (context) =>
+                            ProductDetailPage(productData: product),
                       ),
                     );
                   },

@@ -1984,12 +1984,27 @@ class _HomePageState extends State<HomePage> {
                         fontSize: 14.sp,
                         color: Colors.grey[600],
                       ),
+                      textAlign: TextAlign.center,
                     ),
-                    SizedBox(height: 16.h),
-                    ElevatedButton(
-                      onPressed: _refreshData,
-                      child: const Text('刷新'),
-                    ),
+                    if (_errorMessage != null) ...[
+                      SizedBox(height: 16.h),
+                      ElevatedButton.icon(
+                        onPressed: () {
+                          _loadHomeData();
+                          _loadCategoryData();
+                        },
+                        icon: Icon(Icons.refresh, size: 16.w),
+                        label: Text('重试'),
+                        style: ElevatedButton.styleFrom(
+                          backgroundColor: const Color(0xFF42A5F5),
+                          foregroundColor: Colors.white,
+                          padding: EdgeInsets.symmetric(
+                            horizontal: 20.w,
+                            vertical: 8.h,
+                          ),
+                        ),
+                      ),
+                    ],
                   ],
                 ),
               ),
