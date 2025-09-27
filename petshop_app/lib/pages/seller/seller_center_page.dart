@@ -168,20 +168,59 @@ class _SellerCenterPageState extends State<SellerCenterPage> {
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  Text(
-                    '店铺数据',
-                    style: TextStyle(
-                      fontSize: 16.sp,
-                      fontWeight: FontWeight.bold,
-                      color: const Color(0xFF333333),
-                    ),
+                  Row(
+                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                    children: [
+                      Text(
+                        '店铺数据',
+                        style: TextStyle(
+                          fontSize: 16.sp,
+                          fontWeight: FontWeight.bold,
+                          color: const Color(0xFF333333),
+                        ),
+                      ),
+                      GestureDetector(
+                        onTap: _loadDashboard,
+                        child: Icon(
+                          Icons.refresh,
+                          size: 20.w,
+                          color: const Color(0xFF9C4DFF),
+                        ),
+                      ),
+                    ],
                   ),
                   SizedBox(height: 16.h),
                   Row(
                     children: [
-                      _buildDataItem('商品数量', '0', Icons.inventory),
-                      _buildDataItem('待处理订单', '0', Icons.pending_actions),
-                      _buildDataItem('本月销售', '¥0', Icons.trending_up),
+                      _buildDataItem(
+                          '商品数量',
+                          '${_dashboardData?['stats']?['products']?['total'] ?? 0}',
+                          Icons.inventory),
+                      _buildDataItem(
+                          '待处理订单',
+                          '${(_dashboardData?['stats']?['orders']?['total_orders'] ?? 0) - (_dashboardData?['stats']?['orders']?['completed_orders'] ?? 0)}',
+                          Icons.pending_actions),
+                      _buildDataItem(
+                          '本月销售',
+                          '¥${_dashboardData?['stats']?['orders']?['total_amount']?.toStringAsFixed(2) ?? '0.00'}',
+                          Icons.trending_up),
+                    ],
+                  ),
+                  SizedBox(height: 16.h),
+                  Row(
+                    children: [
+                      _buildDataItem(
+                          '在售商品',
+                          '${_dashboardData?['stats']?['products']?['active_auctions'] ?? 0}',
+                          Icons.storefront),
+                      _buildDataItem(
+                          '总浏览量',
+                          '${_dashboardData?['stats']?['products']?['total_views'] ?? 0}',
+                          Icons.visibility),
+                      _buildDataItem(
+                          '总出价数',
+                          '${_dashboardData?['stats']?['engagement']?['total_bids'] ?? 0}',
+                          Icons.gavel),
                     ],
                   ),
                 ],

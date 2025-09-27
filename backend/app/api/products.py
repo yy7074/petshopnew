@@ -94,37 +94,166 @@ async def delete_product(
         raise HTTPException(status_code=404, detail="商品不存在或无权限删除")
     return {"message": "商品删除成功"}
 
-@router.post("/{product_id}/images")
+@router.post("/upload-images")
 async def upload_product_images(
+    files: List[UploadFile] = File(...),
+    db: Session = Depends(get_db),
+    current_user: User = Depends(get_current_user)
+):
+    """上传商品图片（发布商品时使用）"""
+    if len(files) > 9:
+        raise HTTPException(status_code=400, detail="最多只能上传9张图片")
+    
+    uploaded_images = []
+    for file in files:
+        # 验证文件类型
+        if not file.filename:
+            raise HTTPException(status_code=400, detail="文件名不能为空")
+        
+        file_ext = file.filename.lower().split('.')[-1] if '.' in file.filename else ''
+        allowed_extensions = ['jpg', 'jpeg', 'png', 'webp']
+        
+        if file_ext not in allowed_extensions:
+            raise HTTPException(status_code=400, detail=f"不支持的文件格式: {file.filename}，支持的格式: {', '.join(allowed_extensions)}")
+        
+        # 验证文件大小 (5MB限制)
+        file_content = await file.read()
+        if len(file_content) > 5 * 1024 * 1024:
+            raise HTTPException(status_code=400, detail=f"文件 {file.filename} 太大，最大支持5MB")
+        
+        # 重置文件指针
+        await file.seek(0)
+        
+        # 生成唯一文件名
+        timestamp = int(datetime.now().timestamp())
+        unique_filename = f"product_{current_user.id}_{timestamp}_{file.filename}"
+        
+        # 创建上传目录
+        upload_dir = os.path.join("backend", "static", "uploads", "products")
+        os.makedirs(upload_dir, exist_ok=True)
+        
+        file_path = os.path.join(upload_dir, unique_filename)
+        
+        # 保存文件
+        with open(file_path, "wb") as buffer:
+            shutil.copyfileobj(file.file, buffer)
+        
+        # 压缩图片（如果需要）
+        try:
+            from PIL import Image
+            import io
+            
+            # 打开图片
+            with Image.open(file_path) as img:
+                # 转换为RGB模式（去除透明通道）
+                if img.mode in ('RGBA', 'LA', 'P'):
+                    img = img.convert('RGB')
+                
+                # 如果图片太大则压缩
+                max_width, max_height = 1200, 1200
+                if img.width > max_width or img.height > max_height:
+                    img.thumbnail((max_width, max_height), Image.Resampling.LANCZOS)
+                    img.save(file_path, 'JPEG', quality=85, optimize=True)
+                
+        except ImportError:
+            # 如果没有PIL库，跳过压缩
+            pass
+        except Exception as e:
+            print(f"图片压缩失败: {e}")
+        
+        # 生成访问URL
+        image_url = f"/static/uploads/products/{unique_filename}"
+        uploaded_images.append(image_url)
+    
+    return {
+        "success": True,
+        "message": "图片上传成功",
+        "images": uploaded_images
+    }
+
+@router.post("/{product_id}/images")
+async def add_product_images(
     product_id: int,
     files: List[UploadFile] = File(...),
     db: Session = Depends(get_db),
     current_user: User = Depends(get_current_user)
 ):
-    """上传商品图片"""
-    if len(files) > 10:
-        raise HTTPException(status_code=400, detail="最多只能上传10张图片")
+    """为已存在的商品添加图片"""
+    # 验证商品权限
+    product = db.query(Product).filter(
+        Product.id == product_id,
+        Product.seller_id == current_user.id
+    ).first()
+    
+    if not product:
+        raise HTTPException(status_code=404, detail="商品不存在或无权限操作")
+    
+    if len(files) > 9:
+        raise HTTPException(status_code=400, detail="最多只能上传9张图片")
     
     uploaded_images = []
     for file in files:
-        if not any(file.filename.lower().endswith(ext) for ext in settings.ALLOWED_EXTENSIONS):
+        # 验证文件类型
+        if not file.filename:
+            raise HTTPException(status_code=400, detail="文件名不能为空")
+        
+        file_ext = file.filename.lower().split('.')[-1] if '.' in file.filename else ''
+        allowed_extensions = ['jpg', 'jpeg', 'png', 'webp']
+        
+        if file_ext not in allowed_extensions:
             raise HTTPException(status_code=400, detail=f"不支持的文件格式: {file.filename}")
         
-        # 保存文件
+        # 验证文件大小
+        file_content = await file.read()
+        if len(file_content) > 5 * 1024 * 1024:
+            raise HTTPException(status_code=400, detail=f"文件 {file.filename} 太大，最大支持5MB")
+        
+        await file.seek(0)
+        
+        # 生成文件名
         timestamp = int(datetime.now().timestamp())
         filename = f"product_{product_id}_{timestamp}_{file.filename}"
-        file_path = os.path.join(settings.UPLOAD_DIR, "products", filename)
-        os.makedirs(os.path.dirname(file_path), exist_ok=True)
         
+        # 创建目录
+        upload_dir = os.path.join("backend", "static", "uploads", "products")
+        os.makedirs(upload_dir, exist_ok=True)
+        
+        file_path = os.path.join(upload_dir, filename)
+        
+        # 保存文件
         with open(file_path, "wb") as buffer:
             shutil.copyfileobj(file.file, buffer)
         
-        # 保存到数据库
+        # 图片压缩处理
+        try:
+            from PIL import Image
+            
+            with Image.open(file_path) as img:
+                if img.mode in ('RGBA', 'LA', 'P'):
+                    img = img.convert('RGB')
+                
+                max_width, max_height = 1200, 1200
+                if img.width > max_width or img.height > max_height:
+                    img.thumbnail((max_width, max_height), Image.Resampling.LANCZOS)
+                    img.save(file_path, 'JPEG', quality=85, optimize=True)
+        except:
+            pass
+        
+        # 添加到商品图片列表
         image_url = f"/static/uploads/products/{filename}"
-        image = await product_service.add_product_image(db, product_id, image_url, current_user.id)
-        uploaded_images.append(image)
+        current_images = product.images or []
+        current_images.append(image_url)
+        product.images = current_images
+        
+        uploaded_images.append(image_url)
     
-    return {"message": "图片上传成功", "images": uploaded_images}
+    db.commit()
+    
+    return {
+        "success": True,
+        "message": "图片添加成功",
+        "images": uploaded_images
+    }
 
 @router.delete("/{product_id}/images/{image_id}")
 async def delete_product_image(
