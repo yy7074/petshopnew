@@ -1,6 +1,6 @@
 from sqlalchemy.orm import Session
 from sqlalchemy import and_, or_, desc, asc, func
-from typing import List, Optional, Dict, Any
+from typing import List, Optional, Dict, Any, Union, Set
 from datetime import datetime, timedelta
 import os
 
@@ -22,26 +22,15 @@ class ProductService:
         max_price: Optional[float] = None,
         sort_by: Optional[str] = None,
         sort_order: str = "desc",
-        status: str = "active",
-        auction_type: Optional[str] = None
+        status: Optional[Union[str, int]] = None,
+        auction_type: Optional[Union[str, int]] = None
     ) -> ProductListResponse:
         """获取商品列表"""
         query = db.query(Product)
-        
-        # 状态筛选
-        if status != "all":
-            if status == "active":
-                query = query.filter(
-                    and_(
-                        Product.status == "active",
-                        or_(
-                            Product.auction_end_time.is_(None),
-                            Product.auction_end_time > datetime.now()
-                        )
-                    )
-                )
-            else:
-                query = query.filter(Product.status == status)
+
+        status_value = self._normalize_status(status)
+        if status_value:
+            query = query.filter(Product.status.in_(status_value))
         
         # 分类筛选
         if category_id:
@@ -64,26 +53,15 @@ class ProductService:
             query = query.filter(Product.current_price <= max_price)
         
         # 拍卖类型筛选
-        if auction_type:
-            if auction_type == "auction":
-                query = query.filter(Product.auction_type == "auction")
-            elif auction_type == "fixed_price":
-                query = query.filter(Product.auction_type == "fixed_price")
+        auction_value = self._normalize_auction_type(auction_type)
+        if auction_value:
+            query = query.filter(Product.auction_type.in_(auction_value))
         
         # 排序
         if sort_by:
-            if sort_by == "price":
-                order_field = Product.current_price
-            elif sort_by == "created_at":
-                order_field = Product.created_at
-            elif sort_by == "end_time":
-                order_field = Product.auction_end_time
-            elif sort_by == "popularity":
-                order_field = Product.view_count
-            else:
-                order_field = Product.created_at
-            
-            if sort_order == "asc":
+            order_field = self._resolve_sort_field(sort_by)
+
+            if sort_order and sort_order.lower() == "asc":
                 query = query.order_by(asc(order_field))
             else:
                 query = query.order_by(desc(order_field))
@@ -102,6 +80,90 @@ class ProductService:
             page_size=page_size,
             total_pages=(total + page_size - 1) // page_size
         )
+
+    def _normalize_status(self, status: Optional[Union[str, int]]) -> Optional[Set[Union[int, str]]]:
+        if status is None:
+            return None
+
+        values: Set[Union[int, str]] = set()
+
+        if isinstance(status, int):
+            values.update({status, str(status)})
+        else:
+            status_str = str(status).strip().lower()
+            if not status_str or status_str == "all":
+                return None
+
+            if status_str.isdigit():
+                values.update({int(status_str), status_str})
+            else:
+                status_map: Dict[str, Set[Union[int, str]]] = {
+                    "draft": {1, "1", "draft"},
+                    "pending": {1, "1", "pending", "review"},
+                    "review": {1, "1", "pending", "review"},
+                    "active": {2, 3, "2", "3", "active", "selling", "on_sale"},
+                    "selling": {2, 3, "2", "3", "active", "selling"},
+                    "on_sale": {2, 3, "2", "3", "active", "on_sale"},
+                    "auction": {3, "3", "auction", "ongoing"},
+                    "ongoing": {3, "3", "auction", "ongoing"},
+                    "ended": {3, "3", "ended", "finished"},
+                    "finished": {3, "3", "ended", "finished"},
+                    "sold": {4, "4", "sold", "completed"},
+                    "completed": {4, "4", "sold", "completed"},
+                    "offline": {0, "0", "offline", "disabled"},
+                    "disabled": {0, "0", "offline", "disabled"},
+                }
+                mapped = status_map.get(status_str)
+                if mapped:
+                    values.update(mapped)
+
+        return values or None
+
+    def _normalize_auction_type(self, auction_type: Optional[Union[str, int]]) -> Optional[Set[Union[int, str]]]:
+        if auction_type is None:
+            return None
+
+        values: Set[Union[int, str]] = set()
+
+        if isinstance(auction_type, int):
+            values.update({auction_type, str(auction_type)})
+        else:
+            auction_str = str(auction_type).strip().lower()
+            if not auction_str or auction_str in {"both", "all"}:
+                return None
+
+            if auction_str.isdigit():
+                values.update({int(auction_str), auction_str})
+            else:
+                auction_map: Dict[str, Set[Union[int, str]]] = {
+                    "auction": {1, "1", 3, "3", "auction"},
+                    "fixed_price": {2, "2", 3, "3", "fixed", "fixed_price"},
+                    "fixed": {2, "2", 3, "3", "fixed", "fixed_price"},
+                    "mixed": {3, "3", "mixed", "hybrid"},
+                    "hybrid": {3, "3", "mixed", "hybrid"},
+                }
+                mapped = auction_map.get(auction_str)
+                if mapped:
+                    values.update(mapped)
+
+        return values or None
+
+    def _resolve_sort_field(self, sort_by: str):
+        sort_key = (sort_by or "").strip().lower()
+        mapping = {
+            "price": Product.current_price,
+            "current_price": Product.current_price,
+            "created_at": Product.created_at,
+            "updated_at": Product.updated_at,
+            "end_time": Product.auction_end_time,
+            "auction_end_time": Product.auction_end_time,
+            "popularity": Product.view_count,
+            "view_count": Product.view_count,
+            "bid_count": Product.bid_count,
+            "favorite_count": Product.favorite_count,
+        }
+
+        return mapping.get(sort_key, Product.created_at)
     
     async def get_product_detail(
         self, 
@@ -449,13 +511,21 @@ class ProductService:
             category_id=product.category_id,
             starting_price=product.starting_price,
             current_price=product.current_price,
+            buy_now_price=product.buy_now_price,
             auction_type=product.auction_type,
+            auction_start_time=product.auction_start_time,
             auction_end_time=product.auction_end_time,
+            location=product.location,
+            shipping_fee=product.shipping_fee,
+            is_free_shipping=product.is_free_shipping,
+            condition_type=product.condition_type,
+            stock_quantity=product.stock_quantity,
             status=product.status,
             seller_id=product.seller_id,
             view_count=product.view_count,
             bid_count=product.bid_count,
             favorite_count=product.favorite_count,
+            is_featured=product.is_featured,
             created_at=product.created_at,
             updated_at=product.updated_at,
             images=[img.image_url for img in images]

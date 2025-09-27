@@ -30,11 +30,13 @@ class SearchService {
       if (minPrice != null) queryParams['min_price'] = minPrice;
       if (maxPrice != null) queryParams['max_price'] = maxPrice;
 
-      final response = await _apiService.get('/search', queryParameters: queryParams);
+      final response =
+          await _apiService.get('/search/', queryParameters: queryParams);
 
       if (response.statusCode == 200) {
         final List<dynamic> productsJson = response.data['data']['items'] ?? [];
-        final products = productsJson.map((json) => Product.fromJson(json)).toList();
+        final products =
+            productsJson.map((json) => Product.fromJson(json)).toList();
         return ApiResult.success(products);
       } else {
         return ApiResult.error(response.data['message'] ?? '搜索失败');
@@ -113,13 +115,15 @@ class SearchService {
   // 搜索建议
   Future<ApiResult<List<String>>> getSearchSuggestions(String keyword) async {
     try {
-      final response = await _apiService.get('/search/suggestions', queryParameters: {
+      final response =
+          await _apiService.get('/search/suggestions', queryParameters: {
         'keyword': keyword,
       });
 
       if (response.statusCode == 200) {
         final List<dynamic> suggestionsJson = response.data['data'] ?? [];
-        final suggestions = suggestionsJson.map((item) => item.toString()).toList();
+        final suggestions =
+            suggestionsJson.map((item) => item.toString()).toList();
         return ApiResult.success(suggestions);
       } else {
         return ApiResult.error(response.data['message'] ?? '获取搜索建议失败');

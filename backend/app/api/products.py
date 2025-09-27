@@ -1,6 +1,6 @@
 from fastapi import APIRouter, Depends, HTTPException, Query, UploadFile, File
 from sqlalchemy.orm import Session
-from typing import List, Optional
+from typing import List, Optional, Union
 import shutil
 import os
 from datetime import datetime
@@ -27,10 +27,10 @@ async def get_products(
     keyword: Optional[str] = None,
     min_price: Optional[float] = None,
     max_price: Optional[float] = None,
-    sort_by: Optional[str] = Query(None, regex="^(price|created_at|end_time|popularity)$"),
+    sort_by: Optional[str] = None,
     sort_order: Optional[str] = Query("desc", regex="^(asc|desc)$"),
-    status: Optional[str] = Query("active", regex="^(active|sold|ended|all)$"),
-    auction_type: Optional[str] = Query(None, regex="^(auction|fixed_price|both)$"),
+    status: Optional[Union[str, int]] = None,
+    auction_type: Optional[Union[str, int]] = None,
     db: Session = Depends(get_db)
 ):
     """获取商品列表"""

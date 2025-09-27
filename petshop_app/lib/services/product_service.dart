@@ -32,10 +32,11 @@ class ProductService {
       if (auctionType != null) queryParams['auction_type'] = auctionType;
 
       final response =
-          await _apiService.get('/products', queryParameters: queryParams);
+          await _apiService.get('/products/', queryParameters: queryParams);
 
       if (response.statusCode == 200) {
-        final List<dynamic> productsJson = response.data['data']['items'] ?? [];
+        // API直接返回items数组，不包装在data字段中
+        final List<dynamic> productsJson = response.data['items'] ?? [];
         final products =
             productsJson.map((json) => Product.fromJson(json)).toList();
         return ApiResult.success(products);
@@ -50,10 +51,12 @@ class ProductService {
   // 获取商品详情
   Future<ApiResult<Product>> getProductDetail(int productId) async {
     try {
-      final response = await _apiService.get('/products/$productId');
+      final response = await _apiService.get('/products/$productId/');
 
       if (response.statusCode == 200) {
-        final product = Product.fromJson(response.data['data']);
+        // 检查是否有data包装
+        final productData = response.data['data'] ?? response.data;
+        final product = Product.fromJson(productData);
         return ApiResult.success(product);
       } else {
         return ApiResult.error(response.data['message'] ?? '获取商品详情失败');
@@ -66,7 +69,8 @@ class ProductService {
   // 获取热门商品
   Future<ApiResult<List<Product>>> getHotProducts({int limit = 10}) async {
     try {
-      final response = await _apiService.get('/products/hot', queryParameters: {
+      final response =
+          await _apiService.get('/products/hot/', queryParameters: {
         'limit': limit,
       });
 
@@ -88,7 +92,7 @@ class ProductService {
       {int limit = 10}) async {
     try {
       final response =
-          await _apiService.get('/products/recommended', queryParameters: {
+          await _apiService.get('/products/recommended/', queryParameters: {
         'limit': limit,
       });
 
@@ -108,7 +112,7 @@ class ProductService {
   // 获取分类列表
   Future<ApiResult<List<Category>>> getCategories() async {
     try {
-      final response = await _apiService.get('/categories');
+      final response = await _apiService.get('/categories/');
 
       if (response.statusCode == 200) {
         final List<dynamic> categoriesJson = response.data['data'] ?? [];
