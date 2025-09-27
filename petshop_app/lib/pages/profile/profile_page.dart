@@ -288,9 +288,11 @@ class _ProfilePageState extends State<ProfilePage>
               ],
             ),
           ),
+
+          // 悬浮按钮作为Stack的子元素
+          _buildFloatingActionButton(),
         ],
       ),
-      floatingActionButton: _buildFloatingActionButton(),
     );
   }
 
@@ -1210,40 +1212,42 @@ class _ProfilePageState extends State<ProfilePage>
     return Positioned(
       bottom: 120.h,
       right: 20.w,
-      child: GestureDetector(
-        onTap: () {},
-        child: Container(
-          width: 60.w,
-          height: 60.w,
-          decoration: BoxDecoration(
-            color: const Color(0xFF9C4DFF),
-            shape: BoxShape.circle,
-            boxShadow: [
-              BoxShadow(
-                color: const Color(0xFF9C4DFF).withOpacity(0.3),
-                blurRadius: 12,
-                offset: const Offset(0, 4),
-              ),
-            ],
-          ),
-          child: Column(
-            mainAxisAlignment: MainAxisAlignment.center,
-            children: [
-              Icon(
-                Icons.gavel,
-                size: 20.w,
-                color: Colors.white,
-              ),
-              SizedBox(height: 2.h),
-              Text(
-                '参与',
-                style: TextStyle(
-                  fontSize: 10.sp,
-                  color: Colors.white,
-                  fontWeight: FontWeight.w600,
+      child: SafeArea(
+        child: GestureDetector(
+          onTap: () {},
+          child: Container(
+            width: 60.w,
+            height: 60.w,
+            decoration: BoxDecoration(
+              color: const Color(0xFF9C4DFF),
+              shape: BoxShape.circle,
+              boxShadow: [
+                BoxShadow(
+                  color: const Color(0xFF9C4DFF).withOpacity(0.3),
+                  blurRadius: 12,
+                  offset: const Offset(0, 4),
                 ),
-              ),
-            ],
+              ],
+            ),
+            child: Column(
+              mainAxisAlignment: MainAxisAlignment.center,
+              children: [
+                Icon(
+                  Icons.gavel,
+                  size: 20.w,
+                  color: Colors.white,
+                ),
+                SizedBox(height: 2.h),
+                Text(
+                  '参与',
+                  style: TextStyle(
+                    fontSize: 10.sp,
+                    color: Colors.white,
+                    fontWeight: FontWeight.w600,
+                  ),
+                ),
+              ],
+            ),
           ),
         ),
       ),
