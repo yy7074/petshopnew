@@ -99,6 +99,75 @@ class _AquariumDesignPageState extends State<AquariumDesignPage>
     await _loadDesignServices();
   }
 
+  List<Map<String, dynamic>> get _displayRewardItems =>
+      _designServices.isNotEmpty ? _designServices : _mockRewardItems;
+
+  String? _resolveImage(Map<String, dynamic> item) {
+    final dynamic directImage = item['image'] ?? item['coverImage'] ?? item['cover_image'];
+    if (directImage is String && directImage.isNotEmpty) return directImage;
+
+    final dynamic images = item['images'] ?? item['portfolio_images'];
+    if (images is List && images.isNotEmpty) {
+      final first = images.first;
+      if (first is String && first.isNotEmpty) return first;
+      if (first is Map) {
+        final dynamic url = first['url'] ?? first['image_url'];
+        if (url is String && url.isNotEmpty) return url;
+      }
+    }
+
+    return null;
+  }
+
+  String _resolveTitle(Map<String, dynamic> item) {
+    final dynamic title =
+        item['title'] ?? item['name'] ?? item['serviceTitle'] ?? item['service_title'];
+    return title?.toString() ?? '鱼缸造景服务';
+  }
+
+  String _resolveShopName(Map<String, dynamic> item) {
+    final dynamic shop =
+        item['shopName'] ?? item['provider_name'] ?? item['designer_name'];
+    return shop?.toString() ?? '优质服务商';
+  }
+
+  String? _resolveShopAvatar(Map<String, dynamic> item) {
+    final dynamic avatar =
+        item['shopAvatar'] ?? item['provider_avatar'] ?? item['designer_avatar'];
+    if (avatar is String && avatar.isNotEmpty) return avatar;
+    return null;
+  }
+
+  num? _parseNum(dynamic value) {
+    if (value == null) return null;
+    if (value is num) return value;
+    if (value is String && value.isNotEmpty) {
+      return num.tryParse(value.replaceAll(RegExp(r'[^0-9\.-]'), ''));
+    }
+    return null;
+  }
+
+  String _formatPrice(Map<String, dynamic> item) {
+    final num? price = _parseNum(
+      item['currentPrice'] ??
+          item['current_price'] ??
+          item['price'] ??
+          item['reward_amount'] ??
+          item['budget_min'],
+    );
+
+    if (price != null) {
+      return '¥${price.toStringAsFixed(0)}';
+    }
+
+    final dynamic priceRange = item['price_range'] ?? item['budget_range'];
+    if (priceRange is String && priceRange.isNotEmpty) {
+      return priceRange;
+    }
+
+    return '价格面议';
+  }
+
   // 原来的模拟数据（作为备用）
   final List<Map<String, dynamic>> _mockRewardItems = [
     {
@@ -214,13 +283,6 @@ class _AquariumDesignPageState extends State<AquariumDesignPage>
       'shopAvatar': 'https://picsum.photos/40/40?random=816',
     },
   ];
-
-  @override
-  void initState() {
-    super.initState();
-    _tabController = TabController(length: 2, vsync: this);
-  }
-
   @override
   void dispose() {
     _tabController.dispose();
