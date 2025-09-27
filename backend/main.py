@@ -80,6 +80,54 @@ async def root():
 async def health_check():
     return {"status": "healthy", "message": "服务运行正常"}
 
+# 隐私政策页面
+@app.get("/privacy-policy")
+async def privacy_policy():
+    from fastapi.responses import FileResponse
+    import os
+    
+    privacy_file = os.path.join("static", "privacy-policy.html")
+    if os.path.exists(privacy_file):
+        return FileResponse(privacy_file, media_type="text/html")
+    else:
+        raise HTTPException(status_code=404, detail="隐私政策页面未找到")
+
+# 隐私政策页面 - 兼容性路由
+@app.get("/privacy")
+async def privacy_redirect():
+    from fastapi.responses import RedirectResponse
+    return RedirectResponse(url="/privacy-policy", status_code=301)
+
+# 用户协议页面
+@app.get("/terms-of-service")
+async def terms_of_service():
+    from fastapi.responses import FileResponse
+    import os
+    
+    terms_file = os.path.join("static", "terms-of-service.html")
+    if os.path.exists(terms_file):
+        return FileResponse(terms_file, media_type="text/html")
+    else:
+        raise HTTPException(status_code=404, detail="用户协议页面未找到")
+
+# 用户协议页面 - 兼容性路由
+@app.get("/terms")
+async def terms_redirect():
+    from fastapi.responses import RedirectResponse
+    return RedirectResponse(url="/terms-of-service", status_code=301)
+
+# 法律条款导航页面
+@app.get("/legal")
+async def legal_page():
+    from fastapi.responses import FileResponse
+    import os
+    
+    legal_file = os.path.join("static", "legal.html")
+    if os.path.exists(legal_file):
+        return FileResponse(legal_file, media_type="text/html")
+    else:
+        raise HTTPException(status_code=404, detail="法律条款页面未找到")
+
 # 全局异常处理
 @app.exception_handler(HTTPException)
 async def http_exception_handler(request, exc: HTTPException):

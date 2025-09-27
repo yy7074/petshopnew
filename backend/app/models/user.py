@@ -78,3 +78,13 @@ class KeywordSubscription(Base):
     created_at = Column(DateTime, server_default=func.now())
 
 
+class SearchHistory(Base):
+    __tablename__ = "search_history"
+
+    id = Column(Integer, primary_key=True, index=True, autoincrement=True)
+    user_id = Column(Integer, nullable=False, index=True)
+    keyword = Column(String(100), nullable=False)
+    search_type = Column(String(20), default="product", comment="product, store")
+    created_at = Column(DateTime, server_default=func.now())
+
+

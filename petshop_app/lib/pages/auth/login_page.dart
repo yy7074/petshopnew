@@ -5,6 +5,10 @@ import 'package:get/get.dart';
 import '../../utils/app_routes.dart';
 import '../../services/auth_service.dart';
 import 'sms_login_page.dart';
+import 'terms_of_service_page.dart';
+import 'privacy_policy_page.dart';
+import '../../widgets/privacy_consent_dialog.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 
 class LoginPage extends StatefulWidget {
   const LoginPage({super.key});
@@ -20,12 +24,13 @@ class _LoginPageState extends State<LoginPage> {
   bool _isTestAccountMode = false;
   bool _isPhoneLoading = false;
   bool _isPasswordLoading = false;
-  bool _agreedToTerms = true; // 默认已同意
+  bool _agreedToTerms = false; // 默认未同意，需要用户主动同意
   bool _passwordVisible = false;
 
   @override
   void initState() {
     super.initState();
+    _checkAndShowPrivacyConsent();
     // 设置状态栏样式
     SystemChrome.setSystemUIOverlayStyle(
       const SystemUiOverlayStyle(
@@ -34,6 +39,15 @@ class _LoginPageState extends State<LoginPage> {
         statusBarBrightness: Brightness.light,
       ),
     );
+
+    // 自动填入测试账号信息
+    _fillTestAccount();
+  }
+
+  // 自动填入测试账号
+  void _fillTestAccount() {
+    _phoneController.text = "18888888888";
+    _passwordController.text = "111111";
   }
 
   @override
@@ -404,9 +418,13 @@ class _LoginPageState extends State<LoginPage> {
                         width: double.infinity,
                         height: 50.h,
                         child: ElevatedButton(
-                          onPressed: _isPasswordLoading ? null : _passwordLogin,
+                          onPressed: (_isPasswordLoading || !_agreedToTerms)
+                              ? null
+                              : _passwordLogin,
                           style: ElevatedButton.styleFrom(
-                            backgroundColor: const Color(0xFF9C4DFF),
+                            backgroundColor: _agreedToTerms
+                                ? const Color(0xFF9C4DFF)
+                                : const Color(0xFFCCCCCC),
                             foregroundColor: Colors.white,
                             elevation: 0,
                             shadowColor: Colors.transparent,
@@ -441,9 +459,13 @@ class _LoginPageState extends State<LoginPage> {
                     width: double.infinity,
                     height: 50.h,
                     child: ElevatedButton(
-                      onPressed: _isPhoneLoading ? null : _phoneLogin,
+                      onPressed: (_isPhoneLoading || !_agreedToTerms)
+                          ? null
+                          : _phoneLogin,
                       style: ElevatedButton.styleFrom(
-                        backgroundColor: const Color(0xFF9C4DFF),
+                        backgroundColor: _agreedToTerms
+                            ? const Color(0xFF9C4DFF)
+                            : const Color(0xFFCCCCCC),
                         foregroundColor: Colors.white,
                         elevation: 0,
                         shadowColor: Colors.transparent,
@@ -490,9 +512,15 @@ class _LoginPageState extends State<LoginPage> {
                   children: [
                     GestureDetector(
                       onTap: () {
-                        setState(() {
-                          _agreedToTerms = !_agreedToTerms;
-                        });
+                        if (_agreedToTerms) {
+                          // 如果已经同意，点击取消同意
+                          setState(() {
+                            _agreedToTerms = false;
+                          });
+                        } else {
+                          // 如果未同意，显示隐私政策同意弹窗
+                          _showPrivacyConsentDialog();
+                        }
                       },
                       child: Container(
                         width: 18.w,
@@ -520,31 +548,68 @@ class _LoginPageState extends State<LoginPage> {
                     ),
                     SizedBox(width: 8.w),
                     Expanded(
-                      child: RichText(
-                        text: TextSpan(
-                          style: TextStyle(
-                            fontSize: 12.sp,
-                            color: const Color(0xFF999999),
+                      child: Wrap(
+                        children: [
+                          Text(
+                            '您已阅读并同意 ',
+                            style: TextStyle(
+                              fontSize: 12.sp,
+                              color: const Color(0xFF999999),
+                            ),
                           ),
-                          children: [
-                            const TextSpan(text: '您已阅读并同意 '),
-                            TextSpan(
-                              text: '《用户协议》',
+                          GestureDetector(
+                            onTap: () {
+                              Navigator.push(
+                                context,
+                                MaterialPageRoute(
+                                  builder: (context) =>
+                                      const TermsOfServicePage(
+                                    showButtons: true,
+                                    onAccept: null,
+                                    onReject: null,
+                                  ),
+                                ),
+                              );
+                            },
+                            child: Text(
+                              '《用户协议》',
                               style: TextStyle(
+                                fontSize: 12.sp,
                                 color: const Color(0xFF9C4DFF),
                                 decoration: TextDecoration.underline,
                               ),
                             ),
-                            const TextSpan(text: ' '),
-                            TextSpan(
-                              text: '《隐私政策》',
+                          ),
+                          Text(
+                            ' ',
+                            style: TextStyle(
+                              fontSize: 12.sp,
+                              color: const Color(0xFF999999),
+                            ),
+                          ),
+                          GestureDetector(
+                            onTap: () {
+                              Navigator.push(
+                                context,
+                                MaterialPageRoute(
+                                  builder: (context) => const PrivacyPolicyPage(
+                                    showButtons: true,
+                                    onAccept: null,
+                                    onReject: null,
+                                  ),
+                                ),
+                              );
+                            },
+                            child: Text(
+                              '《隐私政策》',
                               style: TextStyle(
+                                fontSize: 12.sp,
                                 color: const Color(0xFF9C4DFF),
                                 decoration: TextDecoration.underline,
                               ),
                             ),
-                          ],
-                        ),
+                          ),
+                        ],
                       ),
                     ),
                   ],
@@ -556,6 +621,60 @@ class _LoginPageState extends State<LoginPage> {
           ),
         ),
       ),
+    );
+  }
+
+  // 检查并显示隐私政策同意弹窗
+  Future<void> _checkAndShowPrivacyConsent() async {
+    final prefs = await SharedPreferences.getInstance();
+    final hasAgreedToPrivacy = prefs.getBool('has_agreed_to_privacy') ?? false;
+
+    if (!hasAgreedToPrivacy && mounted) {
+      // 延迟一下再显示弹窗，确保页面已经完全加载
+      await Future.delayed(const Duration(milliseconds: 500));
+
+      if (mounted) {
+        showPrivacyConsentDialog(
+          context,
+          onAccept: () async {
+            // 用户同意
+            await prefs.setBool('has_agreed_to_privacy', true);
+            setState(() {
+              _agreedToTerms = true;
+            });
+          },
+          onReject: () {
+            // 用户拒绝，退出应用
+            SystemNavigator.pop();
+          },
+        );
+      }
+    } else {
+      // 用户之前已经同意过
+      setState(() {
+        _agreedToTerms = true;
+      });
+    }
+  }
+
+  // 显示隐私政策同意弹窗（用于勾选框点击）
+  Future<void> _showPrivacyConsentDialog() async {
+    showPrivacyConsentDialog(
+      context,
+      onAccept: () async {
+        // 用户同意
+        final prefs = await SharedPreferences.getInstance();
+        await prefs.setBool('has_agreed_to_privacy', true);
+        setState(() {
+          _agreedToTerms = true;
+        });
+      },
+      onReject: () {
+        // 用户拒绝，勾选框保持未选中状态
+        setState(() {
+          _agreedToTerms = false;
+        });
+      },
     );
   }
 }
