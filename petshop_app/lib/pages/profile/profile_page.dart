@@ -60,10 +60,7 @@ class _ProfilePageState extends State<ProfilePage>
   void initState() {
     super.initState();
     _loadUserInfo();
-    // 清除可能存在的overlay
-    WidgetsBinding.instance.addPostFrameCallback((_) {
-      Navigator.popUntil(context, (route) => route.isFirst);
-    });
+    // 避免在页面初始化时强制清空路由栈，防止遮罩残留
   }
 
   void _loadUserInfo() {
