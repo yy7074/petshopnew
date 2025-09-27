@@ -60,6 +60,24 @@ class PetSocialComment(Base):
     parent = relationship("PetSocialComment", remote_side=[id], back_populates="replies")
     replies = relationship("PetSocialComment", remote_side=[parent_id], back_populates="parent")
 
+# 宠物交流点赞
+class PetSocialLike(Base):
+    __tablename__ = "pet_social_likes"
+    
+    id = Column(Integer, primary_key=True, index=True)
+    post_id = Column(Integer, ForeignKey("pet_social_posts.id"), nullable=False)
+    user_id = Column(Integer, ForeignKey("users.id"), nullable=False)
+    created_at = Column(DateTime(timezone=True), server_default=func.now())
+    
+    # 关联关系
+    post = relationship("PetSocialPost")
+    user = relationship("User")
+    
+    # 确保同一用户对同一帖子只能点赞一次
+    __table_args__ = (
+        {'mysql_charset': 'utf8mb4'},
+    )
+
 # 宠物配种信息
 class PetBreedingInfo(Base):
     __tablename__ = "pet_breeding_info"
@@ -205,6 +223,74 @@ class PetValuationService(Base):
     # 关联关系
     user = relationship("User", foreign_keys=[user_id])
     valuator = relationship("User", foreign_keys=[valuator_id])
+
+# 回收查询相关模型
+class RecyclingItem(Base):
+    __tablename__ = "recycling_items"
+    
+    id = Column(Integer, primary_key=True, index=True)
+    user_id = Column(Integer, ForeignKey("users.id"), nullable=False)
+    name = Column(String(200), nullable=False)
+    category = Column(String(50), nullable=False)
+    original_price = Column(Float)
+    recycling_price = Column(Float)
+    condition = Column(String(20))  # 新旧程度
+    description = Column(Text)
+    images = Column(Text)  # JSON格式存储图片列表
+    location = Column(String(200))
+    contact_phone = Column(String(20))
+    contact_wechat = Column(String(50))
+    status = Column(String(20), default="可回收")  # 可回收、已回收、已取消
+    view_count = Column(Integer, default=0)
+    created_at = Column(DateTime(timezone=True), server_default=func.now())
+    updated_at = Column(DateTime(timezone=True), server_default=func.now(), onupdate=func.now())
+    
+    # 关联关系
+    user = relationship("User")
+
+# 回收订单
+class RecyclingOrder(Base):
+    __tablename__ = "recycling_orders"
+    
+    id = Column(Integer, primary_key=True, index=True)
+    item_id = Column(Integer, ForeignKey("recycling_items.id"), nullable=False)
+    buyer_id = Column(Integer, ForeignKey("users.id"), nullable=False)
+    seller_id = Column(Integer, ForeignKey("users.id"), nullable=False)
+    agreed_price = Column(Float, nullable=False)
+    pickup_address = Column(String(500))
+    pickup_time = Column(DateTime(timezone=True))
+    notes = Column(Text)
+    status = Column(String(20), default="待确认")  # 待确认、已确认、进行中、已完成、已取消
+    created_at = Column(DateTime(timezone=True), server_default=func.now())
+    updated_at = Column(DateTime(timezone=True), server_default=func.now(), onupdate=func.now())
+    
+    # 关联关系
+    item = relationship("RecyclingItem")
+    buyer = relationship("User", foreign_keys=[buyer_id])
+    seller = relationship("User", foreign_keys=[seller_id])
+
+# 合作方代理相关模型
+class PartnerApplication(Base):
+    __tablename__ = "partner_applications"
+    
+    id = Column(Integer, primary_key=True, index=True)
+    user_id = Column(Integer, ForeignKey("users.id"), nullable=False)
+    name = Column(String(100), nullable=False)  # 申请人姓名
+    phone = Column(String(20), nullable=False)  # 联系电话
+    company = Column(String(200))  # 公司名称
+    address = Column(String(500), nullable=False)  # 地址
+    agent_type = Column(String(50), nullable=False)  # 代理类型：区域代理、品牌代理等
+    remark = Column(Text)  # 备注信息
+    status = Column(String(20), default="待审核")  # 待审核、已通过、已拒绝
+    admin_remark = Column(Text)  # 管理员备注
+    reviewed_by = Column(Integer, ForeignKey("users.id"))  # 审核人
+    reviewed_at = Column(DateTime(timezone=True))  # 审核时间
+    created_at = Column(DateTime(timezone=True), server_default=func.now())
+    updated_at = Column(DateTime(timezone=True), server_default=func.now(), onupdate=func.now())
+    
+    # 关联关系
+    user = relationship("User", foreign_keys=[user_id])
+    reviewer = relationship("User", foreign_keys=[reviewed_by])
 
 # 附近发现
 class NearbyItem(Base):

@@ -88,6 +88,66 @@ async def create_social_comment(
     except Exception as e:
         raise HTTPException(status_code=500, detail=str(e))
 
+@router.post("/social-posts/{post_id}/like")
+async def like_social_post(
+    post_id: int,
+    db: Session = Depends(get_db),
+    current_user: User = Depends(get_current_user)
+):
+    """点赞/取消点赞帖子"""
+    try:
+        result = await local_service.toggle_post_like(db, post_id, current_user.id)
+        return {
+            "success": True,
+            "liked": result["liked"],
+            "like_count": result["like_count"],
+            "message": "点赞成功" if result["liked"] else "取消点赞成功"
+        }
+    except ValueError as e:
+        raise HTTPException(status_code=400, detail=str(e))
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=str(e))
+
+@router.get("/social-posts/search")
+async def search_social_posts(
+    q: str = Query(..., min_length=1, description="搜索关键词"),
+    page: int = Query(1, ge=1),
+    page_size: int = Query(20, ge=1, le=100),
+    pet_type: Optional[str] = Query(None),
+    location: Optional[str] = Query(None),
+    sort_by: str = Query("created_at", description="排序方式：created_at, like_count, comment_count"),
+    sort_order: str = Query("desc", description="排序顺序：asc, desc"),
+    db: Session = Depends(get_db)
+):
+    """搜索宠物社交帖子"""
+    try:
+        result = await local_service.search_social_posts(
+            db, q, page, page_size, pet_type, location, sort_by, sort_order
+        )
+        return {
+            "success": True,
+            "data": result
+        }
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=str(e))
+
+@router.get("/social-posts/{post_id}/likes")
+async def get_post_likes(
+    post_id: int,
+    page: int = Query(1, ge=1),
+    page_size: int = Query(20, ge=1, le=100),
+    db: Session = Depends(get_db)
+):
+    """获取帖子点赞列表"""
+    try:
+        result = await local_service.get_post_likes(db, post_id, page, page_size)
+        return {
+            "success": True,
+            "data": result
+        }
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=str(e))
+
 # ==================== 宠物配种相关接口 ====================
 
 @router.post("/breeding-info", response_model=PetBreedingInfoResponse)
@@ -296,6 +356,170 @@ async def get_service_stats(
     """获取服务统计数据"""
     try:
         return await local_service.get_service_stats(db)
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=str(e))
+
+# ==================== 回收查询相关路由 ====================
+
+@router.get("/recycling-items")
+async def get_recycling_items(
+    page: int = Query(1, ge=1),
+    page_size: int = Query(20, ge=1, le=100),
+    category: Optional[str] = Query(None),
+    location: Optional[str] = Query(None),
+    status: Optional[str] = Query(None),
+    keyword: Optional[str] = Query(None),
+    sort_by: str = Query("created_at"),
+    sort_order: str = Query("desc"),
+    db: Session = Depends(get_db)
+):
+    """获取回收物品列表"""
+    try:
+        return await local_service.get_recycling_items(
+            db=db,
+            page=page,
+            page_size=page_size,
+            category=category,
+            location=location,
+            status=status,
+            keyword=keyword,
+            sort_by=sort_by,
+            sort_order=sort_order
+        )
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=str(e))
+
+@router.post("/recycling-items")
+async def create_recycling_item(
+    item_data: dict,
+    db: Session = Depends(get_db),
+    current_user: User = Depends(get_current_user)
+):
+    """创建回收物品"""
+    try:
+        return await local_service.create_recycling_item(
+            db=db,
+            item_data=item_data,
+            user_id=current_user.id
+        )
+    except ValueError as e:
+        raise HTTPException(status_code=400, detail=str(e))
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=str(e))
+
+@router.get("/recycling-items/{item_id}")
+async def get_recycling_item_detail(
+    item_id: int,
+    db: Session = Depends(get_db)
+):
+    """获取回收物品详情"""
+    try:
+        return await local_service.get_recycling_item_detail(db, item_id)
+    except ValueError as e:
+        raise HTTPException(status_code=404, detail=str(e))
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=str(e))
+
+@router.post("/recycling-orders")
+async def create_recycling_order(
+    order_data: dict,
+    db: Session = Depends(get_db),
+    current_user: User = Depends(get_current_user)
+):
+    """创建回收订单"""
+    try:
+        return await local_service.create_recycling_order(
+            db=db,
+            order_data=order_data,
+            buyer_id=current_user.id
+        )
+    except ValueError as e:
+        raise HTTPException(status_code=400, detail=str(e))
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=str(e))
+
+@router.get("/recycling-orders")
+async def get_recycling_orders(
+    page: int = Query(1, ge=1),
+    page_size: int = Query(20, ge=1, le=100),
+    status: Optional[str] = Query(None),
+    order_type: str = Query("all"),
+    db: Session = Depends(get_db),
+    current_user: User = Depends(get_current_user)
+):
+    """获取用户的回收订单"""
+    try:
+        return await local_service.get_recycling_orders(
+            db=db,
+            user_id=current_user.id,
+            page=page,
+            page_size=page_size,
+            status=status,
+            order_type=order_type
+        )
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=str(e))
+
+# ==================== 合作方代理相关路由 ====================
+
+@router.post("/partner-applications")
+async def create_partner_application(
+    application_data: dict,
+    db: Session = Depends(get_db),
+    current_user: User = Depends(get_current_user)
+):
+    """创建合作方代理申请"""
+    try:
+        return await local_service.create_partner_application(
+            db=db,
+            application_data=application_data,
+            user_id=current_user.id
+        )
+    except ValueError as e:
+        raise HTTPException(status_code=400, detail=str(e))
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=str(e))
+
+@router.get("/partner-applications")
+async def get_partner_applications(
+    page: int = Query(1, ge=1),
+    page_size: int = Query(20, ge=1, le=100),
+    db: Session = Depends(get_db),
+    current_user: User = Depends(get_current_user)
+):
+    """获取用户的合作方代理申请列表"""
+    try:
+        return await local_service.get_user_partner_applications(
+            db=db,
+            user_id=current_user.id,
+            page=page,
+            page_size=page_size
+        )
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=str(e))
+
+@router.get("/partner-applications/{application_id}")
+async def get_partner_application_detail(
+    application_id: int,
+    db: Session = Depends(get_db),
+    current_user: User = Depends(get_current_user)
+):
+    """获取合作方代理申请详情"""
+    try:
+        application = await local_service.get_partner_application_detail(
+            db=db,
+            application_id=application_id
+        )
+        
+        # 检查权限：只能查看自己的申请
+        if application['user_id'] != current_user.id:
+            raise HTTPException(status_code=403, detail="无权访问此申请")
+        
+        return application
+    except ValueError as e:
+        raise HTTPException(status_code=404, detail=str(e))
+    except HTTPException:
+        raise
     except Exception as e:
         raise HTTPException(status_code=500, detail=str(e))
 

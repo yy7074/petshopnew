@@ -5,7 +5,7 @@ class Product {
   final String description;
   final int categoryId;
   final List<String> images;
-  final String status;
+  final int status;
   final ProductType type;
   final AuctionInfo? auctionInfo;
   final FixedInfo? fixedInfo;
@@ -75,7 +75,7 @@ class Product {
       description: json['description'] ?? '',
       categoryId: json['category_id'] ?? 0,
       images: List<String>.from(json['images'] ?? []),
-      status: (json['status'] ?? 1).toString(),
+      status: int.tryParse(json['status']?.toString() ?? '') ?? 1,
       type: productType,
       auctionInfo: auctionInfo,
       fixedInfo: fixedInfo,

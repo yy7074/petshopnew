@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import '../../constants/app_colors.dart';
+import '../../services/local_service_service.dart';
 import 'pet_social_detail_page.dart';
 import 'pet_social_publish_page.dart';
 
@@ -14,8 +15,128 @@ class PetSocialPage extends StatefulWidget {
 class _PetSocialPageState extends State<PetSocialPage> {
   final ScrollController _scrollController = ScrollController();
 
-  // 模拟社交帖子数据
-  final List<Map<String, dynamic>> _posts = [
+  // 数据状态
+  List<Map<String, dynamic>> _posts = [];
+  bool _isLoading = true;
+  bool _isLoadingMore = false;
+  String? _errorMessage;
+  int _currentPage = 1;
+  bool _hasMore = true;
+
+  // 筛选条件
+  String? _selectedPetType;
+  String? _selectedLocation;
+  String _currentSearchQuery = '';
+
+  // 宠物类型选项
+  final List<String> _petTypes = ['全部', '狗狗', '猫咪', '鸟类', '鱼类', '爬虫', '小宠'];
+
+  @override
+  void initState() {
+    super.initState();
+    _loadPosts();
+    _scrollController.addListener(_onScroll);
+  }
+
+  // 滚动监听
+  void _onScroll() {
+    if (_scrollController.position.pixels >=
+        _scrollController.position.maxScrollExtent - 200) {
+      _loadMorePosts();
+    }
+  }
+
+  // 加载帖子
+  Future<void> _loadPosts({bool refresh = false}) async {
+    if (!refresh && _isLoading) return;
+
+    setState(() {
+      if (refresh) {
+        _isLoading = true;
+        _currentPage = 1;
+        _hasMore = true;
+        _posts.clear();
+      } else {
+        _isLoading = true;
+      }
+      _errorMessage = null;
+    });
+
+    try {
+      final result = _currentSearchQuery.isNotEmpty
+          ? await LocalServiceService.searchSocialPosts(
+              query: _currentSearchQuery,
+              page: _currentPage,
+              pageSize: 20,
+              petType: _selectedPetType,
+              location: _selectedLocation,
+            )
+          : await LocalServiceService.getSocialPosts(
+              page: _currentPage,
+              pageSize: 20,
+              petType: _selectedPetType,
+              location: _selectedLocation,
+            );
+
+      final List<Map<String, dynamic>> newPosts =
+          List<Map<String, dynamic>>.from(result['items'] ?? []);
+
+      setState(() {
+        if (refresh || _currentPage == 1) {
+          _posts = newPosts;
+        } else {
+          _posts.addAll(newPosts);
+        }
+        _hasMore = newPosts.length >= 20;
+        _isLoading = false;
+        _isLoadingMore = false;
+      });
+    } catch (e) {
+      setState(() {
+        _errorMessage = '加载失败: $e';
+        _isLoading = false;
+        _isLoadingMore = false;
+      });
+    }
+  }
+
+  // 加载更多帖子
+  Future<void> _loadMorePosts() async {
+    if (_isLoadingMore || !_hasMore) return;
+
+    setState(() {
+      _isLoadingMore = true;
+      _currentPage++;
+    });
+
+    await _loadPosts();
+  }
+
+  // 点赞功能
+  Future<void> _toggleLike(int index, int postId) async {
+    try {
+      final result = await LocalServiceService.togglePostLike(postId);
+
+      setState(() {
+        _posts[index]['liked'] = result['liked'];
+        _posts[index]['like_count'] = result['like_count'];
+      });
+
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Text(result['liked'] ? '点赞成功' : '取消点赞'),
+          duration: const Duration(seconds: 1),
+        ),
+      );
+    } catch (e) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text('操作失败: $e')),
+      );
+    }
+  }
+
+  // 原来的模拟数据（作为备用）
+  final List<Map<String, dynamic>> _mockPosts = [
     {
       'id': '1',
       'userAvatar': 'https://picsum.photos/60/60?random=1',
@@ -420,10 +541,21 @@ class _PetSocialPageState extends State<PetSocialPage> {
 
   // 执行搜索
   void _performSearch(String query) {
-    // 这里可以实现实际的搜索逻辑
+    setState(() {
+      _currentSearchQuery = query;
+    });
+    _loadPosts(refresh: true);
+
     ScaffoldMessenger.of(context).showSnackBar(
       SnackBar(content: Text('搜索: $query')),
     );
-    // TODO: 实现实际的搜索API调用和结果显示
+  }
+
+  // 清除搜索
+  void _clearSearch() {
+    setState(() {
+      _currentSearchQuery = '';
+    });
+    _loadPosts(refresh: true);
   }
 }

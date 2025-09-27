@@ -5,9 +5,10 @@ from datetime import datetime
 import json
 
 from ..models.local_service import (
-    PetSocialPost, PetSocialComment, PetBreedingInfo, LocalPetStore,
+    PetSocialPost, PetSocialComment, PetSocialLike, PetBreedingInfo, LocalPetStore,
     AquariumDesignService, LocalPickupService, DoorService,
-    PetValuationService, NearbyItem, ServiceStatus
+    PetValuationService, RecyclingItem, RecyclingOrder, PartnerApplication, 
+    NearbyItem, ServiceStatus
 )
 from ..models.user import User
 from ..schemas.local_service import (
@@ -110,6 +111,138 @@ class LocalService:
         db.refresh(comment)
         
         return await self._build_social_comment_response(db, comment)
+    
+    async def toggle_post_like(self, db: Session, post_id: int, user_id: int) -> Dict[str, Any]:
+        """点赞/取消点赞帖子"""
+        # 检查帖子是否存在
+        post = db.query(PetSocialPost).filter(PetSocialPost.id == post_id).first()
+        if not post:
+            raise ValueError("帖子不存在")
+        
+        # 检查用户是否已点赞
+        existing_like = db.query(PetSocialLike).filter(
+            and_(PetSocialLike.post_id == post_id, PetSocialLike.user_id == user_id)
+        ).first()
+        
+        if existing_like:
+            # 取消点赞
+            db.delete(existing_like)
+            post.like_count = max(0, post.like_count - 1)
+            liked = False
+        else:
+            # 添加点赞
+            like = PetSocialLike(post_id=post_id, user_id=user_id)
+            db.add(like)
+            post.like_count += 1
+            liked = True
+        
+        db.commit()
+        
+        return {
+            "liked": liked,
+            "like_count": post.like_count
+        }
+    
+    async def search_social_posts(
+        self, 
+        db: Session, 
+        query: str,
+        page: int = 1, 
+        page_size: int = 20,
+        pet_type: Optional[str] = None,
+        location: Optional[str] = None,
+        sort_by: str = "created_at",
+        sort_order: str = "desc"
+    ) -> Dict[str, Any]:
+        """搜索宠物社交帖子"""
+        # 构建查询
+        db_query = db.query(PetSocialPost).filter(PetSocialPost.status == ServiceStatus.ACTIVE)
+        
+        # 搜索条件
+        search_filter = or_(
+            PetSocialPost.title.contains(query),
+            PetSocialPost.content.contains(query)
+        )
+        db_query = db_query.filter(search_filter)
+        
+        # 筛选条件
+        if pet_type:
+            db_query = db_query.filter(PetSocialPost.pet_type == pet_type)
+        if location:
+            db_query = db_query.filter(PetSocialPost.location.contains(location))
+        
+        # 排序
+        if sort_by == "like_count":
+            sort_column = PetSocialPost.like_count
+        elif sort_by == "comment_count":
+            sort_column = PetSocialPost.comment_count
+        elif sort_by == "view_count":
+            sort_column = PetSocialPost.view_count
+        else:
+            sort_column = PetSocialPost.created_at
+        
+        if sort_order == "asc":
+            db_query = db_query.order_by(sort_column.asc())
+        else:
+            db_query = db_query.order_by(sort_column.desc())
+        
+        total = db_query.count()
+        offset = (page - 1) * page_size
+        posts = db_query.offset(offset).limit(page_size).all()
+        
+        items = []
+        for post in posts:
+            items.append(await self._build_social_post_response(db, post))
+        
+        return {
+            "items": items,
+            "total": total,
+            "page": page,
+            "page_size": page_size,
+            "total_pages": (total + page_size - 1) // page_size,
+            "query": query,
+            "filters": {
+                "pet_type": pet_type,
+                "location": location,
+                "sort_by": sort_by,
+                "sort_order": sort_order
+            }
+        }
+    
+    async def get_post_likes(self, db: Session, post_id: int, page: int = 1, page_size: int = 20) -> Dict[str, Any]:
+        """获取帖子点赞列表"""
+        # 检查帖子是否存在
+        post = db.query(PetSocialPost).filter(PetSocialPost.id == post_id).first()
+        if not post:
+            raise ValueError("帖子不存在")
+        
+        # 查询点赞列表
+        query = db.query(PetSocialLike).filter(PetSocialLike.post_id == post_id)
+        query = query.order_by(desc(PetSocialLike.created_at))
+        
+        total = query.count()
+        offset = (page - 1) * page_size
+        likes = query.offset(offset).limit(page_size).all()
+        
+        # 获取用户信息
+        items = []
+        for like in likes:
+            user = db.query(User).filter(User.id == like.user_id).first()
+            items.append({
+                "id": like.id,
+                "user_id": like.user_id,
+                "user_nickname": user.nickname if user else "未知用户",
+                "user_avatar": user.avatar if user else None,
+                "created_at": like.created_at
+            })
+        
+        return {
+            "items": items,
+            "total": total,
+            "page": page,
+            "page_size": page_size,
+            "total_pages": (total + page_size - 1) // page_size
+        }
     
     # 宠物配种相关方法
     async def create_breeding_info(self, db: Session, breeding_data: PetBreedingInfoCreate, user_id: int) -> PetBreedingInfoResponse:
@@ -655,4 +788,407 @@ class LocalService:
             created_at=item.created_at,
             updated_at=item.updated_at
         )
+    
+    # ==================== 回收查询相关方法 ====================
+    
+    async def create_recycling_item(
+        self, 
+        db: Session, 
+        item_data: Dict[str, Any], 
+        user_id: int
+    ) -> Dict[str, Any]:
+        """创建回收物品"""
+        recycling_item = RecyclingItem(
+            user_id=user_id,
+            name=item_data.get('name'),
+            category=item_data.get('category'),
+            original_price=item_data.get('original_price'),
+            recycling_price=item_data.get('recycling_price'),
+            condition=item_data.get('condition'),
+            description=item_data.get('description'),
+            images=json.dumps(item_data.get('images', [])),
+            location=item_data.get('location'),
+            contact_phone=item_data.get('contact_phone'),
+            contact_wechat=item_data.get('contact_wechat')
+        )
+        
+        db.add(recycling_item)
+        db.commit()
+        db.refresh(recycling_item)
+        
+        return await self._build_recycling_item_response(db, recycling_item)
+    
+    async def get_recycling_items(
+        self,
+        db: Session,
+        page: int = 1,
+        page_size: int = 20,
+        category: Optional[str] = None,
+        location: Optional[str] = None,
+        status: Optional[str] = None,
+        keyword: Optional[str] = None,
+        sort_by: str = "created_at",
+        sort_order: str = "desc"
+    ) -> Dict[str, Any]:
+        """获取回收物品列表"""
+        query = db.query(RecyclingItem)
+        
+        # 筛选条件
+        if category and category != "全部":
+            query = query.filter(RecyclingItem.category == category)
+        if location:
+            query = query.filter(RecyclingItem.location.contains(location))
+        if status:
+            query = query.filter(RecyclingItem.status == status)
+        if keyword:
+            search_filter = or_(
+                RecyclingItem.name.contains(keyword),
+                RecyclingItem.description.contains(keyword)
+            )
+            query = query.filter(search_filter)
+        
+        # 排序
+        if sort_by == "recycling_price":
+            sort_column = RecyclingItem.recycling_price
+        elif sort_by == "original_price":
+            sort_column = RecyclingItem.original_price
+        elif sort_by == "view_count":
+            sort_column = RecyclingItem.view_count
+        else:
+            sort_column = RecyclingItem.created_at
+        
+        if sort_order == "asc":
+            query = query.order_by(sort_column.asc())
+        else:
+            query = query.order_by(sort_column.desc())
+        
+        total = query.count()
+        offset = (page - 1) * page_size
+        items = query.offset(offset).limit(page_size).all()
+        
+        results = []
+        for item in items:
+            results.append(await self._build_recycling_item_response(db, item))
+        
+        return {
+            "items": results,
+            "total": total,
+            "page": page,
+            "page_size": page_size,
+            "total_pages": (total + page_size - 1) // page_size
+        }
+    
+    async def get_recycling_item_detail(self, db: Session, item_id: int) -> Dict[str, Any]:
+        """获取回收物品详情"""
+        item = db.query(RecyclingItem).filter(RecyclingItem.id == item_id).first()
+        if not item:
+            raise ValueError("回收物品不存在")
+        
+        # 增加浏览次数
+        item.view_count += 1
+        db.commit()
+        
+        return await self._build_recycling_item_response(db, item)
+    
+    async def create_recycling_order(
+        self,
+        db: Session,
+        order_data: Dict[str, Any],
+        buyer_id: int
+    ) -> Dict[str, Any]:
+        """创建回收订单"""
+        item_id = order_data.get('item_id')
+        
+        # 检查物品是否存在且可回收
+        item = db.query(RecyclingItem).filter(RecyclingItem.id == item_id).first()
+        if not item:
+            raise ValueError("回收物品不存在")
+        if item.status != "可回收":
+            raise ValueError("该物品已不可回收")
+        
+        # 创建订单
+        order = RecyclingOrder(
+            item_id=item_id,
+            buyer_id=buyer_id,
+            seller_id=item.user_id,
+            agreed_price=order_data.get('agreed_price'),
+            pickup_address=order_data.get('pickup_address'),
+            pickup_time=order_data.get('pickup_time'),
+            notes=order_data.get('notes')
+        )
+        
+        db.add(order)
+        # 更新物品状态
+        item.status = "已预订"
+        
+        db.commit()
+        db.refresh(order)
+        
+        return await self._build_recycling_order_response(db, order)
+    
+    async def get_recycling_orders(
+        self,
+        db: Session,
+        user_id: int,
+        page: int = 1,
+        page_size: int = 20,
+        status: Optional[str] = None,
+        order_type: str = "all"  # all, buy, sell
+    ) -> Dict[str, Any]:
+        """获取用户的回收订单"""
+        query = db.query(RecyclingOrder)
+        
+        # 根据订单类型筛选
+        if order_type == "buy":
+            query = query.filter(RecyclingOrder.buyer_id == user_id)
+        elif order_type == "sell":
+            query = query.filter(RecyclingOrder.seller_id == user_id)
+        else:
+            query = query.filter(
+                or_(RecyclingOrder.buyer_id == user_id, RecyclingOrder.seller_id == user_id)
+            )
+        
+        if status:
+            query = query.filter(RecyclingOrder.status == status)
+        
+        query = query.order_by(desc(RecyclingOrder.created_at))
+        
+        total = query.count()
+        offset = (page - 1) * page_size
+        orders = query.offset(offset).limit(page_size).all()
+        
+        results = []
+        for order in orders:
+            results.append(await self._build_recycling_order_response(db, order))
+        
+        return {
+            "items": results,
+            "total": total,
+            "page": page,
+            "page_size": page_size,
+            "total_pages": (total + page_size - 1) // page_size
+        }
+    
+    async def _build_recycling_item_response(self, db: Session, item: RecyclingItem) -> Dict[str, Any]:
+        """构建回收物品响应数据"""
+        user = db.query(User).filter(User.id == item.user_id).first()
+        
+        return {
+            "id": item.id,
+            "name": item.name,
+            "category": item.category,
+            "original_price": item.original_price,
+            "recycling_price": item.recycling_price,
+            "condition": item.condition,
+            "description": item.description,
+            "images": json.loads(item.images) if item.images else [],
+            "location": item.location,
+            "contact_phone": item.contact_phone,
+            "contact_wechat": item.contact_wechat,
+            "status": item.status,
+            "view_count": item.view_count,
+            "created_at": item.created_at,
+            "updated_at": item.updated_at,
+            "user_id": item.user_id,
+            "user_nickname": user.nickname if user else "未知用户",
+            "user_avatar": user.avatar if user else None
+        }
+    
+    async def _build_recycling_order_response(self, db: Session, order: RecyclingOrder) -> Dict[str, Any]:
+        """构建回收订单响应数据"""
+        item = db.query(RecyclingItem).filter(RecyclingItem.id == order.item_id).first()
+        buyer = db.query(User).filter(User.id == order.buyer_id).first()
+        seller = db.query(User).filter(User.id == order.seller_id).first()
+        
+        return {
+            "id": order.id,
+            "item_id": order.item_id,
+            "item_name": item.name if item else "未知物品",
+            "item_images": json.loads(item.images) if item and item.images else [],
+            "buyer_id": order.buyer_id,
+            "buyer_nickname": buyer.nickname if buyer else "未知用户",
+            "seller_id": order.seller_id,
+            "seller_nickname": seller.nickname if seller else "未知用户",
+            "agreed_price": order.agreed_price,
+            "pickup_address": order.pickup_address,
+            "pickup_time": order.pickup_time,
+            "notes": order.notes,
+            "status": order.status,
+            "created_at": order.created_at,
+            "updated_at": order.updated_at
+        }
+    
+    # ==================== 合作方代理相关方法 ====================
+    
+    async def create_partner_application(
+        self,
+        db: Session,
+        application_data: Dict[str, Any],
+        user_id: int
+    ) -> Dict[str, Any]:
+        """创建合作方代理申请"""
+        # 检查用户是否已有待审核的申请
+        existing_application = db.query(PartnerApplication).filter(
+            and_(
+                PartnerApplication.user_id == user_id,
+                PartnerApplication.status == "待审核"
+            )
+        ).first()
+        
+        if existing_application:
+            raise ValueError("您已有待审核的申请，请耐心等待审核结果")
+        
+        application = PartnerApplication(
+            user_id=user_id,
+            name=application_data.get('name'),
+            phone=application_data.get('phone'),
+            company=application_data.get('company'),
+            address=application_data.get('address'),
+            agent_type=application_data.get('agent_type'),
+            remark=application_data.get('remark')
+        )
+        
+        db.add(application)
+        db.commit()
+        db.refresh(application)
+        
+        return await self._build_partner_application_response(db, application)
+    
+    async def get_partner_applications(
+        self,
+        db: Session,
+        page: int = 1,
+        page_size: int = 20,
+        status: Optional[str] = None,
+        agent_type: Optional[str] = None,
+        keyword: Optional[str] = None,
+        user_id: Optional[int] = None
+    ) -> Dict[str, Any]:
+        """获取合作方代理申请列表"""
+        query = db.query(PartnerApplication)
+        
+        # 筛选条件
+        if user_id:
+            query = query.filter(PartnerApplication.user_id == user_id)
+        if status:
+            query = query.filter(PartnerApplication.status == status)
+        if agent_type:
+            query = query.filter(PartnerApplication.agent_type == agent_type)
+        if keyword:
+            search_filter = or_(
+                PartnerApplication.name.contains(keyword),
+                PartnerApplication.company.contains(keyword),
+                PartnerApplication.phone.contains(keyword)
+            )
+            query = query.filter(search_filter)
+        
+        query = query.order_by(desc(PartnerApplication.created_at))
+        
+        total = query.count()
+        offset = (page - 1) * page_size
+        applications = query.offset(offset).limit(page_size).all()
+        
+        results = []
+        for app in applications:
+            results.append(await self._build_partner_application_response(db, app))
+        
+        return {
+            "items": results,
+            "total": total,
+            "page": page,
+            "page_size": page_size,
+            "total_pages": (total + page_size - 1) // page_size
+        }
+    
+    async def get_partner_application_detail(
+        self, 
+        db: Session, 
+        application_id: int
+    ) -> Dict[str, Any]:
+        """获取合作方代理申请详情"""
+        application = db.query(PartnerApplication).filter(
+            PartnerApplication.id == application_id
+        ).first()
+        
+        if not application:
+            raise ValueError("申请不存在")
+        
+        return await self._build_partner_application_response(db, application)
+    
+    async def review_partner_application(
+        self,
+        db: Session,
+        application_id: int,
+        reviewer_id: int,
+        status: str,
+        admin_remark: Optional[str] = None
+    ) -> Dict[str, Any]:
+        """审核合作方代理申请"""
+        if status not in ["已通过", "已拒绝"]:
+            raise ValueError("无效的审核状态")
+        
+        application = db.query(PartnerApplication).filter(
+            PartnerApplication.id == application_id
+        ).first()
+        
+        if not application:
+            raise ValueError("申请不存在")
+        
+        if application.status != "待审核":
+            raise ValueError("该申请已被审核")
+        
+        application.status = status
+        application.admin_remark = admin_remark
+        application.reviewed_by = reviewer_id
+        application.reviewed_at = datetime.utcnow()
+        
+        db.commit()
+        
+        return await self._build_partner_application_response(db, application)
+    
+    async def get_user_partner_applications(
+        self,
+        db: Session,
+        user_id: int,
+        page: int = 1,
+        page_size: int = 20
+    ) -> Dict[str, Any]:
+        """获取用户的合作方代理申请"""
+        return await self.get_partner_applications(
+            db=db,
+            page=page,
+            page_size=page_size,
+            user_id=user_id
+        )
+    
+    async def _build_partner_application_response(
+        self, 
+        db: Session, 
+        application: PartnerApplication
+    ) -> Dict[str, Any]:
+        """构建合作方代理申请响应数据"""
+        user = db.query(User).filter(User.id == application.user_id).first()
+        reviewer = None
+        if application.reviewed_by:
+            reviewer = db.query(User).filter(User.id == application.reviewed_by).first()
+        
+        return {
+            "id": application.id,
+            "name": application.name,
+            "phone": application.phone,
+            "company": application.company,
+            "address": application.address,
+            "agent_type": application.agent_type,
+            "remark": application.remark,
+            "status": application.status,
+            "admin_remark": application.admin_remark,
+            "reviewed_at": application.reviewed_at,
+            "created_at": application.created_at,
+            "updated_at": application.updated_at,
+            "user_id": application.user_id,
+            "user_nickname": user.nickname if user else "未知用户",
+            "user_avatar": user.avatar if user else None,
+            "reviewer_id": application.reviewed_by,
+            "reviewer_nickname": reviewer.nickname if reviewer else None
+        }
 

@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import '../../constants/app_colors.dart';
+import '../../services/local_service_service.dart';
 import 'aquarium_design_detail_page.dart';
 
 class AquariumDesignPage extends StatefulWidget {
@@ -15,8 +16,91 @@ class _AquariumDesignPageState extends State<AquariumDesignPage>
   late TabController _tabController;
   final ScrollController _scrollController = ScrollController();
 
-  // 悬赏数据
-  final List<Map<String, dynamic>> _rewardItems = [
+  // 数据状态
+  List<Map<String, dynamic>> _designServices = [];
+  bool _isLoading = true;
+  String? _errorMessage;
+  int _currentPage = 1;
+  bool _hasMore = true;
+  bool _isLoadingMore = false;
+
+  // 筛选条件
+  String? _selectedLocation;
+  String? _selectedStyle;
+
+  @override
+  void initState() {
+    super.initState();
+    _tabController = TabController(length: 2, vsync: this);
+    _loadDesignServices();
+    _scrollController.addListener(_onScroll);
+  }
+
+  void _onScroll() {
+    if (_scrollController.position.pixels >=
+        _scrollController.position.maxScrollExtent - 200) {
+      _loadMoreServices();
+    }
+  }
+
+  Future<void> _loadDesignServices({bool refresh = false}) async {
+    if (!refresh && _isLoading) return;
+
+    setState(() {
+      if (refresh) {
+        _isLoading = true;
+        _currentPage = 1;
+        _hasMore = true;
+        _designServices.clear();
+      } else {
+        _isLoading = true;
+      }
+      _errorMessage = null;
+    });
+
+    try {
+      final result = await LocalServiceService.getAquariumDesignServices(
+        page: _currentPage,
+        pageSize: 20,
+        location: _selectedLocation,
+        style: _selectedStyle,
+      );
+
+      final List<Map<String, dynamic>> newServices =
+          List<Map<String, dynamic>>.from(result['items'] ?? []);
+
+      setState(() {
+        if (refresh || _currentPage == 1) {
+          _designServices = newServices;
+        } else {
+          _designServices.addAll(newServices);
+        }
+        _hasMore = newServices.length >= 20;
+        _isLoading = false;
+        _isLoadingMore = false;
+      });
+    } catch (e) {
+      setState(() {
+        _errorMessage = '加载失败: $e';
+        _isLoading = false;
+        _isLoadingMore = false;
+      });
+    }
+  }
+
+  Future<void> _loadMoreServices() async {
+    if (_isLoadingMore || !_hasMore) return;
+
+    setState(() {
+      _isLoadingMore = true;
+      _currentPage++;
+    });
+
+    await _loadDesignServices();
+  }
+
+  // 原来的模拟数据（作为备用）
+  final List<Map<String, dynamic>> _mockRewardItems = [
     {
       'id': '1',
       'image': 'https://picsum.photos/400/300?random=701',
@@ -270,7 +354,8 @@ class _AquariumDesignPageState extends State<AquariumDesignPage>
               child: Container(
                 width: double.infinity,
                 decoration: BoxDecoration(
-                  borderRadius: BorderRadius.vertical(top: Radius.circular(12.r)),
+                  borderRadius:
+                      BorderRadius.vertical(top: Radius.circular(12.r)),
                   image: DecorationImage(
                     image: NetworkImage(item['image']),
                     fit: BoxFit.cover,
@@ -278,7 +363,7 @@ class _AquariumDesignPageState extends State<AquariumDesignPage>
                 ),
               ),
             ),
-            
+
             // 产品信息
             Expanded(
               flex: 2,
@@ -298,9 +383,9 @@ class _AquariumDesignPageState extends State<AquariumDesignPage>
                       maxLines: 2,
                       overflow: TextOverflow.ellipsis,
                     ),
-                    
+
                     SizedBox(height: 8.h),
-                    
+
                     // 价格行
                     Row(
                       children: [
@@ -322,9 +407,9 @@ class _AquariumDesignPageState extends State<AquariumDesignPage>
                         ),
                       ],
                     ),
-                    
+
                     SizedBox(height: 8.h),
-                    
+
                     // 店铺信息
                     Row(
                       children: [
