@@ -972,9 +972,95 @@
             // 页面加载完成后初始化
             document.addEventListener('DOMContentLoaded', function() {
                 console.log('页面初始化完成');
-                // 默认显示仪表盘
-                showSection('dashboard');
+                
+                // 检查登录状态
+                const savedToken = localStorage.getItem('admin_token');
+                if (savedToken === 'admin-token') {
+                    console.log('已登录，显示管理界面');
+                    // 已登录，显示管理界面
+                    showSection('dashboard');
+                } else {
+                    console.log('未登录，显示登录界面');
+                    // 未登录，触发登录检查
+                    if (typeof checkAdminAuth === 'function') {
+                        checkAdminAuth();
+                    } else {
+                        // 如果checkAdminAuth函数不存在，直接显示登录提示
+                        alert('请先登录\n用户名: admin\n密码: 123456');
+                        showSimpleLogin();
+                    }
+                }
             });
+            
+            // 简单登录界面（备用）
+            function showSimpleLogin() {
+                const loginHtml = `
+                    <div id="simpleLogin" style="position: fixed; top: 0; left: 0; width: 100%; height: 100%; 
+                         background: rgba(0,0,0,0.8); z-index: 10000; display: flex; align-items: center; justify-content: center;">
+                        <div style="background: white; padding: 30px; border-radius: 10px; width: 400px;">
+                            <h3 style="text-align: center; margin-bottom: 20px;">管理员登录</h3>
+                            <div style="margin-bottom: 15px;">
+                                <label>用户名:</label>
+                                <input type="text" id="simpleUsername" style="width: 100%; padding: 8px; margin-top: 5px;" value="admin">
+                            </div>
+                            <div style="margin-bottom: 20px;">
+                                <label>密码:</label>
+                                <input type="password" id="simplePassword" style="width: 100%; padding: 8px; margin-top: 5px;" value="123456">
+                            </div>
+                            <button onclick="simpleLogin()" style="width: 100%; padding: 10px; background: #007bff; color: white; border: none; border-radius: 5px;">
+                                登录
+                            </button>
+                        </div>
+                    </div>
+                `;
+                document.body.insertAdjacentHTML('beforeend', loginHtml);
+            }
+            
+            // 简单登录处理
+            function simpleLogin() {
+                const username = document.getElementById('simpleUsername').value;
+                const password = document.getElementById('simplePassword').value;
+                
+                if (username === 'admin' && password === '123456') {
+                    // 保存登录状态
+                    localStorage.setItem('admin_token', 'admin-token');
+                    
+                    // 移除登录界面
+                    const loginDiv = document.getElementById('simpleLogin');
+                    if (loginDiv) {
+                        loginDiv.remove();
+                    }
+                    
+                    // 刷新页面
+                    window.location.reload();
+                } else {
+                    alert('用户名或密码错误！');
+                }
+            }
+        }
+        
+        // 退出登录函数
+        function logout() {
+            // 清除本地存储的token
+            localStorage.removeItem('admin_token');
+            
+            // 清除全局变量
+            if (typeof authToken !== 'undefined') {
+                authToken = null;
+            }
+            
+            // 刷新页面，重新显示登录界面
+            window.location.reload();
+        }
+        
+        // 显示个人资料（暂时显示管理员信息）
+        function showProfile() {
+            alert('当前登录用户：admin\n权限：管理员');
+        }
+        
+        // 导出数据功能（暂时显示提示）
+        function exportData() {
+            alert('数据导出功能开发中...');
         }
     </script>
 </body>

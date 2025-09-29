@@ -27,10 +27,14 @@ function checkAdminAuth() {
 // 验证token
 async function validateToken() {
     try {
-        // 暂时跳过token验证，直接认为有效
-        // 因为后端可能没有验证接口
-        hideAdminLogin();
-        loadDashboardData();
+        // 简单的token验证（开发环境）
+        if (authToken === 'admin-token') {
+            hideAdminLogin();
+            console.log('Token验证通过');
+            return;
+        } else {
+            showAdminLogin();
+        }
     } catch (error) {
         console.error('Token验证失败:', error);
         showAdminLogin();
@@ -92,26 +96,33 @@ window.adminLogin = async function() {
     const username = document.getElementById('adminUsername').value;
     const password = document.getElementById('adminPassword').value;
 
-    try {
-        const response = await apiRequest('/login', {
-            method: 'POST',
-            body: JSON.stringify({ username, password })
-        });
-
-        if (response.access_token) {
-            authToken = response.access_token;
-            localStorage.setItem('admin_token', authToken);
-            hideAdminLogin();
-            showSuccess('登录成功');
-            // 登录成功后加载数据
-            setTimeout(() => {
-                loadDashboardData();
-            }, 1000);
-        } else {
-            showError('登录失败：' + response.message);
-        }
-    } catch (error) {
-        showError('登录失败：' + error.message);
+    // 简单的用户名密码验证（开发环境）
+    if (username === 'admin' && password === '123456') {
+        // 设置一个简单的token
+        authToken = 'admin-token';
+        localStorage.setItem('admin_token', authToken);
+        
+        // 隐藏登录模态框
+        hideAdminLogin();
+        
+        // 显示成功消息
+        console.log('登录成功');
+        
+        // 移除模态框元素
+        setTimeout(() => {
+            const modalElement = document.getElementById('adminLoginModal');
+            if (modalElement) {
+                modalElement.remove();
+            }
+        }, 300);
+        
+        // 刷新页面数据
+        setTimeout(() => {
+            window.location.reload();
+        }, 500);
+        
+    } else {
+        alert('用户名或密码错误\n用户名: admin\n密码: 123456');
     }
 }
 
