@@ -2515,6 +2515,7 @@ class _HomePageState extends State<HomePage> {
     return GestureDetector(
       onTap: () {
         print('点击了${category['name']}');
+        _handleCategoryTap(category['name']);
       },
       child: Container(
         constraints: BoxConstraints(maxHeight: 55.h), // 进一步减少最大高度
@@ -2624,6 +2625,141 @@ class _HomePageState extends State<HomePage> {
         },
       ),
     );
+  }
+
+  // 处理分类点击事件
+  void _handleCategoryTap(String categoryName) {
+    switch (categoryName) {
+      case 'AI识宠':
+        Get.toNamed('/ai-pet-recognition');
+        break;
+      case '限时拍卖':
+        Get.toNamed('/limited-auction');
+        break;
+      case '品牌专区':
+        Get.toNamed('/brand-zone');
+        break;
+      case '一口价专区':
+        Get.toNamed('/fixed-price-zone');
+        break;
+      case '交易查询':
+        Get.toNamed('/transaction-query');
+        break;
+      case '同城配送':
+        Get.toNamed('/local-delivery');
+        break;
+      case '回收查询':
+        Get.toNamed('/recycling-query');
+        break;
+      case '合作方代理':
+        Get.toNamed('/partner-agent');
+        break;
+      case '宠物繁殖':
+        Get.toNamed('/pet-breeding');
+        break;
+      case '本地自提':
+        Get.toNamed('/local-pickup');
+        break;
+      case '宠物估值':
+        Get.toNamed('/pet-valuation');
+        break;
+      case '附近发现':
+        Get.toNamed('/nearby-discovery');
+        break;
+      case '宠物交流':
+        Navigator.push(
+          context,
+          MaterialPageRoute(builder: (context) => const PetSocialPage()),
+        );
+        break;
+      case '本地宠店':
+        Navigator.push(
+          context,
+          MaterialPageRoute(builder: (context) => const LocalPetStoresPage()),
+        );
+        break;
+      case '鱼缸造景':
+        Navigator.push(
+          context,
+          MaterialPageRoute(builder: (context) => const AquariumDesignPage()),
+        );
+        break;
+      case '上门服务':
+        Navigator.push(
+          context,
+          MaterialPageRoute(builder: (context) => const DoorServicePage()),
+        );
+        break;
+      default:
+        // 对于其他分类，跳转到分类页面
+        Get.toNamed('/category-list', arguments: {
+          'categoryName': categoryName,
+          'categoryId': _getCategoryIdByName(categoryName),
+        });
+        break;
+    }
+  }
+
+  // 根据分类名称获取分类ID
+  int _getCategoryIdByName(String categoryName) {
+    switch (categoryName) {
+      case '猫咪':
+      case '狗狗':
+      case '宠物用品':
+        return 1; // 宠物分类
+      case '观赏鱼':
+      case '水族器材':
+        return 2; // 水族分类
+      default:
+        return 1;
+    }
+  }
+
+  // 处理水族分类点击事件
+  void _handleAquaticCategoryTap(String categoryName) {
+    switch (categoryName) {
+      case '鱼缸造景':
+        Navigator.push(
+          context,
+          MaterialPageRoute(builder: (context) => const AquariumDesignPage()),
+        );
+        break;
+      case '鱼类':
+      case '观赏鱼':
+      case '海水鱼':
+      case '淡水鱼':
+        Get.toNamed('/category-list', arguments: {
+          'categoryName': '观赏鱼',
+          'categoryId': 2,
+        });
+        break;
+      case '水族用品':
+      case '鱼缸':
+      case '粮类':
+      case '药品':
+      case '水草':
+        Get.toNamed('/category-list', arguments: {
+          'categoryName': '水族器材',
+          'categoryId': 2,
+        });
+        break;
+      case '两栖类':
+      case '哺乳类':
+      case '两栖爬行':
+      case '海洋生物':
+        Get.toNamed('/category-list', arguments: {
+          'categoryName': categoryName,
+          'categoryId': 2,
+        });
+        break;
+      default:
+        // 默认跳转到水族分类页面
+        Get.toNamed('/category-list', arguments: {
+          'categoryName': categoryName,
+          'categoryId': 2,
+        });
+        break;
+    }
   }
 
   // 根据筛选条件加载宠物商品
@@ -2956,6 +3092,7 @@ class _HomePageState extends State<HomePage> {
     return GestureDetector(
       onTap: () {
         print('点击了${card['name']}');
+        _handleAquaticCategoryTap(card['name']);
       },
       child: Container(
         constraints: BoxConstraints(maxHeight: 55.h),
@@ -3108,6 +3245,7 @@ class _HomePageState extends State<HomePage> {
     return GestureDetector(
       onTap: () {
         print('点击了${category['name']}');
+        _handleAquaticCategoryTap(category['name']);
       },
       child: Container(
         constraints: BoxConstraints(maxHeight: 80.h), // 继续增加最大高度
@@ -4011,7 +4149,9 @@ class _HomePageState extends State<HomePage> {
                             ),
                             SizedBox(width: 4.w),
                             Text(
-                              product['shop'],
+                              product['shop'] ??
+                                  product['seller_name'] ??
+                                  '未知店铺',
                               style: TextStyle(
                                 fontSize: 10.sp,
                                 color: const Color(0xFF666666),

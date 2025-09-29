@@ -551,7 +551,7 @@ class _LoginPageState extends State<LoginPage> {
                       child: Wrap(
                         children: [
                           Text(
-                            '您已阅读并同意 ',
+                            '我已阅读并同意 ',
                             style: TextStyle(
                               fontSize: 12.sp,
                               color: const Color(0xFF999999),
@@ -649,12 +649,15 @@ class _LoginPageState extends State<LoginPage> {
           },
         );
       }
-    } else {
-      // 用户之前已经同意过
-      setState(() {
-        _agreedToTerms = true;
-      });
     }
+    // 确保每次打开应用都需要用户重新勾选，符合合规要求
+    // 注释掉自动设置为true的逻辑
+    // else {
+    //   // 用户之前已经同意过
+    //   setState(() {
+    //     _agreedToTerms = true;
+    //   });
+    // }
   }
 
   // 显示隐私政策同意弹窗（用于勾选框点击）

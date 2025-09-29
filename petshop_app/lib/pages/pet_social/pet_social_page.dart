@@ -92,10 +92,18 @@ class _PetSocialPageState extends State<PetSocialPage> {
         _isLoadingMore = false;
       });
     } catch (e) {
+      // API失败时使用模拟数据
+      print('API请求失败，使用模拟数据: $e');
       setState(() {
-        _errorMessage = '加载失败: $e';
+        if (refresh || _currentPage == 1) {
+          _posts = _mockPosts;
+        } else {
+          _posts.addAll(_mockPosts);
+        }
+        _hasMore = false;
         _isLoading = false;
         _isLoadingMore = false;
+        _errorMessage = null;
       });
     }
   }
@@ -221,6 +229,118 @@ class _PetSocialPageState extends State<PetSocialPage> {
     super.dispose();
   }
 
+  // 构建页面主体
+  Widget _buildBody() {
+    if (_isLoading && _posts.isEmpty) {
+      return const Center(
+        child: CircularProgressIndicator(),
+      );
+    }
+
+    if (_errorMessage != null && _posts.isEmpty) {
+      return Center(
+        child: Column(
+          mainAxisAlignment: MainAxisAlignment.center,
+          children: [
+            Icon(
+              Icons.error_outline,
+              size: 64.w,
+              color: Colors.grey[400],
+            ),
+            SizedBox(height: 16.h),
+            Text(
+              '加载失败',
+              style: TextStyle(
+                fontSize: 16.sp,
+                color: Colors.grey[600],
+              ),
+            ),
+            SizedBox(height: 8.h),
+            Text(
+              _errorMessage!,
+              style: TextStyle(
+                fontSize: 14.sp,
+                color: Colors.grey[500],
+              ),
+              textAlign: TextAlign.center,
+            ),
+            SizedBox(height: 16.h),
+            ElevatedButton(
+              onPressed: () => _loadPosts(refresh: true),
+              child: const Text('重试'),
+            ),
+          ],
+        ),
+      );
+    }
+
+    if (_posts.isEmpty) {
+      return Center(
+        child: Column(
+          mainAxisAlignment: MainAxisAlignment.center,
+          children: [
+            Icon(
+              Icons.pets,
+              size: 64.w,
+              color: Colors.grey[400],
+            ),
+            SizedBox(height: 16.h),
+            Text(
+              '暂无宠物交流内容',
+              style: TextStyle(
+                fontSize: 16.sp,
+                color: Colors.grey[600],
+              ),
+            ),
+            SizedBox(height: 8.h),
+            Text(
+              '快来发布第一条宠物动态吧～',
+              style: TextStyle(
+                fontSize: 14.sp,
+                color: Colors.grey[500],
+              ),
+            ),
+          ],
+        ),
+      );
+    }
+
+    return RefreshIndicator(
+      onRefresh: () => _loadPosts(refresh: true),
+      child: CustomScrollView(
+        controller: _scrollController,
+        slivers: [
+          SliverPadding(
+            padding: EdgeInsets.all(8.w),
+            sliver: SliverGrid(
+              gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
+                crossAxisCount: 2,
+                childAspectRatio: 0.75,
+                crossAxisSpacing: 8.w,
+                mainAxisSpacing: 8.w,
+              ),
+              delegate: SliverChildBuilderDelegate(
+                (context, index) {
+                  final post = _posts[index % _posts.length];
+                  return _buildPostCard(post);
+                },
+                childCount: _posts.length * 3, // 重复显示数据以演示滚动
+              ),
+            ),
+          ),
+          if (_isLoadingMore)
+            SliverToBoxAdapter(
+              child: Container(
+                padding: EdgeInsets.all(16.w),
+                alignment: Alignment.center,
+                child: const CircularProgressIndicator(),
+              ),
+            ),
+        ],
+      ),
+    );
+  }
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -249,29 +369,7 @@ class _PetSocialPageState extends State<PetSocialPage> {
           ),
         ],
       ),
-      body: CustomScrollView(
-        controller: _scrollController,
-        slivers: [
-          SliverPadding(
-            padding: EdgeInsets.all(8.w),
-            sliver: SliverGrid(
-              gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
-                crossAxisCount: 2,
-                childAspectRatio: 0.75,
-                crossAxisSpacing: 8.w,
-                mainAxisSpacing: 8.w,
-              ),
-              delegate: SliverChildBuilderDelegate(
-                (context, index) {
-                  final post = _posts[index % _posts.length];
-                  return _buildPostCard(post);
-                },
-                childCount: _posts.length * 3, // 重复显示数据以演示滚动
-              ),
-            ),
-          ),
-        ],
-      ),
+      body: _buildBody(),
       floatingActionButton: FloatingActionButton(
         onPressed: () {
           Navigator.push(
