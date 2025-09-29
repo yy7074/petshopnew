@@ -498,33 +498,32 @@ function renderUserTable(users, emptyMessage) {
     }
 
     tbody.innerHTML = users.map(user => {
-        const username = user.username || '未填写';
-        const phone = user.phone || '未填写';
-        const email = user.email || '未填写';
-        const createdAt = formatDateTime(user.created_at);
+        const username = user.username ? escapeHtml(user.username) : '<span class="text-muted">未填写</span>';
+        const phone = user.phone ? escapeHtml(user.phone) : '<span class="text-muted">未填写</span>';
+        const email = user.email ? escapeHtml(user.email) : '<span class="text-muted">未填写</span>';
+        const createdAt = escapeHtml(formatDateTime(user.created_at));
+        const statusBadge = `<span class="badge ${getStatusClass(user.status)}">${escapeHtml(getStatusText(user.status))}</span>`;
 
         return `
-        <tr>
+        <tr data-user-id="${user.id}">
             <td>${user.id}</td>
             <td>${username}</td>
             <td>${phone}</td>
             <td>${email}</td>
-            <td>
-                <span class="badge ${getStatusClass(user.status)}">
-                    ${getStatusText(user.status)}
-                </span>
-            </td>
+            <td>${statusBadge}</td>
             <td>${createdAt}</td>
             <td>
-                <button class="btn btn-sm btn-primary me-1" onclick="viewUser(${user.id})">
-                    <i class="bi bi-eye"></i>
-                </button>
-                <button class="btn btn-sm btn-warning me-1" onclick="editUser(${user.id})">
-                    <i class="bi bi-pencil"></i>
-                </button>
-                <button class="btn btn-sm btn-danger" onclick="deleteUser(${user.id})">
-                    <i class="bi bi-trash"></i>
-                </button>
+                <div class="table-actions">
+                    <button type="button" class="btn btn-outline-primary btn-sm" title="查看用户" onclick="viewUser(${user.id})">
+                        <i class="bi bi-eye"></i>
+                    </button>
+                    <button type="button" class="btn btn-outline-warning btn-sm" title="编辑用户" onclick="editUser(${user.id})">
+                        <i class="bi bi-pencil"></i>
+                    </button>
+                    <button type="button" class="btn btn-outline-danger btn-sm" title="删除用户" onclick="deleteUser(${user.id})">
+                        <i class="bi bi-trash"></i>
+                    </button>
+                </div>
             </td>
         </tr>
     `;
@@ -662,6 +661,42 @@ window.refreshUsers = function refreshUsers() {
     loadUsers();
 };
 
+window.refreshProducts = function refreshProducts() {
+    if (typeof window.loadProducts === 'function') {
+        window.loadProducts();
+    }
+};
+
+window.refreshCategories = function refreshCategories() {
+    if (typeof window.loadCategories === 'function') {
+        window.loadCategories();
+    }
+};
+
+window.refreshOrders = function refreshOrders() {
+    if (typeof window.loadOrders === 'function') {
+        window.loadOrders();
+    }
+};
+
+window.refreshShops = function refreshShops() {
+    if (typeof window.loadShops === 'function') {
+        window.loadShops();
+    }
+};
+
+window.refreshEvents = function refreshEvents() {
+    if (typeof window.loadEvents === 'function') {
+        window.loadEvents();
+    }
+};
+
+window.refreshMessages = function refreshMessages() {
+    if (typeof window.loadMessages === 'function') {
+        window.loadMessages();
+    }
+};
+
 // 将函数暴露到全局，方便HTML调用
 window.loadUsers = loadUsers;
 
@@ -727,6 +762,14 @@ window.loadProducts = async function loadProducts() {
     }
 }
 
+window.addEventListener('loadProductsData', () => {
+    setTimeout(() => {
+        if (typeof window.loadProducts === 'function') {
+            window.loadProducts();
+        }
+    }, 50);
+});
+
 // 加载分类数据
 async function loadCategories() {
     try {
@@ -764,6 +807,16 @@ async function loadCategories() {
     }
 }
 
+window.loadCategories = loadCategories;
+
+window.addEventListener('loadCategoriesData', () => {
+    setTimeout(() => {
+        if (typeof window.loadCategories === 'function') {
+            window.loadCategories();
+        }
+    }, 50);
+});
+
 // 加载订单数据
 window.loadOrders = async function loadOrders() {
     try {
@@ -800,6 +853,14 @@ window.loadOrders = async function loadOrders() {
         showError('加载订单数据失败');
     }
 }
+
+window.addEventListener('loadOrdersData', () => {
+    setTimeout(() => {
+        if (typeof window.loadOrders === 'function') {
+            window.loadOrders();
+        }
+    }, 50);
+});
 
 // 加载店铺数据
 async function loadShops() {
@@ -841,6 +902,16 @@ async function loadShops() {
         showError('加载店铺数据失败');
     }
 }
+
+window.loadShops = loadShops;
+
+window.addEventListener('loadShopsData', () => {
+    setTimeout(() => {
+        if (typeof window.loadShops === 'function') {
+            window.loadShops();
+        }
+    }, 50);
+});
 
 // 加载专场活动数据
 async function loadEvents() {
@@ -919,6 +990,16 @@ async function loadMessages() {
         showError('加载消息数据失败');
     }
 }
+
+window.loadMessages = loadMessages;
+
+window.addEventListener('loadMessagesData', () => {
+    setTimeout(() => {
+        if (typeof window.loadMessages === 'function') {
+            window.loadMessages();
+        }
+    }, 50);
+});
 
 // 工具函数
 function getStatusClass(status) {
@@ -1017,6 +1098,66 @@ function formatDateTime(dateString) {
     return date.toLocaleString('zh-CN');
 }
 
+function escapeHtml(value) {
+    if (value === null || value === undefined) {
+        return '';
+    }
+    return String(value)
+        .replace(/&/g, '&amp;')
+        .replace(/</g, '&lt;')
+        .replace(/>/g, '&gt;')
+        .replace(/"/g, '&quot;')
+        .replace(/'/g, '&#39;');
+}
+
+function formatCurrency(amount) {
+    const numeric = Number(amount);
+    if (Number.isNaN(numeric)) {
+        return '¥0.00';
+    }
+    return '¥' + numeric.toFixed(2);
+}
+
+function getUserInitial(name) {
+    const text = (name || '').trim();
+    if (!text) return '?';
+    return escapeHtml(text[0].toUpperCase());
+}
+
+async function fetchUserDetail(userId) {
+    let remoteUser = null;
+    let remoteError = null;
+
+    try {
+        const response = await apiRequest(`/users/${userId}`);
+        const user = response?.user || response;
+        if (user && typeof user === 'object') {
+            remoteUser = user;
+        }
+    } catch (error) {
+        remoteError = error;
+        console.warn('远程获取用户详情失败，尝试使用缓存:', error);
+    }
+
+    if (remoteUser) {
+        return { ...remoteUser, __fromCache: false };
+    }
+
+    const cachedUser = Array.isArray(userDataCache)
+        ? userDataCache.find(item => Number(item.id) === Number(userId))
+        : null;
+
+    if (cachedUser) {
+        return { ...cachedUser, __fromCache: true };
+    }
+
+    if (remoteError) {
+        throw remoteError;
+    }
+
+    throw new Error('未找到用户信息');
+}
+
 // API请求封装
 async function apiRequest(endpoint, options = {}) {
     const url = `${API_BASE_URL}${endpoint}`;
@@ -1101,204 +1242,325 @@ function showSuccess(message) {
 }
 
 // 详细操作函数
-window.viewUser = function(userId) {
-    // TODO: 实现用户详情查看
-    console.log('查看用户:', userId);
-}
+window.viewUser = async function(userId) {
+    try {
+        const user = await fetchUserDetail(userId);
+        const fromCacheOnly = user.__fromCache === true;
+
+        const existingModal = document.getElementById('viewUserModal');
+        if (existingModal) {
+            existingModal.remove();
+        }
+
+        const displayName = user.nickname || user.username || `用户 ${userId}`;
+        const safeDisplayName = escapeHtml(displayName);
+        const userInitial = getUserInitial(displayName);
+        const createdAt = escapeHtml(formatDateTime(user.created_at));
+        const statusBadge = `<span class="badge ${getStatusClass(user.status)}">${escapeHtml(getStatusText(user.status))}</span>`;
+        const verifiedTag = user.is_verified ? '<span class="tag tag-verified">已认证</span>' : '';
+        const sellerTag = user.is_seller ? '<span class="tag tag-seller">卖家</span>' : '';
+        const adminTag = user.is_admin ? '<span class="tag tag-admin">管理员</span>' : '';
+
+        const phoneDisplay = user.phone ? escapeHtml(user.phone) : '<span class="text-muted">未填写</span>';
+        const emailDisplay = user.email ? escapeHtml(user.email) : '<span class="text-muted">未填写</span>';
+        const locationSource = user.location || user.city || user.region;
+        const locationDisplay = locationSource ? escapeHtml(locationSource) : '<span class="text-muted">未填写</span>';
+
+        const lastLoginDisplay = user.last_login_at ? escapeHtml(formatDateTime(user.last_login_at)) : '<span class="text-muted">未登录</span>';
+        const lastLoginIp = user.last_login_ip ? escapeHtml(user.last_login_ip) : '<span class="text-muted">未知</span>';
+        const channelSource = user.register_channel || user.channel || user.register_source;
+        const channelDisplay = channelSource ? escapeHtml(channelSource) : '<span class="text-muted">未知</span>';
+
+        const balanceDisplay = escapeHtml(formatCurrency(user.balance ?? user.wallet_balance ?? 0));
+        const creditScoreValue = Number.isFinite(Number(user.credit_score)) ? Number(user.credit_score) : (Number(user.score) || 0);
+        const creditScoreDisplay = escapeHtml(creditScoreValue.toString());
+        const orderCountValue = Number.isFinite(Number(user.order_count)) ? Number(user.order_count) : Number(user.orders_count || 0);
+        const orderCountDisplay = escapeHtml(orderCountValue.toLocaleString('zh-CN'));
+
+        const remarkBlock = user.remark
+            ? `<div class="user-remark-card"><span class="label">备注</span><p>${escapeHtml(user.remark)}</p></div>`
+            : '';
+
+        const cacheNotice = fromCacheOnly
+            ? '<div class="alert alert-warning fade show user-cache-notice"><i class="bi bi-exclamation-triangle me-2"></i>正在使用列表缓存展示部分信息，部分字段可能缺失。请检查接口 /users/:id 是否可用。</div>'
+            : '';
+
+        const modalHtml = `
+            <div class="modal fade" id="viewUserModal" tabindex="-1" aria-hidden="true">
+                <div class="modal-dialog modal-lg modal-dialog-centered modal-dialog-scrollable">
+                    <div class="modal-content user-modal">
+                        <div class="modal-header">
+                            <div>
+                                <h5 class="modal-title">用户详情</h5>
+                                <p class="modal-subtitle">ID ${user.id} · 注册于 ${createdAt}</p>
+                            </div>
+                            <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="关闭"></button>
+                        </div>
+                        <div class="modal-body">
+                            <div class="user-summary-header">
+                                <div class="user-avatar-badge">${userInitial}</div>
+                                <div>
+                                    <h4 class="mb-1">${safeDisplayName}</h4>
+                                    <div class="user-meta">账号状态：${statusBadge}</div>
+                                <div class="user-summary-tags">
+                                    <span class="tag tag-id">ID ${user.id}</span>
+                                    ${verifiedTag}
+                                    ${sellerTag}
+                                    ${adminTag}
+                                </div>
+                            </div>
+                        </div>
+                        ${cacheNotice}
+                        <div class="user-detail-grid">
+                            <div class="user-detail-card">
+                                <span class="label">联系方式</span>
+                                <ul class="user-detail-list">
+                                    <li><span>手机号</span><span>${phoneDisplay}</span></li>
+                                        <li><span>邮箱</span><span>${emailDisplay}</span></li>
+                                        <li><span>所在地区</span><span>${locationDisplay}</span></li>
+                                    </ul>
+                                </div>
+                                <div class="user-detail-card">
+                                    <span class="label">账号指标</span>
+                                    <ul class="user-detail-list">
+                                        <li><span>账户余额</span><span>${balanceDisplay}</span></li>
+                                        <li><span>信用分</span><span>${creditScoreDisplay}</span></li>
+                                        <li><span>订单数量</span><span>${orderCountDisplay}</span></li>
+                                    </ul>
+                                </div>
+                                <div class="user-detail-card">
+                                    <span class="label">登录信息</span>
+                                    <ul class="user-detail-list">
+                                        <li><span>最近登录</span><span>${lastLoginDisplay}</span></li>
+                                        <li><span>登录 IP</span><span>${lastLoginIp}</span></li>
+                                        <li><span>注册渠道</span><span>${channelDisplay}</span></li>
+                                    </ul>
+                                </div>
+                            </div>
+                            ${remarkBlock}
+                        </div>
+                        <div class="modal-footer">
+                            <button type="button" class="btn btn-outline-secondary" data-bs-dismiss="modal">关闭</button>
+                            <button type="button" class="btn btn-primary" onclick="editUser(${user.id})">
+                                <i class="bi bi-pencil"></i> 编辑用户
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        `;
+
+        document.body.insertAdjacentHTML('beforeend', modalHtml);
+        const modalElement = document.getElementById('viewUserModal');
+        const modalInstance = new bootstrap.Modal(modalElement);
+        modalInstance.show();
+        modalElement.addEventListener('hidden.bs.modal', () => {
+            modalElement.remove();
+        });
+    } catch (error) {
+        console.error('查看用户详情失败:', error);
+        showError(`获取用户详情失败: ${escapeHtml(error.message || '未知错误')}`);
+    }
+};
 
 window.editUser = async function(userId) {
     try {
-        // 获取用户详细信息
-        const userResponse = await apiRequest(`/users/${userId}`);
-        
-        // 创建编辑用户的模态框
+        const user = await fetchUserDetail(userId);
+        const fromCacheOnly = user.__fromCache === true;
+
+        const existingModal = document.getElementById('editUserModal');
+        if (existingModal) {
+            existingModal.remove();
+        }
+
+        const usernameValue = escapeHtml(user.username || '');
+        const phoneValue = escapeHtml(user.phone || '');
+        const emailValue = escapeHtml(user.email || '');
+        const nicknameValue = escapeHtml(user.nickname || '');
+        const realNameValue = escapeHtml(user.real_name || '');
+        const locationValue = escapeHtml(user.location || '');
+        const balanceValue = Number.isFinite(Number(user.balance)) ? Number(user.balance).toFixed(2) : Number(user.wallet_balance || 0).toFixed(2);
+        const creditScoreValue = Number.isFinite(Number(user.credit_score)) ? Number(user.credit_score) : (Number(user.score) || 0);
+        const statusValue = Number.isFinite(Number(user.status)) ? Number(user.status) : 1;
+        const genderValue = Number.isFinite(Number(user.gender)) ? Number(user.gender) : 0;
+        const createdAt = escapeHtml(formatDateTime(user.created_at));
+
+        const cacheNotice = fromCacheOnly
+            ? '<div class="alert alert-warning fade show user-cache-notice mb-3"><i class="bi bi-exclamation-triangle me-2"></i>当前表单基于缓存数据生成，保存时需确认接口 /users/:id 是否已实现。</div>'
+            : '';
+
         const modalHtml = `
-            <div class="modal fade" id="editUserModal" tabindex="-1">
-                <div class="modal-dialog modal-lg">
-                    <div class="modal-content">
+            <div class="modal fade" id="editUserModal" tabindex="-1" aria-hidden="true">
+                <div class="modal-dialog modal-lg modal-dialog-centered modal-dialog-scrollable">
+                    <div class="modal-content user-modal">
                         <div class="modal-header">
-                            <h5 class="modal-title">编辑用户 - ${userResponse.username}</h5>
-                            <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                            <div>
+                                <h5 class="modal-title">编辑用户</h5>
+                                <p class="modal-subtitle">ID ${user.id} · 注册于 ${createdAt}</p>
+                            </div>
+                            <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="关闭"></button>
                         </div>
                         <div class="modal-body">
+                            ${cacheNotice}
                             <form id="editUserForm">
-                                <div class="row">
+                                <div class="row g-3">
                                     <div class="col-md-6">
-                                        <div class="mb-3">
-                                            <label class="form-label">用户名</label>
-                                            <input type="text" class="form-control" id="username" value="${userResponse.username || ''}" required>
+                                        <label class="form-label">用户名</label>
+                                        <input type="text" class="form-control" id="editUserUsername" value="${usernameValue}" required>
+                                    </div>
+                                    <div class="col-md-6">
+                                        <label class="form-label">手机号</label>
+                                        <input type="tel" class="form-control" id="editUserPhone" value="${phoneValue}" required>
+                                    </div>
+                                    <div class="col-md-6">
+                                        <label class="form-label">邮箱</label>
+                                        <input type="email" class="form-control" id="editUserEmail" value="${emailValue}">
+                                    </div>
+                                    <div class="col-md-6">
+                                        <label class="form-label">昵称</label>
+                                        <input type="text" class="form-control" id="editUserNickname" value="${nicknameValue}">
+                                    </div>
+                                    <div class="col-md-6">
+                                        <label class="form-label">真实姓名</label>
+                                        <input type="text" class="form-control" id="editUserRealname" value="${realNameValue}">
+                                    </div>
+                                    <div class="col-md-6">
+                                        <label class="form-label">性别</label>
+                                        <select class="form-select" id="editUserGender">
+                                            <option value="0" ${genderValue === 0 ? 'selected' : ''}>未知</option>
+                                            <option value="1" ${genderValue === 1 ? 'selected' : ''}>男</option>
+                                            <option value="2" ${genderValue === 2 ? 'selected' : ''}>女</option>
+                                        </select>
+                                    </div>
+                                    <div class="col-md-6">
+                                        <label class="form-label">所在地区</label>
+                                        <input type="text" class="form-control" id="editUserLocation" value="${locationValue}">
+                                    </div>
+                                    <div class="col-md-6">
+                                        <label class="form-label">账户余额 (¥)</label>
+                                        <div class="input-group">
+                                            <input type="number" class="form-control" id="editUserBalance" value="${balanceValue}" step="0.01" min="0">
+                                            <button type="button" class="btn btn-outline-primary" onclick="showAddBalanceDialog(${user.id})">
+                                                <i class="bi bi-plus"></i> 充值
+                                            </button>
                                         </div>
                                     </div>
                                     <div class="col-md-6">
-                                        <div class="mb-3">
-                                            <label class="form-label">手机号</label>
-                                            <input type="text" class="form-control" id="phone" value="${userResponse.phone || ''}" required>
-                                        </div>
-                                    </div>
-                                </div>
-                                <div class="row">
-                                    <div class="col-md-6">
-                                        <div class="mb-3">
-                                            <label class="form-label">邮箱</label>
-                                            <input type="email" class="form-control" id="email" value="${userResponse.email || ''}">
-                                        </div>
+                                        <label class="form-label">信用分</label>
+                                        <input type="number" class="form-control" id="editUserCredit" value="${creditScoreValue}" min="0" max="1000">
                                     </div>
                                     <div class="col-md-6">
-                                        <div class="mb-3">
-                                            <label class="form-label">昵称</label>
-                                            <input type="text" class="form-control" id="nickname" value="${userResponse.nickname || ''}">
-                                        </div>
-                                    </div>
-                                </div>
-                                <div class="row">
-                                    <div class="col-md-6">
-                                        <div class="mb-3">
-                                            <label class="form-label">真实姓名</label>
-                                            <input type="text" class="form-control" id="real_name" value="${userResponse.real_name || ''}">
-                                        </div>
-                                    </div>
-                                    <div class="col-md-6">
-                                        <div class="mb-3">
-                                            <label class="form-label">性别</label>
-                                            <select class="form-control" id="gender">
-                                                <option value="0" ${userResponse.gender === 0 ? 'selected' : ''}>未知</option>
-                                                <option value="1" ${userResponse.gender === 1 ? 'selected' : ''}>男</option>
-                                                <option value="2" ${userResponse.gender === 2 ? 'selected' : ''}>女</option>
-                                            </select>
-                                        </div>
-                                    </div>
-                                </div>
-                                <div class="row">
-                                    <div class="col-md-6">
-                                        <div class="mb-3">
-                                            <label class="form-label">地区</label>
-                                            <input type="text" class="form-control" id="location" value="${userResponse.location || ''}">
-                                        </div>
-                                    </div>
-                                    <div class="col-md-6">
-                                        <div class="mb-3">
-                                            <label class="form-label">账户余额 (¥)</label>
-                                            <div class="input-group">
-                                                <input type="number" class="form-control" id="balance" value="${userResponse.balance || 0}" step="0.01" min="0">
-                                                <button type="button" class="btn btn-outline-primary" onclick="showAddBalanceDialog(${userId})">
-                                                    <i class="bi bi-plus"></i> 充值
-                                                </button>
-                                            </div>
-                                        </div>
+                                        <label class="form-label">账户状态</label>
+                                        <select class="form-select" id="editUserStatus">
+                                            <option value="1" ${statusValue === 1 ? 'selected' : ''}>正常</option>
+                                            <option value="2" ${statusValue === 2 ? 'selected' : ''}>冻结</option>
+                                            <option value="3" ${statusValue === 3 ? 'selected' : ''}>禁用</option>
+                                        </select>
                                     </div>
                                 </div>
-                                <div class="row">
-                                    <div class="col-md-6">
-                                        <div class="mb-3">
-                                            <label class="form-label">信用分</label>
-                                            <input type="number" class="form-control" id="credit_score" value="${userResponse.credit_score || 100}" min="0" max="1000">
+                                <div class="row g-3 mt-2">
+                                    <div class="col-12">
+                                        <div class="form-check form-check-inline">
+                                            <input class="form-check-input" type="checkbox" id="editUserIsSeller" ${user.is_seller ? 'checked' : ''}>
+                                            <label class="form-check-label" for="editUserIsSeller">卖家权限</label>
                                         </div>
-                                    </div>
-                                    <div class="col-md-6">
-                                        <div class="mb-3">
-                                            <label class="form-label">账户状态</label>
-                                            <select class="form-control" id="status">
-                                                <option value="1" ${userResponse.status === 1 ? 'selected' : ''}>正常</option>
-                                                <option value="2" ${userResponse.status === 2 ? 'selected' : ''}>冻结</option>
-                                                <option value="3" ${userResponse.status === 3 ? 'selected' : ''}>禁用</option>
-                                            </select>
+                                        <div class="form-check form-check-inline">
+                                            <input class="form-check-input" type="checkbox" id="editUserIsVerified" ${user.is_verified ? 'checked' : ''}>
+                                            <label class="form-check-label" for="editUserIsVerified">已认证</label>
                                         </div>
-                                    </div>
-                                </div>
-                                <div class="row">
-                                    <div class="col-md-12">
-                                        <div class="mb-3">
-                                            <div class="form-check">
-                                                <input class="form-check-input" type="checkbox" id="is_seller" ${userResponse.is_seller ? 'checked' : ''}>
-                                                <label class="form-check-label" for="is_seller">卖家权限</label>
-                                            </div>
-                                            <div class="form-check">
-                                                <input class="form-check-input" type="checkbox" id="is_verified" ${userResponse.is_verified ? 'checked' : ''}>
-                                                <label class="form-check-label" for="is_verified">已认证</label>
-                                            </div>
-                                            <div class="form-check">
-                                                <input class="form-check-input" type="checkbox" id="is_admin" ${userResponse.is_admin ? 'checked' : ''}>
-                                                <label class="form-check-label" for="is_admin">管理员权限</label>
-                                            </div>
+                                        <div class="form-check form-check-inline">
+                                            <input class="form-check-input" type="checkbox" id="editUserIsAdmin" ${user.is_admin ? 'checked' : ''}>
+                                            <label class="form-check-label" for="editUserIsAdmin">管理员权限</label>
                                         </div>
                                     </div>
                                 </div>
                             </form>
                         </div>
                         <div class="modal-footer">
-                            <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">取消</button>
-                            <button type="button" class="btn btn-primary" onclick="updateUser(${userId})">保存更改</button>
+                            <button type="button" class="btn btn-outline-secondary" data-bs-dismiss="modal">取消</button>
+                            <button type="button" class="btn btn-primary" onclick="updateUser(${user.id})">
+                                <i class="bi bi-save"></i> 保存更改
+                            </button>
                         </div>
                     </div>
                 </div>
             </div>
         `;
-        
-        // 添加模态框到页面
+
         document.body.insertAdjacentHTML('beforeend', modalHtml);
-        
-        // 显示模态框
-        const modal = new bootstrap.Modal(document.getElementById('editUserModal'));
-        modal.show();
-        
-        // 模态框隐藏时删除
-        document.getElementById('editUserModal').addEventListener('hidden.bs.modal', () => {
-            document.getElementById('editUserModal').remove();
+        const modalElement = document.getElementById('editUserModal');
+        const modalInstance = new bootstrap.Modal(modalElement);
+        modalInstance.show();
+        modalElement.addEventListener('hidden.bs.modal', () => {
+            modalElement.remove();
         });
-        
     } catch (error) {
         console.error('获取用户详情失败:', error);
-        showError('获取用户详情失败: ' + error.message);
+        showError(`获取用户详情失败: ${escapeHtml(error.message || '未知错误')}`);
     }
-}
+};
 
 window.updateUser = async function(userId) {
     try {
+        const usernameInput = document.getElementById('editUserUsername');
+        if (!usernameInput) {
+            showError('编辑表单未初始化');
+            return;
+        }
+
         const formData = {
-            username: document.getElementById('username').value,
-            phone: document.getElementById('phone').value,
-            email: document.getElementById('email').value,
-            nickname: document.getElementById('nickname').value,
-            real_name: document.getElementById('real_name').value,
-            gender: parseInt(document.getElementById('gender').value),
-            location: document.getElementById('location').value,
-            balance: parseFloat(document.getElementById('balance').value),
-            credit_score: parseInt(document.getElementById('credit_score').value),
-            status: parseInt(document.getElementById('status').value),
-            is_seller: document.getElementById('is_seller').checked,
-            is_verified: document.getElementById('is_verified').checked,
-            is_admin: document.getElementById('is_admin').checked
+            username: usernameInput.value.trim(),
+            phone: document.getElementById('editUserPhone').value.trim(),
+            email: document.getElementById('editUserEmail').value.trim(),
+            nickname: document.getElementById('editUserNickname').value.trim(),
+            real_name: document.getElementById('editUserRealname').value.trim(),
+            gender: Number.parseInt(document.getElementById('editUserGender').value, 10),
+            location: document.getElementById('editUserLocation').value.trim(),
+            balance: Number.parseFloat(document.getElementById('editUserBalance').value) || 0,
+            credit_score: Number.parseInt(document.getElementById('editUserCredit').value, 10) || 0,
+            status: Number.parseInt(document.getElementById('editUserStatus').value, 10),
+            is_seller: document.getElementById('editUserIsSeller').checked,
+            is_verified: document.getElementById('editUserIsVerified').checked,
+            is_admin: document.getElementById('editUserIsAdmin').checked
         };
-        
+
         const response = await apiRequest(`/users/${userId}`, {
             method: 'PUT',
             body: JSON.stringify(formData)
         });
-        
-        if (response.success) {
-            showSuccess('用户信息更新成功');
-            // 关闭模态框
-            const modal = bootstrap.Modal.getInstance(document.getElementById('editUserModal'));
-            modal.hide();
-            // 刷新用户列表
-            loadUsers();
-        } else {
-            showError(response.message || '更新失败');
+
+        if (response && response.success === false) {
+            throw new Error(response.message || '更新失败');
         }
+
+        const successMessage = response?.message ? escapeHtml(response.message) : escapeHtml('用户信息更新成功');
+        showSuccess(successMessage);
+
+        const modal = bootstrap.Modal.getInstance(document.getElementById('editUserModal'));
+        if (modal) {
+            modal.hide();
+        }
+
+        await loadUsers();
     } catch (error) {
         console.error('更新用户失败:', error);
-        showError('更新用户失败: ' + error.message);
+        showError(`更新用户失败: ${escapeHtml(error.message || '未知错误')}`);
     }
-}
+};
 
 window.showAddBalanceDialog = function(userId) {
+    const existingModal = document.getElementById('addBalanceModal');
+    if (existingModal) {
+        existingModal.remove();
+    }
+
     const balanceModalHtml = `
-        <div class="modal fade" id="addBalanceModal" tabindex="-1">
-            <div class="modal-dialog">
-                <div class="modal-content">
+        <div class="modal fade" id="addBalanceModal" tabindex="-1" aria-hidden="true">
+            <div class="modal-dialog modal-dialog-centered">
+                <div class="modal-content user-modal">
                     <div class="modal-header">
                         <h5 class="modal-title">为用户充值</h5>
-                        <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="关闭"></button>
                     </div>
                     <div class="modal-body">
                         <div class="mb-3">
@@ -1311,66 +1573,82 @@ window.showAddBalanceDialog = function(userId) {
                         </div>
                     </div>
                     <div class="modal-footer">
-                        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">取消</button>
+                        <button type="button" class="btn btn-outline-secondary" data-bs-dismiss="modal">取消</button>
                         <button type="button" class="btn btn-primary" onclick="addUserBalance(${userId})">确认充值</button>
                     </div>
                 </div>
             </div>
         </div>
     `;
-    
-    // 添加模态框到页面
+
     document.body.insertAdjacentHTML('beforeend', balanceModalHtml);
-    
-    // 显示模态框
     const modal = new bootstrap.Modal(document.getElementById('addBalanceModal'));
     modal.show();
-    
-    // 模态框隐藏时删除
     document.getElementById('addBalanceModal').addEventListener('hidden.bs.modal', () => {
         document.getElementById('addBalanceModal').remove();
     });
-}
+};
 
 window.addUserBalance = async function(userId) {
     try {
-        const amount = parseFloat(document.getElementById('addAmount').value);
-        const reason = document.getElementById('addReason').value;
-        
+        const amountInput = document.getElementById('addAmount');
+        const amount = Number.parseFloat(amountInput.value);
+        const reason = document.getElementById('addReason').value.trim();
+
         if (!amount || amount <= 0) {
             showError('请输入有效的充值金额');
             return;
         }
-        
+
         const response = await apiRequest(`/users/${userId}/add-balance`, {
             method: 'POST',
-            body: JSON.stringify({ amount: amount, reason: reason })
+            body: JSON.stringify({ amount, reason })
         });
-        
-        if (response.success) {
-            showSuccess(`成功充值 ¥${amount}，当前余额: ¥${response.new_balance}`);
-            // 关闭充值模态框
-            const balanceModal = bootstrap.Modal.getInstance(document.getElementById('addBalanceModal'));
+
+        if (response && response.success === false) {
+            throw new Error(response.message || '充值失败');
+        }
+
+        const newBalance = Number(response?.new_balance ?? amount);
+        const successMessage = response?.message ? escapeHtml(response.message) : escapeHtml(`成功充值 ¥${amount.toFixed(2)}`);
+        showSuccess(successMessage);
+
+        const balanceInput = document.getElementById('editUserBalance');
+        if (balanceInput && Number.isFinite(newBalance)) {
+            balanceInput.value = newBalance.toFixed(2);
+        }
+
+        const balanceModal = bootstrap.Modal.getInstance(document.getElementById('addBalanceModal'));
+        if (balanceModal) {
             balanceModal.hide();
-            // 更新编辑框中的余额显示
-            if (document.getElementById('balance')) {
-                document.getElementById('balance').value = response.new_balance;
-            }
-        } else {
-            showError(response.message || '充值失败');
         }
     } catch (error) {
         console.error('充值失败:', error);
-        showError('充值失败: ' + error.message);
+        showError(`充值失败: ${escapeHtml(error.message || '未知错误')}`);
     }
-}
+};
 
 window.deleteUser = function(userId) {
-    if (confirm('确定要删除这个用户吗？')) {
-        // TODO: 实现用户删除
-        console.log('删除用户:', userId);
-    }
-}
+    const targetUser = Array.isArray(userDataCache) ? userDataCache.find(user => user.id === userId) : null;
+    const displayName = targetUser?.username || targetUser?.nickname || `ID ${userId}`;
+    const safeName = escapeHtml(displayName);
+
+    showConfirmModal({
+        title: '删除用户',
+        message: `确认要删除用户 <strong>${safeName}</strong> 吗？此操作不可撤销。`,
+        confirmText: '删除',
+        confirmType: 'danger',
+        onConfirm: async () => {
+            const response = await apiRequest(`/users/${userId}`, { method: 'DELETE' });
+            if (response && response.success === false) {
+                throw new Error(response.message || '删除失败');
+            }
+            const successMessage = response?.message ? escapeHtml(response.message) : escapeHtml('用户已删除');
+            showSuccess(successMessage);
+            await loadUsers();
+        }
+    });
+};
 
 // 加载专场活动数据
 async function loadEvents() {
@@ -1425,6 +1703,16 @@ async function loadEvents() {
         showError('加载专场活动失败: ' + error.message);
     }
 }
+
+window.loadEvents = loadEvents;
+
+window.addEventListener('loadEventsData', () => {
+    setTimeout(() => {
+        if (typeof window.loadEvents === 'function') {
+            window.loadEvents();
+        }
+    }, 50);
+});
 
 // 管理专场商品
 window.manageEventProducts = async function(eventId) {
@@ -3175,3 +3463,80 @@ function showNotification(message, type = 'info') {
         if (typeof showInfo === 'function') showInfo(message);
     }
 }
+
+function showConfirmModal({
+    title = '确认操作',
+    message = '',
+    confirmText = '确认',
+    confirmType = 'primary',
+    onConfirm
+} = {}) {
+    const existingModal = document.getElementById('confirmModal');
+    if (existingModal) {
+        existingModal.remove();
+    }
+
+    const safeTitle = escapeHtml(title);
+    const safeConfirmText = escapeHtml(confirmText);
+
+    const modalHtml = `
+        <div class="modal fade" id="confirmModal" tabindex="-1" aria-hidden="true">
+            <div class="modal-dialog modal-dialog-centered">
+                <div class="modal-content user-modal">
+                    <div class="modal-header">
+                        <h5 class="modal-title">${safeTitle}</h5>
+                        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="关闭"></button>
+                    </div>
+                    <div class="modal-body confirm-modal-body">
+                        ${message}
+                    </div>
+                    <div class="modal-footer">
+                        <button type="button" class="btn btn-outline-secondary" data-bs-dismiss="modal">取消</button>
+                        <button type="button" class="btn btn-${confirmType} confirm-btn" data-role="confirm">
+                            ${safeConfirmText}
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    `;
+
+    document.body.insertAdjacentHTML('beforeend', modalHtml);
+    const modalElement = document.getElementById('confirmModal');
+    const modalInstance = new bootstrap.Modal(modalElement);
+    const confirmButton = modalElement.querySelector('[data-role="confirm"]');
+    const originalButtonContent = confirmButton.innerHTML;
+
+    modalElement.addEventListener('hidden.bs.modal', () => {
+        modalElement.remove();
+    });
+
+    confirmButton.addEventListener('click', async () => {
+        if (typeof onConfirm !== 'function') {
+            modalInstance.hide();
+            return;
+        }
+
+        confirmButton.disabled = true;
+        confirmButton.innerHTML = '<span class="spinner-border spinner-border-sm me-2"></span>处理中...';
+
+        try {
+            await onConfirm();
+            modalInstance.hide();
+        } catch (error) {
+            console.error('确认操作失败:', error);
+            showError(escapeHtml(error.message || '操作失败'));
+            confirmButton.disabled = false;
+            confirmButton.innerHTML = originalButtonContent;
+        }
+    });
+
+    modalInstance.show();
+}
+
+// 标记核心脚本加载完成，供内联脚本判定
+window.__adminCoreReady = true;
+setTimeout(() => {
+    window.dispatchEvent(new CustomEvent('adminCoreReady'));
+}, 0);
+console.log('Admin核心脚本已就绪');

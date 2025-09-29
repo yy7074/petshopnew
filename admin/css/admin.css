@@ -267,6 +267,233 @@ body {
     }
 }
 
+.section-toolbar .form-select,
+.section-toolbar .form-control {
+    min-width: 180px;
+    border-radius: 0.75rem;
+}
+
+.section-toolbar .btn {
+    border-radius: 999px;
+}
+
+.table-actions {
+    display: flex;
+    align-items: center;
+    gap: 0.4rem;
+}
+
+.table-actions .btn {
+    width: 2.25rem;
+    height: 2.25rem;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    border-radius: 999px;
+    padding: 0;
+}
+
+.table-actions .btn i {
+    font-size: 0.9rem;
+}
+
+.user-modal .modal-header {
+    border-bottom: none;
+    padding-bottom: 0.25rem;
+}
+
+.user-modal .modal-body {
+    padding-top: 0.5rem;
+}
+
+.user-modal .modal-footer {
+    border-top: none;
+}
+
+.modal-subtitle {
+    font-size: 0.85rem;
+    color: #7a7d91;
+    margin: 0.35rem 0 0;
+}
+
+.user-summary-header {
+    display: flex;
+    align-items: center;
+    gap: 1.25rem;
+    margin-bottom: 1.5rem;
+}
+
+.user-avatar-badge {
+    width: 60px;
+    height: 60px;
+    border-radius: 50%;
+    background: linear-gradient(135deg, #5a6cf3 0%, #7b8bff 100%);
+    color: #fff;
+    font-weight: 700;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 1.5rem;
+}
+
+.user-meta {
+    color: #7a7d91;
+    font-size: 0.85rem;
+}
+
+.user-summary-tags {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.35rem;
+    margin-top: 0.5rem;
+}
+
+.user-summary-tags .tag {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.25rem;
+    padding: 0.25rem 0.65rem;
+    border-radius: 999px;
+    font-size: 0.75rem;
+    background: #eef1f8;
+    color: #465063;
+}
+
+.user-summary-tags .tag-id {
+    background: rgba(78, 115, 223, 0.15);
+    color: #344c9c;
+}
+
+.user-summary-tags .tag-verified {
+    background: rgba(28, 200, 138, 0.15);
+    color: #118860;
+}
+
+.user-summary-tags .tag-seller {
+    background: rgba(246, 194, 62, 0.2);
+    color: #8c6508;
+}
+
+.user-summary-tags .tag-admin {
+    background: rgba(231, 74, 59, 0.18);
+    color: #a32920;
+}
+
+.user-detail-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+    gap: 1rem;
+}
+
+.user-detail-card {
+    background: #f8f9ff;
+    border: 1px solid #edf0ff;
+    border-radius: 1rem;
+    padding: 1rem 1.25rem;
+    box-shadow: 0 8px 24px -20px rgba(31, 45, 61, 0.35);
+}
+
+.user-detail-card .label {
+    font-size: 0.75rem;
+    letter-spacing: 0.05rem;
+    color: #7a7d91;
+    text-transform: uppercase;
+    display: block;
+    margin-bottom: 0.65rem;
+}
+
+.user-detail-list {
+    list-style: none;
+    padding: 0;
+    margin: 0;
+    display: flex;
+    flex-direction: column;
+    gap: 0.45rem;
+}
+
+.user-detail-list li {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    gap: 0.75rem;
+    font-size: 0.9rem;
+}
+
+.user-detail-list li span:first-child {
+    color: #7a7d91;
+    font-size: 0.85rem;
+}
+
+.user-detail-list li span:last-child {
+    font-weight: 600;
+    color: #2f2f52;
+    text-align: right;
+}
+
+.user-remark-card {
+    margin-top: 1.5rem;
+    background: #fff8f0;
+    border: 1px solid #ffe4c7;
+    border-radius: 1rem;
+    padding: 1rem 1.25rem;
+}
+
+.user-remark-card .label {
+    display: block;
+    font-size: 0.75rem;
+    letter-spacing: 0.05rem;
+    color: #b7791f;
+    text-transform: uppercase;
+    margin-bottom: 0.5rem;
+}
+
+.user-remark-card p {
+    margin: 0;
+    color: #5a4a33;
+    line-height: 1.5;
+    word-break: break-word;
+}
+
+.confirm-modal-body {
+    font-size: 0.95rem;
+    color: #555;
+}
+
+.confirm-modal-body strong {
+    color: #2f2f52;
+}
+
+.user-cache-notice {
+    border-radius: 0.75rem;
+    border: 1px solid rgba(255, 193, 7, 0.25);
+    background: rgba(255, 243, 205, 0.6);
+    color: #8a6d1d;
+    font-size: 0.85rem;
+}
+
+@media (max-width: 575.98px) {
+    .user-summary-header {
+        flex-direction: column;
+        align-items: flex-start;
+    }
+
+    .user-detail-list li {
+        flex-direction: column;
+        align-items: flex-start;
+        text-align: left;
+        gap: 0.2rem;
+    }
+
+    .table-actions {
+        gap: 0.3rem;
+    }
+
+    .table-actions .btn {
+        width: 2rem;
+        height: 2rem;
+    }
+}
+
 .sidebar {
     position: fixed;
     top: 0;
@@ -502,13 +729,6 @@ body {
 .status-banned {
     background-color: #e74a3b;
 }
-
-
-
-
-
-
-
 
 
 

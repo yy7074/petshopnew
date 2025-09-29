@@ -331,13 +331,31 @@
 
                 <!-- 商品管理 -->
                 <div id="products" class="content-section" style="display: none;">
+                    <div class="section-header mb-4">
+                        <div>
+                            <h2 class="section-title">商品管理</h2>
+                            <p class="section-subtitle">维护拍卖商品，掌握上下架状态</p>
+                        </div>
+                        <div class="section-actions">
+                            <button type="button" class="btn btn-outline-primary" onclick="refreshProducts()">
+                                <i class="bi bi-arrow-repeat"></i>
+                                刷新商品
+                            </button>
+                            <button type="button" class="btn btn-primary" onclick="showNotification('新增商品功能开发中', 'info')">
+                                <i class="bi bi-plus"></i>
+                                新增商品
+                            </button>
+                        </div>
+                    </div>
+
                     <div class="card shadow mb-4">
-                        <div class="card-header py-3">
+                        <div class="card-header py-3 d-flex justify-content-between align-items-center">
                             <h6 class="m-0 font-weight-bold text-primary">商品列表</h6>
+                            <span class="table-hint">包含当前所有在售及待审核的拍品</span>
                         </div>
                         <div class="card-body">
                             <div class="table-responsive">
-                                <table class="table table-bordered" id="productsTable">
+                                <table class="table table-bordered align-middle" id="productsTable">
                                     <thead>
                                         <tr>
                                             <th>ID</th>
@@ -361,19 +379,30 @@
 
                 <!-- 分类管理 -->
                 <div id="categories" class="content-section" style="display: none;">
-                    <div class="d-flex justify-content-between align-items-center mb-3">
-                        <h3>分类管理</h3>
-                        <button type="button" class="btn btn-primary" onclick="addCategory()">
-                            <i class="bi bi-plus"></i> 新增分类
-                        </button>
+                    <div class="section-header mb-4">
+                        <div>
+                            <h2 class="section-title">分类管理</h2>
+                            <p class="section-subtitle">调整分类结构，保持商品体系清晰</p>
+                        </div>
+                        <div class="section-actions">
+                            <button type="button" class="btn btn-outline-primary" onclick="refreshCategories()">
+                                <i class="bi bi-arrow-repeat"></i>
+                                刷新分类
+                            </button>
+                            <button type="button" class="btn btn-primary" onclick="addCategory()">
+                                <i class="bi bi-plus"></i>
+                                新增分类
+                            </button>
+                        </div>
                     </div>
                     <div class="card shadow mb-4">
-                        <div class="card-header py-3">
+                        <div class="card-header py-3 d-flex justify-content-between align-items-center">
                             <h6 class="m-0 font-weight-bold text-primary">分类列表</h6>
+                            <span class="table-hint">支持多级分类与排序管理</span>
                         </div>
                         <div class="card-body">
                             <div class="table-responsive">
-                                <table class="table table-bordered" id="categoriesTable">
+                                <table class="table table-bordered align-middle" id="categoriesTable">
                                     <thead>
                                         <tr>
                                             <th>ID</th>
@@ -396,8 +425,21 @@
 
                 <!-- 订单管理 -->
                 <div id="orders" class="content-section" style="display: none;">
-                    <div class="row mb-3">
-                        <div class="col-md-3">
+                    <div class="section-header mb-4">
+                        <div>
+                            <h2 class="section-title">订单管理</h2>
+                            <p class="section-subtitle">跟踪订单进度，掌握履约和售后状态</p>
+                        </div>
+                        <div class="section-actions">
+                            <button type="button" class="btn btn-outline-primary" onclick="refreshOrders()">
+                                <i class="bi bi-arrow-repeat"></i>
+                                刷新订单
+                            </button>
+                        </div>
+                    </div>
+
+                    <div class="section-toolbar flex-wrap mb-3">
+                        <div class="d-flex flex-wrap gap-2 align-items-center">
                             <select class="form-select" id="orderStatusFilter">
                                 <option value="">全部状态</option>
                                 <option value="1">待支付</option>
@@ -407,23 +449,27 @@
                                 <option value="5">已完成</option>
                                 <option value="6">已取消</option>
                             </select>
-                        </div>
-                        <div class="col-md-6">
                             <input type="text" class="form-control" id="orderSearch" placeholder="搜索订单号、用户名或商品名称">
                         </div>
-                        <div class="col-md-3">
+                        <div class="toolbar-right ms-auto">
+                            <button type="button" class="btn btn-outline-secondary" onclick="refreshOrders()">
+                                <i class="bi bi-arrow-clockwise"></i>
+                                重载
+                            </button>
                             <button type="button" class="btn btn-primary" onclick="searchOrders()">
-                                <i class="bi bi-search"></i> 搜索
+                                <i class="bi bi-search"></i>
+                                搜索
                             </button>
                         </div>
                     </div>
                     <div class="card shadow mb-4">
-                        <div class="card-header py-3">
+                        <div class="card-header py-3 d-flex justify-content-between align-items-center">
                             <h6 class="m-0 font-weight-bold text-primary">订单列表</h6>
+                            <span class="table-hint">支持状态筛选与关键字检索</span>
                         </div>
                         <div class="card-body">
                             <div class="table-responsive">
-                                <table class="table table-bordered" id="ordersTable">
+                                <table class="table table-bordered align-middle" id="ordersTable">
                                     <thead>
                                         <tr>
                                             <th>订单号</th>
@@ -446,6 +492,18 @@
 
                 <!-- 店铺管理 -->
                 <div id="shops" class="content-section" style="display: none;">
+                    <div class="section-header mb-4">
+                        <div>
+                            <h2 class="section-title">店铺管理</h2>
+                            <p class="section-subtitle">审核开店申请，维护入驻商家与店铺信息</p>
+                        </div>
+                        <div class="section-actions">
+                            <button type="button" class="btn btn-outline-primary" onclick="refreshShops()">
+                                <i class="bi bi-arrow-repeat"></i>
+                                刷新店铺
+                            </button>
+                        </div>
+                    </div>
                     <!-- 选项卡导航 -->
                     <ul class="nav nav-tabs mb-4" id="shopsTab" role="tablist">
                         <li class="nav-item" role="presentation">
@@ -463,8 +521,8 @@
                     <div class="tab-content" id="shopsTabContent">
                         <!-- 开店申请管理 -->
                         <div class="tab-pane fade show active" id="applications" role="tabpanel">
-                            <div class="row mb-3">
-                                <div class="col-md-3">
+                            <div class="section-toolbar flex-wrap mb-3">
+                                <div class="d-flex flex-wrap gap-2 align-items-center">
                                     <select class="form-select" id="applicationStatusFilter">
                                         <option value="">全部状态</option>
                                         <option value="0">待审核</option>
@@ -472,8 +530,6 @@
                                         <option value="2">审核拒绝</option>
                                         <option value="3">已开店</option>
                                     </select>
-                                </div>
-                                <div class="col-md-3">
                                     <select class="form-select" id="storeTypeFilter">
                                         <option value="">全部类型</option>
                                         <option value="个人店">个人店</option>
@@ -482,20 +538,22 @@
                                         <option value="旗舰店">旗舰店</option>
                                     </select>
                                 </div>
-                                <div class="col-md-6">
-                                    <button type="button" class="btn btn-info" onclick="loadApplications()">
-                                        <i class="bi bi-arrow-clockwise"></i> 刷新
+                                <div class="toolbar-right ms-auto">
+                                    <button type="button" class="btn btn-outline-secondary" onclick="loadApplications()">
+                                        <i class="bi bi-arrow-clockwise"></i>
+                                        重载
                                     </button>
                                 </div>
                             </div>
 
                             <div class="card shadow mb-4">
-                                <div class="card-header py-3">
+                                <div class="card-header py-3 d-flex justify-content-between align-items-center">
                                     <h6 class="m-0 font-weight-bold text-primary">开店申请列表</h6>
+                                    <span class="table-hint">审核前可查看押金与认证状态</span>
                                 </div>
                                 <div class="card-body">
                                     <div class="table-responsive">
-                                        <table class="table table-bordered" id="applicationsTable">
+                                        <table class="table table-bordered align-middle" id="applicationsTable">
                                             <thead>
                                                 <tr>
                                                     <th>ID</th>
@@ -521,36 +579,36 @@
 
                         <!-- 店铺列表 -->
                         <div class="tab-pane fade" id="stores" role="tabpanel">
-                            <div class="row mb-3">
-                                <div class="col-md-3">
+                            <div class="section-toolbar flex-wrap mb-3">
+                                <div class="d-flex flex-wrap gap-2 align-items-center">
                                     <select class="form-select" id="storeStatusFilter">
                                         <option value="">全部状态</option>
                                         <option value="1">正常</option>
                                         <option value="2">暂停</option>
                                         <option value="3">关闭</option>
                                     </select>
-                                </div>
-                                <div class="col-md-3">
                                     <select class="form-select" id="verifiedFilter">
                                         <option value="">全部认证</option>
                                         <option value="true">已认证</option>
                                         <option value="false">未认证</option>
                                     </select>
                                 </div>
-                                <div class="col-md-6">
-                                    <button type="button" class="btn btn-info" onclick="loadStores()">
-                                        <i class="bi bi-arrow-clockwise"></i> 刷新
+                                <div class="toolbar-right ms-auto">
+                                    <button type="button" class="btn btn-outline-secondary" onclick="loadStores()">
+                                        <i class="bi bi-arrow-clockwise"></i>
+                                        重载
                                     </button>
                                 </div>
                             </div>
 
                             <div class="card shadow mb-4">
-                                <div class="card-header py-3">
+                                <div class="card-header py-3 d-flex justify-content-between align-items-center">
                                     <h6 class="m-0 font-weight-bold text-primary">店铺列表</h6>
+                                    <span class="table-hint">快速查阅店铺认证、押金与经营状态</span>
                                 </div>
                                 <div class="card-body">
                                     <div class="table-responsive">
-                                        <table class="table table-bordered" id="storesTable">
+                                        <table class="table table-bordered align-middle" id="storesTable">
                                             <thead>
                                                 <tr>
                                                     <th>ID</th>
@@ -580,19 +638,30 @@
 
                 <!-- 专场活动管理 -->
                 <div id="events" class="content-section" style="display: none;">
-                    <div class="d-flex justify-content-between align-items-center mb-3">
-                        <h3>专场活动管理</h3>
-                        <button type="button" class="btn btn-primary" onclick="addEvent()">
-                            <i class="bi bi-plus"></i> 新建活动
-                        </button>
+                    <div class="section-header mb-4">
+                        <div>
+                            <h2 class="section-title">专场活动管理</h2>
+                            <p class="section-subtitle">策划与维护主题活动，提升曝光与成交</p>
+                        </div>
+                        <div class="section-actions">
+                            <button type="button" class="btn btn-outline-primary" onclick="refreshEvents()">
+                                <i class="bi bi-arrow-repeat"></i>
+                                刷新活动
+                            </button>
+                            <button type="button" class="btn btn-primary" onclick="addEvent()">
+                                <i class="bi bi-plus"></i>
+                                新建活动
+                            </button>
+                        </div>
                     </div>
                     <div class="card shadow mb-4">
-                        <div class="card-header py-3">
+                        <div class="card-header py-3 d-flex justify-content-between align-items-center">
                             <h6 class="m-0 font-weight-bold text-primary">活动列表</h6>
+                            <span class="table-hint">活动支持快速管理关联商品与状态</span>
                         </div>
                         <div class="card-body">
                             <div class="table-responsive">
-                                <table class="table table-bordered" id="eventsTable">
+                                <table class="table table-bordered align-middle" id="eventsTable">
                                     <thead>
                                         <tr>
                                             <th>ID</th>
@@ -616,16 +685,26 @@
 
                 <!-- 启动广告管理 -->
                 <div id="splash-ads" class="content-section" style="display: none;">
-                    <div class="d-flex justify-content-between align-items-center mb-3">
-                        <h3>启动广告管理</h3>
-                        <button type="button" class="btn btn-primary" data-bs-toggle="modal" data-bs-target="#addSplashAdModal">
-                            <i class="bi bi-plus"></i> 添加广告
-                        </button>
+                    <div class="section-header mb-4">
+                        <div>
+                            <h2 class="section-title">启动广告管理</h2>
+                            <p class="section-subtitle">配置启动页展示资源，提升品牌曝光</p>
+                        </div>
+                        <div class="section-actions">
+                            <button type="button" class="btn btn-outline-primary" onclick="loadSplashAds()">
+                                <i class="bi bi-arrow-repeat"></i>
+                                刷新广告
+                            </button>
+                            <button type="button" class="btn btn-primary" data-bs-toggle="modal" data-bs-target="#addSplashAdModal">
+                                <i class="bi bi-plus"></i>
+                                添加广告
+                            </button>
+                        </div>
                     </div>
 
                     <!-- 筛选条件 -->
-                    <div class="row mb-3">
-                        <div class="col-md-3">
+                    <div class="section-toolbar flex-wrap mb-3">
+                        <div class="d-flex flex-wrap gap-2 align-items-center">
                             <select class="form-select" id="adStatusFilter" onchange="loadSplashAds()">
                                 <option value="">全部状态</option>
                                 <option value="draft">草稿</option>
@@ -633,29 +712,33 @@
                                 <option value="inactive">停用</option>
                                 <option value="expired">已过期</option>
                             </select>
-                        </div>
-                        <div class="col-md-3">
                             <select class="form-select" id="adTypeFilter" onchange="loadSplashAds()">
                                 <option value="">全部类型</option>
                                 <option value="image">图片广告</option>
                                 <option value="video">视频广告</option>
                             </select>
+                            <div class="search-control">
+                                <i class="bi bi-search"></i>
+                                <input type="text" id="adSearchInput" placeholder="搜索广告标题..." onkeyup="searchSplashAds()">
+                            </div>
                         </div>
-                        <div class="col-md-4">
-                            <input type="text" class="form-control" id="adSearchInput" placeholder="搜索广告标题..." onkeyup="searchSplashAds()">
-                        </div>
-                        <div class="col-md-2">
+                        <div class="toolbar-right ms-auto">
                             <button class="btn btn-outline-secondary" onclick="loadSplashAds()">
-                                <i class="bi bi-arrow-clockwise"></i> 刷新
+                                <i class="bi bi-arrow-clockwise"></i>
+                                重载
                             </button>
                         </div>
                     </div>
 
                     <!-- 广告列表 -->
                     <div class="card shadow">
+                        <div class="card-header py-3 d-flex justify-content-between align-items-center">
+                            <h6 class="m-0 font-weight-bold text-primary">广告列表</h6>
+                            <span class="table-hint">展示曝光和点击效果数据</span>
+                        </div>
                         <div class="card-body">
                             <div class="table-responsive">
-                                <table class="table table-hover">
+                                <table class="table table-hover align-middle">
                                     <thead>
                                         <tr>
                                             <th>ID</th>
@@ -847,8 +930,21 @@
 
                 <!-- 消息管理 -->
                 <div id="messages" class="content-section" style="display: none;">
-                    <div class="row mb-3">
-                        <div class="col-md-3">
+                    <div class="section-header mb-4">
+                        <div>
+                            <h2 class="section-title">消息管理</h2>
+                            <p class="section-subtitle">统一查看平台通知与用户消息，及时跟进</p>
+                        </div>
+                        <div class="section-actions">
+                            <button type="button" class="btn btn-primary" onclick="sendSystemMessage()">
+                                <i class="bi bi-envelope"></i>
+                                发送系统消息
+                            </button>
+                        </div>
+                    </div>
+
+                    <div class="section-toolbar flex-wrap mb-3">
+                        <div class="d-flex flex-wrap gap-2 align-items-center">
                             <select class="form-select" id="messageTypeFilter">
                                 <option value="">全部类型</option>
                                 <option value="1">系统消息</option>
@@ -856,27 +952,27 @@
                                 <option value="3">拍卖通知</option>
                                 <option value="4">订单通知</option>
                             </select>
-                        </div>
-                        <div class="col-md-3">
                             <select class="form-select" id="messageStatusFilter">
                                 <option value="">全部状态</option>
                                 <option value="true">已读</option>
                                 <option value="false">未读</option>
                             </select>
                         </div>
-                        <div class="col-md-6">
-                            <button type="button" class="btn btn-primary" onclick="sendSystemMessage()">
-                                <i class="bi bi-envelope"></i> 发送系统消息
+                        <div class="toolbar-right ms-auto">
+                            <button type="button" class="btn btn-outline-secondary" onclick="refreshMessages()">
+                                <i class="bi bi-arrow-clockwise"></i>
+                                刷新
                             </button>
                         </div>
                     </div>
                     <div class="card shadow mb-4">
-                        <div class="card-header py-3">
+                        <div class="card-header py-3 d-flex justify-content-between align-items-center">
                             <h6 class="m-0 font-weight-bold text-primary">消息列表</h6>
+                            <span class="table-hint">可快速筛选消息类型与阅读状态</span>
                         </div>
                         <div class="card-body">
                             <div class="table-responsive">
-                                <table class="table table-bordered" id="messagesTable">
+                                <table class="table table-bordered align-middle" id="messagesTable">
                                     <thead>
                                         <tr>
                                             <th>ID</th>
@@ -1108,6 +1204,48 @@
                 
                 currentSection = sectionName;
                 
+                const loaderEvents = {
+                    loadUsers: 'loadUsersData',
+                    loadProducts: 'loadProductsData',
+                    loadOrders: 'loadOrdersData',
+                    loadCategories: 'loadCategoriesData',
+                    loadShops: 'loadShopsData',
+                    loadEvents: 'loadEventsData',
+                    loadMessages: 'loadMessagesData'
+                };
+
+                const pendingLoaders = new Map();
+
+                function queueLoader(name, fallbackFn) {
+                    if (typeof window[name] === 'function') {
+                        window[name]();
+                        return;
+                    }
+
+                    const eventName = loaderEvents[name];
+                    if (eventName) {
+                        console.log(`等待核心脚本注册 ${name}，通过事件 ${eventName} 触发`);
+                        window.dispatchEvent(new CustomEvent(eventName));
+                        pendingLoaders.set(name, fallbackFn || null);
+                    }
+
+                    if (window.__adminCoreReady !== true && typeof fallbackFn === 'function') {
+                        console.log(`使用内联方案执行 ${name}`);
+                        fallbackFn();
+                    }
+                }
+
+                window.addEventListener('adminCoreReady', () => {
+                    pendingLoaders.forEach((fallbackFn, loaderName) => {
+                        if (typeof window[loaderName] === 'function') {
+                            window[loaderName]();
+                        } else if (typeof fallbackFn === 'function') {
+                            fallbackFn();
+                        }
+                    });
+                    pendingLoaders.clear();
+                });
+
                 // 根据不同区域加载对应数据
                 switch(sectionName) {
                     case 'dashboard':
@@ -1117,7 +1255,8 @@
                             if (typeof window.loadDashboardData === 'function') {
                                 window.loadDashboardData();
                             } else {
-                                console.error('loadDashboardData函数未定义');
+                                console.warn('loadDashboardData函数暂未注册，使用备用逻辑');
+                                window.loadDashboardData();
                             }
                         }, 200);
                         break;
@@ -1131,59 +1270,19 @@
                         break;
                     case 'users':
                         console.log('用户管理页面');
-                        // 调用加载用户数据函数
-                        setTimeout(() => {
-                            if (typeof window.loadUsers === 'function') {
-                                window.loadUsers();
-                            } else if (typeof loadUsers === 'function') {
-                                loadUsers();
-                            } else {
-                                console.error('loadUsers函数未定义，使用内联方案');
-                                // 直接在这里调用用户API
-                                loadUsersDirectly();
-                            }
-                        }, 100);
+                        setTimeout(() => queueLoader('loadUsers', window.loadUsersDirectly), 100);
                         break;
                     case 'products':
                         console.log('商品管理页面');
-                        // 调用加载商品数据函数
-                        setTimeout(() => {
-                            if (typeof window.loadProducts === 'function') {
-                                window.loadProducts();
-                            } else {
-                                console.error('loadProducts函数未定义，使用内联方案');
-                                if (typeof window.loadProductsDirectly === 'function') {
-                                    window.loadProductsDirectly();
-                                }
-                            }
-                        }, 100);
+                        setTimeout(() => queueLoader('loadProducts', window.loadProductsDirectly), 100);
                         break;
                     case 'orders':
                         console.log('订单管理页面');
-                        // 调用加载订单数据函数
-                        setTimeout(() => {
-                            if (typeof window.loadOrders === 'function') {
-                                window.loadOrders();
-                            } else {
-                                console.error('loadOrders函数未定义，使用内联方案');
-                                if (typeof window.loadOrdersDirectly === 'function') {
-                                    window.loadOrdersDirectly();
-                                }
-                            }
-                        }, 100);
+                        setTimeout(() => queueLoader('loadOrders', window.loadOrdersDirectly), 100);
                         break;
                     case 'categories':
                         console.log('分类管理页面');
-                        setTimeout(() => {
-                            if (typeof window.loadCategories === 'function') {
-                                window.loadCategories();
-                            } else {
-                                console.error('loadCategories函数未定义，使用内联方案');
-                                if (typeof window.loadCategoriesDirectly === 'function') {
-                                    window.loadCategoriesDirectly();
-                                }
-                            }
-                        }, 100);
+                        setTimeout(() => queueLoader('loadCategories', window.loadCategoriesDirectly), 100);
                         break;
                     case 'shops':
                         console.log('店铺管理页面');
@@ -1196,42 +1295,17 @@
                             
                             // 延迟一下再加载数据，确保标签页切换完成
                             setTimeout(() => {
-                                if (typeof window.loadShops === 'function') {
-                                    window.loadShops();
-                                } else {
-                                    console.error('loadShops函数未定义，使用内联方案');
-                                    if (typeof window.loadShopsDirectly === 'function') {
-                                        window.loadShopsDirectly();
-                                    }
-                                }
+                                queueLoader('loadShops', window.loadShopsDirectly);
                             }, 200);
                         }, 100);
                         break;
                     case 'events':
                         console.log('专场活动页面');
-                        setTimeout(() => {
-                            if (typeof window.loadEvents === 'function') {
-                                window.loadEvents();
-                            } else {
-                                console.error('loadEvents函数未定义，使用内联方案');
-                                if (typeof window.loadEventsDirectly === 'function') {
-                                    window.loadEventsDirectly();
-                                }
-                            }
-                        }, 100);
+                        setTimeout(() => queueLoader('loadEvents', window.loadEventsDirectly), 100);
                         break;
                     case 'messages':
                         console.log('消息管理页面');
-                        setTimeout(() => {
-                            if (typeof window.loadMessages === 'function') {
-                                window.loadMessages();
-                            } else {
-                                console.error('loadMessages函数未定义，使用内联方案');
-                                if (typeof window.loadMessagesDirectly === 'function') {
-                                    window.loadMessagesDirectly();
-                                }
-                            }
-                        }, 100);
+                        setTimeout(() => queueLoader('loadMessages', window.loadMessagesDirectly), 100);
                         break;
                     default:
                         console.log('显示页面:', sectionName);
@@ -1420,15 +1494,17 @@
                             </td>
                             <td>${new Date(user.created_at).toLocaleString('zh-CN')}</td>
                             <td>
-                                <button class="btn btn-sm btn-primary me-1" onclick="alert('查看用户 ${user.id}')">
-                                    <i class="bi bi-eye"></i>
-                                </button>
-                                <button class="btn btn-sm btn-warning me-1" onclick="alert('编辑用户 ${user.id}')">
-                                    <i class="bi bi-pencil"></i>
-                                </button>
-                                <button class="btn btn-sm btn-danger" onclick="if(confirm('确定删除用户 ${user.username}?')) alert('删除用户 ${user.id}')">
-                                    <i class="bi bi-trash"></i>
-                                </button>
+                                <div class="table-actions">
+                                    <button type="button" class="btn btn-outline-primary btn-sm" onclick="window.viewUser ? viewUser(${user.id}) : alert('查看用户 ${user.id}')" title="查看用户">
+                                        <i class="bi bi-eye"></i>
+                                    </button>
+                                    <button type="button" class="btn btn-outline-warning btn-sm" onclick="window.editUser ? editUser(${user.id}) : alert('编辑用户 ${user.id}')" title="编辑用户">
+                                        <i class="bi bi-pencil"></i>
+                                    </button>
+                                    <button type="button" class="btn btn-outline-danger btn-sm" onclick="window.deleteUser ? deleteUser(${user.id}) : (confirm('确定删除用户 ${user.username}?') && alert('删除用户 ${user.id}'))" title="删除用户">
+                                        <i class="bi bi-trash"></i>
+                                    </button>
+                                </div>
                             </td>
                         </tr>
                     `).join('');
@@ -1754,4 +1830,3 @@
     </script>
 </body>
 </html>
-
