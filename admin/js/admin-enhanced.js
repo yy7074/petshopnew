@@ -1,14 +1,123 @@
 // 增强版后台管理系统JavaScript
 // 全局变量
-const API_BASE_URL = 'http://localhost:3000/api/v1/admin';
+const API_BASE_URL = 'https://catdog.dachaonet.com/api/v1/admin';
 let currentSection = 'dashboard';
 let authToken = null;
 
+// 加载仪表盘数据 - 全局函数，确保HTML onclick可以访问
+window.loadDashboardData = async function() {
+    console.log('调用真实的loadDashboardData函数');
+    if (!authToken) {
+        console.log('没有认证token，跳过加载数据');
+        showError('请先登录');
+        return;
+    }
+    
+    try {
+        console.log('开始加载仪表盘数据，token:', authToken ? '已设置' : '未设置');
+        
+        // 显示加载状态
+        const totalUsersEl = document.getElementById('total-users');
+        const totalProductsEl = document.getElementById('total-products');
+        const todayOrdersEl = document.getElementById('today-orders');
+        const todayRevenueEl = document.getElementById('today-revenue');
+        
+        if (totalUsersEl) totalUsersEl.textContent = '加载中...';
+        if (totalProductsEl) totalProductsEl.textContent = '加载中...';
+        if (todayOrdersEl) todayOrdersEl.textContent = '加载中...';
+        if (todayRevenueEl) todayRevenueEl.textContent = '加载中...';
+        
+        const response = await apiRequest('/dashboard/stats');
+        
+        // 更新统计数据
+        console.log('更新仪表盘统计数据:', response);
+        
+        if (totalUsersEl) {
+            totalUsersEl.textContent = response.total_users.toLocaleString();
+            console.log('更新用户数:', response.total_users);
+        }
+        if (totalProductsEl) {
+            totalProductsEl.textContent = response.total_products.toLocaleString();
+            console.log('更新商品数:', response.total_products);
+        }
+        if (todayOrdersEl) {
+            todayOrdersEl.textContent = response.today_orders.toLocaleString();
+            console.log('更新订单数:', response.today_orders);
+        }
+        if (todayRevenueEl) {
+            todayRevenueEl.textContent = '¥' + response.today_revenue.toLocaleString();
+            console.log('更新收入:', response.today_revenue);
+        }
+        
+    } catch (error) {
+        console.error('加载仪表盘数据失败:', error);
+        
+        // 显示具体的错误信息在仪表盘上
+        const totalUsersEl = document.getElementById('total-users');
+        const totalProductsEl = document.getElementById('total-products');
+        const todayOrdersEl = document.getElementById('today-orders');
+        const todayRevenueEl = document.getElementById('today-revenue');
+        
+        const errorMsg = `错误: ${error.message}`;
+        
+        if (totalUsersEl) totalUsersEl.textContent = errorMsg;
+        if (totalProductsEl) totalProductsEl.textContent = errorMsg;
+        if (todayOrdersEl) todayOrdersEl.textContent = errorMsg;
+        if (todayRevenueEl) todayRevenueEl.textContent = errorMsg;
+        
+        // 显示用户友好的错误提示
+        if (error.message.includes('401')) {
+            showError('认证已过期，请重新登录');
+            logout();
+            return;
+        } else {
+            showError('加载仪表盘数据失败: ' + error.message);
+        }
+    }
+};
+
+// 确保真实函数没有备用标记
+delete window.loadDashboardData._isBackup;
+
+// 通知页面真实函数已加载
+console.log('真实的loadDashboardData函数已加载完成');
+
+// 触发自定义事件通知页面
+if (typeof window.CustomEvent === 'function') {
+    window.dispatchEvent(new CustomEvent('dashboardFunctionReady'));
+}
+
+// 如果当前页面是dashboard，立即加载数据
+if (document.readyState === 'complete' || document.readyState === 'interactive') {
+    const currentSection = document.querySelector('.nav-link.active')?.getAttribute('href')?.substring(1);
+    if (currentSection === 'dashboard' || !currentSection) {
+        console.log('检测到dashboard页面，立即加载数据');
+        setTimeout(() => {
+            window.loadDashboardData();
+        }, 100);
+    }
+}
+
 // 页面加载完成后初始化
 document.addEventListener('DOMContentLoaded', function() {
+    console.log('DOMContentLoaded事件触发，真实函数已准备就绪');
     initCharts();
     // 检查管理员身份验证
     checkAdminAuth();
+    
+    // 如果已经登录且在dashboard页面，加载数据
+    const savedToken = localStorage.getItem('admin_token');
+    if (savedToken && (savedToken === 'admin-token' || savedToken.startsWith('eyJ'))) {
+        authToken = savedToken;
+        console.log('检测到已登录状态，准备加载仪表盘数据');
+        setTimeout(() => {
+            const currentSection = document.querySelector('.nav-link.active')?.getAttribute('href')?.substring(1);
+            if (!currentSection || currentSection === 'dashboard') {
+                console.log('DOMContentLoaded中加载仪表盘数据');
+                window.loadDashboardData();
+            }
+        }, 500);
+    }
 });
 
 // 管理员身份验证检查
@@ -27,16 +136,43 @@ function checkAdminAuth() {
 // 验证token
 async function validateToken() {
     try {
-        // 简单的token验证（开发环境）
+        // 调用后端API验证token
+        const data = await apiRequest('/verify');
+        
+        if (data && data.valid && data.admin_info) {
+                // 更新界面显示的管理员信息
+                const currentAdminElement = document.getElementById('current-admin');
+                if (currentAdminElement) {
+                    currentAdminElement.textContent = data.admin_info.username;
+                }
+            localStorage.setItem('admin_info', JSON.stringify(data.admin_info));
+            hideAdminLogin();
+            // 延迟一点时间确保页面元素已经渲染
+            setTimeout(() => {
+                window.loadDashboardData(); // 加载仪表盘数据
+            }, 500);
+            console.log('Token验证通过:', data.admin_info);
+            return;
+        }
+        
+        // 验证失败，清除token并显示登录界面
+        localStorage.removeItem('admin_token');
+        localStorage.removeItem('admin_info');
+        authToken = null;
+        showAdminLogin();
+    } catch (error) {
+        console.error('Token验证请求失败:', error);
+        // 开发环境下的简单验证
         if (authToken === 'admin-token') {
             hideAdminLogin();
-            console.log('Token验证通过');
+            console.log('Token验证通过（开发环境）');
             return;
-        } else {
-            showAdminLogin();
         }
-    } catch (error) {
-        console.error('Token验证失败:', error);
+        
+        // 验证失败，清除token并显示登录界面
+        localStorage.removeItem('admin_token');
+        localStorage.removeItem('admin_info');
+        authToken = null;
         showAdminLogin();
     }
 }
@@ -96,8 +232,54 @@ window.adminLogin = async function() {
     const username = document.getElementById('adminUsername').value;
     const password = document.getElementById('adminPassword').value;
 
-    // 简单的用户名密码验证（开发环境）
-    if (username === 'admin' && password === '123456') {
+    try {
+        // 调用后端API进行真实登录验证
+        const response = await fetch(`${API_BASE_URL}/login`, {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+            },
+            body: JSON.stringify({
+                username: username,
+                password: password
+            })
+        });
+
+        if (response.ok) {
+            const data = await response.json();
+            // 保存真实的token
+            authToken = data.access_token;
+            localStorage.setItem('admin_token', data.access_token);
+            localStorage.setItem('admin_info', JSON.stringify(data.admin_info));
+            
+            // 更新界面显示的管理员信息
+            const currentAdminElement = document.getElementById('current-admin');
+            if (currentAdminElement) {
+                currentAdminElement.textContent = data.admin_info.username;
+            }
+            
+            hideAdminLogin();
+            showNotification('登录成功', 'success');
+            
+            // 立即加载仪表盘数据
+            console.log('管理员登录成功，立即加载数据:', data.admin_info);
+            setTimeout(() => {
+                window.loadDashboardData();
+            }, 100);
+        } else {
+            const errorData = await response.json();
+            showNotification(errorData.detail || '登录失败', 'error');
+            console.error('登录失败:', errorData);
+        }
+    } catch (error) {
+        console.error('登录请求失败:', error);
+        // 网络错误时显示具体错误信息
+        showNotification('网络连接失败: ' + error.message, 'error');
+        console.error('登录网络错误，不使用备用登录:', error);
+        return;
+        
+        // 移除备用登录逻辑，强制使用真实API
+        if (false && username === 'admin' && password === 'admin123456') {
         // 设置一个简单的token
         authToken = 'admin-token';
         localStorage.setItem('admin_token', authToken);
@@ -270,56 +452,30 @@ function initCharts() {
     }
 }
 
-// 加载仪表盘数据
-async function loadDashboardData() {
-    if (!authToken) {
-        console.log('没有认证token，跳过加载数据');
-        return;
-    }
-    
-    try {
-        console.log('开始加载仪表盘数据，token:', authToken ? '已设置' : '未设置');
-        const response = await apiRequest('/dashboard/stats');
-        
-        // 更新统计数据
-        document.getElementById('total-users').textContent = response.total_users.toLocaleString();
-        document.getElementById('total-products').textContent = response.total_products.toLocaleString();
-        document.getElementById('today-orders').textContent = response.today_orders.toLocaleString();
-        document.getElementById('today-revenue').textContent = '¥' + response.today_revenue.toLocaleString();
-        
-    } catch (error) {
-        console.error('加载仪表盘数据失败:', error);
-        if (error.message.includes('401')) {
-            showError('认证已过期，请重新登录');
-            logout();
-            return;
-        }
-        // 使用模拟数据
-        const stats = {
-            totalUsers: 12345,
-            totalProducts: 8967,
-            todayOrders: 156,
-            todayRevenue: 23456
-        };
-        
-        document.getElementById('total-users').textContent = stats.totalUsers.toLocaleString();
-        document.getElementById('total-products').textContent = stats.totalProducts.toLocaleString();
-        document.getElementById('today-orders').textContent = stats.todayOrders.toLocaleString();
-        document.getElementById('today-revenue').textContent = '¥' + stats.todayRevenue.toLocaleString();
-    }
-}
+// 原来的loadDashboardData函数已移到文件顶部
 
 // 加载用户数据
 async function loadUsers() {
     try {
-        const response = await apiRequest('/users', {
-            headers: {
-                'Authorization': `Bearer ${authToken}`
-            }
-        });
+        console.log('开始加载用户列表，token:', authToken ? '已设置' : '未设置');
+        
+        if (!authToken) {
+            console.error('没有认证token，无法加载用户数据');
+            showError('请先登录');
+            return;
+        }
+        
+        const response = await apiRequest('/users');
+        console.log('用户API响应:', response);
         
         const tbody = document.querySelector('#usersTable tbody');
-        if (tbody && response.users) {
+        if (!tbody) {
+            console.error('用户表格元素未找到');
+            return;
+        }
+        
+        if (response && response.users && Array.isArray(response.users)) {
+            console.log(`加载到 ${response.users.length} 个用户`);
             tbody.innerHTML = response.users.map(user => `
                 <tr>
                     <td>${user.id}</td>
@@ -345,22 +501,27 @@ async function loadUsers() {
                     </td>
                 </tr>
             `).join('');
+        } else {
+            console.error('响应数据格式无效:', response);
+            tbody.innerHTML = '<tr><td colspan="7" class="text-center">暂无用户数据</td></tr>';
         }
         
     } catch (error) {
         console.error('加载用户数据失败:', error);
-        showError('加载用户数据失败');
+        showError('加载用户数据失败: ' + error.message);
+        
+        // 显示错误信息在表格中
+        const tbody = document.querySelector('#usersTable tbody');
+        if (tbody) {
+            tbody.innerHTML = '<tr><td colspan="7" class="text-center text-danger">加载失败: ' + error.message + '</td></tr>';
+        }
     }
 }
 
 // 加载商品数据
 async function loadProducts() {
     try {
-        const response = await apiRequest('/products', {
-            headers: {
-                'Authorization': `Bearer ${authToken}`
-            }
-        });
+        const response = await apiRequest('/products');
         
         const tbody = document.querySelector('#productsTable tbody');
         if (tbody && response.products) {
@@ -401,11 +562,7 @@ async function loadProducts() {
 // 加载分类数据
 async function loadCategories() {
     try {
-        const response = await apiRequest('/categories', {
-            headers: {
-                'Authorization': `Bearer ${authToken}`
-            }
-        });
+        const response = await apiRequest('/categories');
         
         const tbody = document.querySelector('#categoriesTable tbody');
         if (tbody && response.categories) {
@@ -442,11 +599,7 @@ async function loadCategories() {
 // 加载订单数据
 async function loadOrders() {
     try {
-        const response = await apiRequest('/orders', {
-            headers: {
-                'Authorization': `Bearer ${authToken}`
-            }
-        });
+        const response = await apiRequest('/orders');
         
         const tbody = document.querySelector('#ordersTable tbody');
         if (tbody && response.orders) {
@@ -483,11 +636,7 @@ async function loadOrders() {
 // 加载店铺数据
 async function loadShops() {
     try {
-        const response = await apiRequest('/shops', {
-            headers: {
-                'Authorization': `Bearer ${authToken}`
-            }
-        });
+        const response = await apiRequest('/shops');
         
         const tbody = document.querySelector('#shopsTable tbody');
         if (tbody && response.shops) {
@@ -528,11 +677,7 @@ async function loadShops() {
 // 加载专场活动数据
 async function loadEvents() {
     try {
-        const response = await apiRequest('/events', {
-            headers: {
-                'Authorization': `Bearer ${authToken}`
-            }
-        });
+        const response = await apiRequest('/events');
         
         const tbody = document.querySelector('#eventsTable tbody');
         if (tbody && response.events) {
@@ -572,11 +717,7 @@ async function loadEvents() {
 // 加载消息数据
 async function loadMessages() {
     try {
-        const response = await apiRequest('/messages', {
-            headers: {
-                'Authorization': `Bearer ${authToken}`
-            }
-        });
+        const response = await apiRequest('/messages');
         
         const tbody = document.querySelector('#messagesTable tbody');
         if (tbody && response.messages) {
@@ -726,16 +867,30 @@ async function apiRequest(endpoint, options = {}) {
     }
     
     try {
+        console.log('发起API请求:', url, config);
         const response = await fetch(url, config);
+        console.log('API响应状态:', response.status, response.statusText);
+        
         if (!response.ok) {
-            const errorText = await response.text();
+            let errorText = '';
+            try {
+                const errorData = await response.json();
+                errorText = errorData.detail || errorData.message || response.statusText;
+            } catch (e) {
+                errorText = await response.text() || response.statusText;
+            }
             throw new Error(`HTTP ${response.status}: ${errorText}`);
         }
-        return await response.json();
+        
+        const data = await response.json();
+        console.log('API响应数据:', data);
+        return data;
     } catch (error) {
-        console.error('API请求失败:', error);
-        console.error('请求URL:', url);
-        console.error('请求配置:', config);
+        console.error('API请求失败:', {
+            url: url,
+            error: error.message,
+            config: config
+        });
         throw error;
     }
 }
@@ -1315,6 +1470,7 @@ function logout() {
         // 清除认证信息
         authToken = null;
         localStorage.removeItem('admin_token');
+        localStorage.removeItem('admin_info');
         
         showSuccess('退出登录成功');
         
@@ -2195,10 +2351,7 @@ async function saveCategory(categoryId) {
         
         await apiRequest(url, {
             method: method,
-            body: JSON.stringify(formData),
-            headers: {
-                'Authorization': `Bearer ${authToken}`
-            }
+            body: JSON.stringify(formData)
         });
         
         showSuccess('分类保存成功');
@@ -2226,10 +2379,7 @@ async function saveEvent(eventId) {
         
         await apiRequest(url, {
             method: method,
-            body: JSON.stringify(formData),
-            headers: {
-                'Authorization': `Bearer ${authToken}`
-            }
+            body: JSON.stringify(formData)
         });
         
         showSuccess('专场活动保存成功');
@@ -2258,10 +2408,7 @@ async function sendSystemMsg() {
     try {
         await apiRequest('/messages/system', {
             method: 'POST',
-            body: JSON.stringify(messageData),
-            headers: {
-                'Authorization': `Bearer ${authToken}`
-            }
+            body: JSON.stringify(messageData)
         });
         
         showSuccess('系统消息发送成功');
@@ -2283,10 +2430,7 @@ async function batchOperation(action, selectedIds) {
     try {
         const response = await apiRequest(`/batch/${action}`, {
             method: 'POST',
-            body: JSON.stringify({ ids: selectedIds }),
-            headers: {
-                'Authorization': `Bearer ${authToken}`
-            }
+            body: JSON.stringify({ ids: selectedIds })
         });
         
         showSuccess(`批量操作完成：成功 ${response.success_count} 个，失败 ${response.failure_count} 个`);
@@ -2313,11 +2457,7 @@ async function batchOperation(action, selectedIds) {
 // 添加统计图表更新
 async function updateCharts() {
     try {
-        const response = await apiRequest('/statistics/overview', {
-            headers: {
-                'Authorization': `Bearer ${authToken}`
-            }
-        });
+        const response = await apiRequest('/statistics/overview');
         
         // 更新图表数据
         if (window.salesChart) {
@@ -2344,11 +2484,7 @@ async function loadApplications() {
         if (statusFilter) params.append('status', statusFilter);
         if (typeFilter) params.append('store_type', typeFilter);
         
-        const response = await apiRequest(`/store-applications?${params.toString()}`, {
-            headers: {
-                'Authorization': `Bearer ${authToken}`
-            }
-        });
+        const response = await apiRequest(`/store-applications?${params.toString()}`);
         renderApplicationsTable(response.items || []);
     } catch (error) {
         console.error('加载开店申请失败:', error);
@@ -2428,11 +2564,7 @@ function getApplicationStatusText(status) {
 // 查看申请详情
 async function viewApplication(applicationId) {
     try {
-        const response = await apiRequest(`/store-applications/${applicationId}`, {
-            headers: {
-                'Authorization': `Bearer ${authToken}`
-            }
-        });
+        const response = await apiRequest(`/store-applications/${applicationId}`);
         showApplicationModal(response);
     } catch (error) {
         console.error('获取申请详情失败:', error);
@@ -2596,10 +2728,6 @@ async function reviewApplication(applicationId, status, rejectReason = '') {
         
         const response = await apiRequest(`/store-applications/${applicationId}/review`, {
             method: 'POST',
-            headers: {
-                'Authorization': `Bearer ${authToken}`,
-                'Content-Type': 'application/json'
-            },
             body: JSON.stringify(body)
         });
         
@@ -2626,11 +2754,7 @@ async function loadStores() {
         if (statusFilter) params.append('status', statusFilter);
         if (verifiedFilter) params.append('verified_only', verifiedFilter === 'true');
         
-        const response = await apiRequest(`/stores?${params.toString()}`, {
-            headers: {
-                'Authorization': `Bearer ${authToken}`
-            }
-        });
+        const response = await apiRequest(`/stores?${params.toString()}`);
         renderStoresTable(response.items || []);
     } catch (error) {
         console.error('加载店铺列表失败:', error);
@@ -2687,11 +2811,7 @@ function renderStoresTable(stores) {
 // 查看店铺详情
 async function viewStore(storeId) {
     try {
-        const response = await apiRequest(`/stores/${storeId}`, {
-            headers: {
-                'Authorization': `Bearer ${authToken}`
-            }
-        });
+        const response = await apiRequest(`/stores/${storeId}`);
         showStoreModal(response);
     } catch (error) {
         console.error('获取店铺详情失败:', error);
@@ -2795,10 +2915,6 @@ async function toggleStoreVerification(storeId, verified) {
     try {
         const response = await apiRequest(`/stores/${storeId}/verify`, {
             method: 'POST',
-            headers: {
-                'Authorization': `Bearer ${authToken}`,
-                'Content-Type': 'application/json'
-            },
             body: JSON.stringify({ verified: verified })
         });
         
@@ -2858,4 +2974,36 @@ function deleteEvent(eventId) {
 function addEvent() {
     console.log('添加专场活动');
     // TODO: 实现添加功能
+}
+
+// 显示通知
+function showNotification(message, type = 'info') {
+    console.log(`[${type.toUpperCase()}] ${message}`);
+    
+    // 创建通知元素
+    const notification = document.createElement('div');
+    notification.className = `alert alert-${type === 'error' ? 'danger' : type === 'success' ? 'success' : 'info'} alert-dismissible fade show`;
+    notification.style.cssText = 'position: fixed; top: 20px; right: 20px; z-index: 9999; min-width: 300px;';
+    notification.innerHTML = `
+        ${message}
+        <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+    `;
+    
+    document.body.appendChild(notification);
+    
+    // 3秒后自动移除
+    setTimeout(() => {
+        if (notification.parentNode) {
+            notification.remove();
+        }
+    }, 3000);
+    
+    // 简单的通知显示（兼容性）
+    if (type === 'success') {
+        if (typeof showSuccess === 'function') showSuccess(message);
+    } else if (type === 'error') {
+        if (typeof showError === 'function') showError(message);
+    } else {
+        if (typeof showInfo === 'function') showInfo(message);
+    }
 }

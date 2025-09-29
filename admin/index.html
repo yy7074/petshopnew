@@ -101,6 +101,12 @@
                     <h1 class="h2" id="page-title">仪表盘</h1>
                     <div class="btn-toolbar mb-2 mb-md-0">
                         <div class="btn-group me-2">
+                            <button type="button" class="btn btn-sm btn-outline-primary" onclick="loadDashboardData()">
+                                <i class="bi bi-arrow-clockwise"></i>
+                                刷新数据
+                            </button>
+                        </div>
+                        <div class="btn-group me-2">
                             <button type="button" class="btn btn-sm btn-outline-secondary" onclick="exportData()">
                                 <i class="bi bi-download"></i>
                                 导出数据
@@ -170,7 +176,7 @@
                                     <div class="row no-gutters align-items-center">
                                         <div class="col mr-2">
                                             <div class="text-xs font-weight-bold text-info text-uppercase mb-1">
-                                                今日订单
+                                                总订单数
                                             </div>
                                             <div class="h5 mb-0 font-weight-bold text-gray-800" id="today-orders">
                                                 156
@@ -190,7 +196,7 @@
                                     <div class="row no-gutters align-items-center">
                                         <div class="col mr-2">
                                             <div class="text-xs font-weight-bold text-warning text-uppercase mb-1">
-                                                今日收入
+                                                总收入
                                             </div>
                                             <div class="h5 mb-0 font-weight-bold text-gray-800" id="today-revenue">
                                                 ¥23,456
@@ -892,6 +898,99 @@
     
     <!-- 临时修复：确保showSection函数可用 -->
     <script>
+        // 全局函数定义 - 确保HTML onclick可以访问
+        
+        // 简单登录处理 - 使用真实API
+        window.simpleLogin = async function() {
+            const username = document.getElementById('simpleUsername').value;
+            const password = document.getElementById('simplePassword').value;
+            
+            try {
+                console.log('简单登录：调用真实API');
+                const response = await fetch('https://catdog.dachaonet.com/api/v1/admin/login', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify({
+                        username: username,
+                        password: password
+                    })
+                });
+
+                if (response.ok) {
+                    const data = await response.json();
+                    console.log('简单登录成功:', data);
+                    
+                    // 保存真实的token
+                    localStorage.setItem('admin_token', data.access_token);
+                    localStorage.setItem('admin_info', JSON.stringify(data.admin_info));
+                    
+                    // 移除登录界面
+                    const loginDiv = document.getElementById('simpleLogin');
+                    if (loginDiv) {
+                        loginDiv.remove();
+                    }
+                    
+                    // 刷新页面
+                    window.location.reload();
+                } else {
+                    const errorData = await response.json();
+                    alert('登录失败: ' + (errorData.detail || '未知错误'));
+                }
+            } catch (error) {
+                console.error('简单登录API调用失败:', error);
+                alert('网络连接失败，请检查网络连接');
+            }
+        };
+        
+        // 清除缓存函数
+        window.clearCache = function() {
+            console.log('清除所有缓存数据');
+            localStorage.clear();
+            sessionStorage.clear();
+            
+            // 移除登录界面
+            const loginDiv = document.getElementById('simpleLogin');
+            if (loginDiv) {
+                loginDiv.remove();
+            }
+            
+            alert('缓存已清除，页面将重新加载');
+            window.location.reload();
+        };
+        
+        // 退出登录函数
+        window.logout = function() {
+            // 清除本地存储的token
+            localStorage.removeItem('admin_token');
+            localStorage.removeItem('admin_info');
+            
+            // 清除全局变量
+            if (typeof authToken !== 'undefined') {
+                authToken = null;
+            }
+            
+            // 刷新页面，重新显示登录界面
+            window.location.reload();
+        };
+        
+        // 显示个人资料函数
+        window.showProfile = function() {
+            const adminInfo = localStorage.getItem('admin_info');
+            if (adminInfo) {
+                const info = JSON.parse(adminInfo);
+                alert(`当前登录用户：${info.username}\n权限：管理员\n邮箱：${info.email || '未设置'}`);
+            } else {
+                alert('当前登录用户：admin\n权限：管理员');
+            }
+        };
+        
+        // 导出数据功能
+        window.exportData = function() {
+            alert('数据导出功能开发中...');
+        };
+        
         // 如果showSection函数未定义，创建一个基本版本
         if (typeof showSection === 'undefined') {
             let currentSection = 'dashboard';
@@ -947,6 +1046,17 @@
                 
                 // 根据不同区域加载对应数据
                 switch(sectionName) {
+                    case 'dashboard':
+                        // 直接调用仪表盘数据加载函数
+                        console.log('切换到dashboard页面，调用数据加载函数');
+                        setTimeout(() => {
+                            if (typeof window.loadDashboardData === 'function') {
+                                window.loadDashboardData();
+                            } else {
+                                console.error('loadDashboardData函数未定义');
+                            }
+                        }, 200);
+                        break;
                     case 'splash-ads':
                         // 加载启动广告数据
                         if (typeof loadSplashAds === 'function') {
@@ -969,24 +1079,112 @@
                 }
             }
             
+            // 简化的备用loadDashboardData函数
+            window.loadDashboardData = window.loadDashboardData || function() {
+                console.log('使用临时的loadDashboardData函数');
+                
+                // 显示加载状态
+                const totalUsersEl = document.getElementById('total-users');
+                const totalProductsEl = document.getElementById('total-products');
+                const todayOrdersEl = document.getElementById('today-orders');
+                const todayRevenueEl = document.getElementById('today-revenue');
+                
+                if (totalUsersEl) totalUsersEl.textContent = '正在连接API...';
+                if (totalProductsEl) totalProductsEl.textContent = '正在连接API...';
+                if (todayOrdersEl) todayOrdersEl.textContent = '正在连接API...';
+                if (todayRevenueEl) todayRevenueEl.textContent = '正在连接API...';
+                
+                // 尝试直接调用API
+                const apiUrl = 'https://catdog.dachaonet.com/api/v1/admin/dashboard/stats';
+                const token = localStorage.getItem('admin_token');
+                
+                console.log('临时函数检查token:', token ? `存在(${token.substring(0, 20)}...)` : '不存在');
+                
+                if (token && token !== 'admin-token') {
+                    console.log('开始调用API:', apiUrl);
+                    fetch(apiUrl, {
+                        headers: {
+                            'Authorization': `Bearer ${token}`,
+                            'Content-Type': 'application/json'
+                        }
+                    })
+                    .then(response => {
+                        console.log('API响应状态:', response.status, response.statusText);
+                        if (!response.ok) {
+                            throw new Error(`HTTP ${response.status}: ${response.statusText}`);
+                        }
+                        return response.json();
+                    })
+                    .then(data => {
+                        console.log('临时函数获取到数据:', data);
+                        if (totalUsersEl) totalUsersEl.textContent = data.total_users?.toLocaleString() || '0';
+                        if (totalProductsEl) totalProductsEl.textContent = data.total_products?.toLocaleString() || '0';
+                        if (todayOrdersEl) todayOrdersEl.textContent = data.today_orders?.toLocaleString() || '0';
+                        if (todayRevenueEl) todayRevenueEl.textContent = '¥' + (data.today_revenue?.toLocaleString() || '0');
+                        console.log('仪表盘数据更新完成');
+                    })
+                    .catch(error => {
+                        console.error('临时函数API调用失败:', error);
+                        const errorMsg = `错误: ${error.message}`;
+                        if (totalUsersEl) totalUsersEl.textContent = errorMsg;
+                        if (totalProductsEl) totalProductsEl.textContent = errorMsg;
+                        if (todayOrdersEl) todayOrdersEl.textContent = errorMsg;
+                        if (todayRevenueEl) todayRevenueEl.textContent = errorMsg;
+                    });
+                } else if (token === 'admin-token') {
+                    // 处理旧的简单token，需要重新登录获取真实token
+                    console.log('检测到旧的简单token，需要重新登录');
+                    const loginMsg = '需要重新登录';
+                    if (totalUsersEl) totalUsersEl.textContent = loginMsg;
+                    if (totalProductsEl) totalProductsEl.textContent = loginMsg;
+                    if (todayOrdersEl) todayOrdersEl.textContent = loginMsg;
+                    if (todayRevenueEl) todayRevenueEl.textContent = loginMsg;
+                } else {
+                    console.log('没有有效的token');
+                    const loginMsg = '请先登录';
+                    if (totalUsersEl) totalUsersEl.textContent = loginMsg;
+                    if (totalProductsEl) totalProductsEl.textContent = loginMsg;
+                    if (todayOrdersEl) todayOrdersEl.textContent = loginMsg;
+                    if (todayRevenueEl) todayRevenueEl.textContent = loginMsg;
+                }
+            };
+            
+            // 监听真实函数加载完成事件
+            window.addEventListener('dashboardFunctionReady', function() {
+                console.log('收到真实函数加载完成通知');
+                // 如果当前在dashboard页面，立即加载数据
+                const currentSection = document.querySelector('.nav-link.active')?.getAttribute('href')?.substring(1);
+                if (!currentSection || currentSection === 'dashboard') {
+                    console.log('通过事件通知加载仪表盘数据');
+                    setTimeout(() => {
+                        window.loadDashboardData();
+                    }, 100);
+                }
+            });
+            
             // 页面加载完成后初始化
             document.addEventListener('DOMContentLoaded', function() {
                 console.log('页面初始化完成');
                 
                 // 检查登录状态
                 const savedToken = localStorage.getItem('admin_token');
-                if (savedToken === 'admin-token') {
-                    console.log('已登录，显示管理界面');
+                if (savedToken && savedToken !== 'admin-token' && savedToken.startsWith('eyJ')) {
+                    console.log('检测到有效的JWT token，显示管理界面');
                     // 已登录，显示管理界面
                     showSection('dashboard');
                 } else {
+                    if (savedToken === 'admin-token') {
+                        console.log('清除旧的简单token');
+                        localStorage.removeItem('admin_token');
+                        localStorage.removeItem('admin_info');
+                    }
                     console.log('未登录，显示登录界面');
                     // 未登录，触发登录检查
                     if (typeof checkAdminAuth === 'function') {
                         checkAdminAuth();
                     } else {
                         // 如果checkAdminAuth函数不存在，直接显示登录提示
-                        alert('请先登录\n用户名: admin\n密码: 123456');
+                        console.log('显示登录提示');
                         showSimpleLogin();
                     }
                 }
@@ -1005,10 +1203,13 @@
                             </div>
                             <div style="margin-bottom: 20px;">
                                 <label>密码:</label>
-                                <input type="password" id="simplePassword" style="width: 100%; padding: 8px; margin-top: 5px;" value="123456">
+                                <input type="password" id="simplePassword" style="width: 100%; padding: 8px; margin-top: 5px;" value="admin123456">
                             </div>
-                            <button onclick="simpleLogin()" style="width: 100%; padding: 10px; background: #007bff; color: white; border: none; border-radius: 5px;">
+                            <button onclick="window.simpleLogin()" style="width: 100%; padding: 10px; background: #007bff; color: white; border: none; border-radius: 5px; margin-bottom: 10px;">
                                 登录
+                            </button>
+                            <button onclick="window.clearCache()" style="width: 100%; padding: 8px; background: #6c757d; color: white; border: none; border-radius: 5px; font-size: 12px;">
+                                清除缓存并重新加载
                             </button>
                         </div>
                     </div>
@@ -1016,52 +1217,10 @@
                 document.body.insertAdjacentHTML('beforeend', loginHtml);
             }
             
-            // 简单登录处理
-            function simpleLogin() {
-                const username = document.getElementById('simpleUsername').value;
-                const password = document.getElementById('simplePassword').value;
-                
-                if (username === 'admin' && password === '123456') {
-                    // 保存登录状态
-                    localStorage.setItem('admin_token', 'admin-token');
-                    
-                    // 移除登录界面
-                    const loginDiv = document.getElementById('simpleLogin');
-                    if (loginDiv) {
-                        loginDiv.remove();
-                    }
-                    
-                    // 刷新页面
-                    window.location.reload();
-                } else {
-                    alert('用户名或密码错误！');
-                }
-            }
+            // 函数已移到全局作用域，这里不再重复定义
         }
         
-        // 退出登录函数
-        function logout() {
-            // 清除本地存储的token
-            localStorage.removeItem('admin_token');
-            
-            // 清除全局变量
-            if (typeof authToken !== 'undefined') {
-                authToken = null;
-            }
-            
-            // 刷新页面，重新显示登录界面
-            window.location.reload();
-        }
-        
-        // 显示个人资料（暂时显示管理员信息）
-        function showProfile() {
-            alert('当前登录用户：admin\n权限：管理员');
-        }
-        
-        // 导出数据功能（暂时显示提示）
-        function exportData() {
-            alert('数据导出功能开发中...');
-        }
+        // 函数已移到全局作用域，这里不再重复定义
     </script>
 </body>
 </html>

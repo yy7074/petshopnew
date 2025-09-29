@@ -77,17 +77,12 @@ async def get_dashboard_stats(admin: User = Depends(get_admin_user), db: Session
     # 商品总数
     total_products = db.query(func.count(Product.id)).scalar()
     
-    # 今日订单数
-    today_orders = db.query(func.count(Order.id)).filter(
-        func.date(Order.created_at) == today
-    ).scalar()
+    # 总订单数（更有意义的数据）
+    total_orders = db.query(func.count(Order.id)).scalar()
     
-    # 今日收入
-    today_revenue = db.query(func.sum(Order.total_amount)).filter(
-        and_(
-            func.date(Order.created_at) == today,
-            Order.payment_status == 2  # 已支付
-        )
+    # 总收入（已支付订单）
+    total_revenue = db.query(func.sum(Order.total_amount)).filter(
+        Order.payment_status == 2  # 已支付
     ).scalar() or 0
     
     # 本月统计
@@ -106,8 +101,8 @@ async def get_dashboard_stats(admin: User = Depends(get_admin_user), db: Session
     return DashboardStats(
         total_users=total_users or 0,
         total_products=total_products or 0,
-        today_orders=today_orders or 0,
-        today_revenue=float(today_revenue),
+        today_orders=total_orders or 0,  # 使用总订单数
+        today_revenue=float(total_revenue),  # 使用总收入
         month_new_users=month_users or 0,
         month_revenue=float(month_revenue)
     )
