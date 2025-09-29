@@ -65,6 +65,12 @@
                             </a>
                         </li>
                         <li class="nav-item">
+                            <a class="nav-link" href="#splash-ads" onclick="showSection('splash-ads')">
+                                <i class="bi bi-image"></i>
+                                启动广告
+                            </a>
+                        </li>
+                        <li class="nav-item">
                             <a class="nav-link" href="#messages" onclick="showSection('messages')">
                                 <i class="bi bi-chat-dots"></i>
                                 消息管理
@@ -538,6 +544,237 @@
                     </div>
                 </div>
 
+                <!-- 启动广告管理 -->
+                <div id="splash-ads" class="content-section" style="display: none;">
+                    <div class="d-flex justify-content-between align-items-center mb-3">
+                        <h3>启动广告管理</h3>
+                        <button type="button" class="btn btn-primary" data-bs-toggle="modal" data-bs-target="#addSplashAdModal">
+                            <i class="bi bi-plus"></i> 添加广告
+                        </button>
+                    </div>
+
+                    <!-- 筛选条件 -->
+                    <div class="row mb-3">
+                        <div class="col-md-3">
+                            <select class="form-select" id="adStatusFilter" onchange="loadSplashAds()">
+                                <option value="">全部状态</option>
+                                <option value="draft">草稿</option>
+                                <option value="active">激活</option>
+                                <option value="inactive">停用</option>
+                                <option value="expired">已过期</option>
+                            </select>
+                        </div>
+                        <div class="col-md-3">
+                            <select class="form-select" id="adTypeFilter" onchange="loadSplashAds()">
+                                <option value="">全部类型</option>
+                                <option value="image">图片广告</option>
+                                <option value="video">视频广告</option>
+                            </select>
+                        </div>
+                        <div class="col-md-4">
+                            <input type="text" class="form-control" id="adSearchInput" placeholder="搜索广告标题..." onkeyup="searchSplashAds()">
+                        </div>
+                        <div class="col-md-2">
+                            <button class="btn btn-outline-secondary" onclick="loadSplashAds()">
+                                <i class="bi bi-arrow-clockwise"></i> 刷新
+                            </button>
+                        </div>
+                    </div>
+
+                    <!-- 广告列表 -->
+                    <div class="card shadow">
+                        <div class="card-body">
+                            <div class="table-responsive">
+                                <table class="table table-hover">
+                                    <thead>
+                                        <tr>
+                                            <th>ID</th>
+                                            <th>标题</th>
+                                            <th>类型</th>
+                                            <th>状态</th>
+                                            <th>优先级</th>
+                                            <th>展示次数</th>
+                                            <th>点击次数</th>
+                                            <th>点击率</th>
+                                            <th>创建时间</th>
+                                            <th>操作</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody id="splashAdsTableBody">
+                                        <!-- 广告数据将通过JavaScript加载 -->
+                                    </tbody>
+                                </table>
+                            </div>
+
+                            <!-- 分页 -->
+                            <nav aria-label="广告列表分页" id="splashAdsPagination">
+                                <!-- 分页将通过JavaScript生成 -->
+                            </nav>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- 添加/编辑广告模态框 -->
+                <div class="modal fade" id="addSplashAdModal" tabindex="-1">
+                    <div class="modal-dialog modal-lg">
+                        <div class="modal-content">
+                            <div class="modal-header">
+                                <h5 class="modal-title" id="splashAdModalTitle">添加启动广告</h5>
+                                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                            </div>
+                            <div class="modal-body">
+                                <form id="splashAdForm">
+                                    <input type="hidden" id="adId" name="id">
+                                    
+                                    <!-- 基本信息 -->
+                                    <div class="row mb-3">
+                                        <div class="col-md-8">
+                                            <label class="form-label">广告标题 *</label>
+                                            <input type="text" class="form-control" id="adTitle" name="title" required maxlength="200">
+                                        </div>
+                                        <div class="col-md-4">
+                                            <label class="form-label">广告类型 *</label>
+                                            <select class="form-select" id="adType" name="ad_type" onchange="toggleAdTypeFields()" required>
+                                                <option value="image">图片广告</option>
+                                                <option value="video">视频广告</option>
+                                            </select>
+                                        </div>
+                                    </div>
+
+                                    <div class="mb-3">
+                                        <label class="form-label">广告描述</label>
+                                        <textarea class="form-control" id="adDescription" name="description" rows="2"></textarea>
+                                    </div>
+
+                                    <!-- 广告素材 -->
+                                    <div class="mb-3" id="imageUploadSection">
+                                        <label class="form-label">广告图片 *</label>
+                                        <div class="input-group">
+                                            <input type="url" class="form-control" id="adImageUrl" name="image_url" placeholder="图片URL">
+                                            <button type="button" class="btn btn-outline-secondary" onclick="uploadAdMedia('image')">
+                                                <i class="bi bi-upload"></i> 上传
+                                            </button>
+                                        </div>
+                                        <div class="mt-2" id="imagePreview" style="display: none;">
+                                            <img id="previewImage" src="" alt="预览" style="max-width: 200px; max-height: 150px;">
+                                        </div>
+                                    </div>
+
+                                    <div class="mb-3" id="videoUploadSection" style="display: none;">
+                                        <label class="form-label">广告视频 *</label>
+                                        <div class="input-group">
+                                            <input type="url" class="form-control" id="adVideoUrl" name="video_url" placeholder="视频URL">
+                                            <button type="button" class="btn btn-outline-secondary" onclick="uploadAdMedia('video')">
+                                                <i class="bi bi-upload"></i> 上传
+                                            </button>
+                                        </div>
+                                        <div class="mt-2" id="videoPreview" style="display: none;">
+                                            <video id="previewVideo" controls style="max-width: 200px; max-height: 150px;">
+                                                <source id="videoSource" src="" type="video/mp4">
+                                            </video>
+                                        </div>
+                                    </div>
+
+                                    <!-- 显示设置 -->
+                                    <div class="row mb-3">
+                                        <div class="col-md-4">
+                                            <label class="form-label">显示时长（秒）</label>
+                                            <input type="number" class="form-control" id="adDuration" name="display_duration" min="1" max="30" value="3">
+                                        </div>
+                                        <div class="col-md-4">
+                                            <label class="form-label">跳过延迟（秒）</label>
+                                            <input type="number" class="form-control" id="adSkipDelay" name="skip_delay" min="0" max="10" value="0">
+                                        </div>
+                                        <div class="col-md-4">
+                                            <div class="form-check mt-4">
+                                                <input class="form-check-input" type="checkbox" id="adSkipEnabled" name="skip_enabled" checked>
+                                                <label class="form-check-label" for="adSkipEnabled">
+                                                    允许跳过
+                                                </label>
+                                            </div>
+                                        </div>
+                                    </div>
+
+                                    <!-- 跳转设置 -->
+                                    <div class="row mb-3">
+                                        <div class="col-md-4">
+                                            <label class="form-label">点击行为</label>
+                                            <select class="form-select" id="adClickAction" name="click_action" onchange="toggleTargetFields()">
+                                                <option value="none">无操作</option>
+                                                <option value="url">跳转链接</option>
+                                                <option value="product">跳转商品</option>
+                                                <option value="category">跳转分类</option>
+                                            </select>
+                                        </div>
+                                        <div class="col-md-4" id="targetUrlField" style="display: none;">
+                                            <label class="form-label">目标URL</label>
+                                            <input type="url" class="form-control" id="adTargetUrl" name="target_url">
+                                        </div>
+                                        <div class="col-md-4" id="targetIdField" style="display: none;">
+                                            <label class="form-label">目标ID</label>
+                                            <input type="number" class="form-control" id="adTargetId" name="target_id" min="1">
+                                        </div>
+                                    </div>
+
+                                    <!-- 时间设置 -->
+                                    <div class="row mb-3">
+                                        <div class="col-md-6">
+                                            <label class="form-label">开始时间</label>
+                                            <input type="datetime-local" class="form-control" id="adStartTime" name="start_time">
+                                        </div>
+                                        <div class="col-md-6">
+                                            <label class="form-label">结束时间</label>
+                                            <input type="datetime-local" class="form-control" id="adEndTime" name="end_time">
+                                        </div>
+                                    </div>
+
+                                    <!-- 优先级和权重 -->
+                                    <div class="row mb-3">
+                                        <div class="col-md-6">
+                                            <label class="form-label">优先级</label>
+                                            <input type="number" class="form-control" id="adPriority" name="priority" value="0">
+                                            <small class="form-text text-muted">数值越大优先级越高</small>
+                                        </div>
+                                        <div class="col-md-6">
+                                            <label class="form-label">权重</label>
+                                            <input type="number" class="form-control" id="adWeight" name="weight" min="1" value="1">
+                                            <small class="form-text text-muted">用于随机展示</small>
+                                        </div>
+                                    </div>
+                                </form>
+                            </div>
+                            <div class="modal-footer">
+                                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">取消</button>
+                                <button type="button" class="btn btn-primary" onclick="saveSplashAd()">保存</button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- 文件上传模态框 -->
+                <div class="modal fade" id="uploadModal" tabindex="-1">
+                    <div class="modal-dialog">
+                        <div class="modal-content">
+                            <div class="modal-header">
+                                <h5 class="modal-title">上传广告素材</h5>
+                                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                            </div>
+                            <div class="modal-body">
+                                <input type="file" class="form-control" id="mediaFileInput" accept="image/*,video/*">
+                                <div class="mt-3">
+                                    <div class="progress" id="uploadProgress" style="display: none;">
+                                        <div class="progress-bar" role="progressbar" style="width: 0%"></div>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="modal-footer">
+                                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">取消</button>
+                                <button type="button" class="btn btn-primary" onclick="performUpload()">上传</button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
                 <!-- 消息管理 -->
                 <div id="messages" class="content-section" style="display: none;">
                     <div class="row mb-3">
@@ -651,6 +888,95 @@
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/js/bootstrap.bundle.min.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     <script src="js/admin-enhanced.js"></script>
+    <script src="js/splash-ads.js"></script>
+    
+    <!-- 临时修复：确保showSection函数可用 -->
+    <script>
+        // 如果showSection函数未定义，创建一个基本版本
+        if (typeof showSection === 'undefined') {
+            let currentSection = 'dashboard';
+            
+            function showSection(sectionName) {
+                console.log('显示页面:', sectionName);
+                
+                // 隐藏所有内容区域
+                const sections = document.querySelectorAll('.content-section');
+                sections.forEach(section => {
+                    section.style.display = 'none';
+                });
+                
+                // 显示指定区域
+                const targetSection = document.getElementById(sectionName);
+                if (targetSection) {
+                    targetSection.style.display = 'block';
+                } else {
+                    console.warn('页面不存在:', sectionName);
+                }
+                
+                // 更新导航状态
+                const navLinks = document.querySelectorAll('.nav-link');
+                navLinks.forEach(link => {
+                    link.classList.remove('active');
+                });
+                
+                const activeLink = document.querySelector(`[href="#${sectionName}"]`);
+                if (activeLink) {
+                    activeLink.classList.add('active');
+                }
+                
+                // 更新页面标题
+                const titles = {
+                    'dashboard': '仪表盘',
+                    'users': '用户管理',
+                    'products': '商品管理',
+                    'categories': '分类管理',
+                    'orders': '订单管理',
+                    'shops': '店铺管理',
+                    'events': '专场活动',
+                    'splash-ads': '启动广告管理',
+                    'messages': '消息管理',
+                    'settings': '系统设置'
+                };
+                
+                const pageTitle = document.getElementById('page-title');
+                if (pageTitle && titles[sectionName]) {
+                    pageTitle.textContent = titles[sectionName];
+                }
+                
+                currentSection = sectionName;
+                
+                // 根据不同区域加载对应数据
+                switch(sectionName) {
+                    case 'splash-ads':
+                        // 加载启动广告数据
+                        if (typeof loadSplashAds === 'function') {
+                            loadSplashAds(1);
+                        } else {
+                            console.log('启动广告管理功能加载中...');
+                        }
+                        break;
+                    case 'users':
+                        console.log('用户管理页面');
+                        break;
+                    case 'products':
+                        console.log('商品管理页面');
+                        break;
+                    case 'orders':
+                        console.log('订单管理页面');
+                        break;
+                    default:
+                        console.log('显示页面:', sectionName);
+                }
+            }
+            
+            // 页面加载完成后初始化
+            document.addEventListener('DOMContentLoaded', function() {
+                console.log('页面初始化完成');
+                // 默认显示仪表盘
+                showSection('dashboard');
+            });
+        }
+    </script>
 </body>
 </html>
 

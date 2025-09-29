@@ -149,6 +149,7 @@ function showSection(sectionName) {
         'orders': '订单管理',
         'shops': '店铺管理',
         'events': '专场活动',
+        'splash-ads': '启动广告管理',
         'messages': '消息管理',
         'settings': '系统设置'
     };
@@ -176,6 +177,11 @@ function showSection(sectionName) {
             break;
         case 'events':
             loadEvents();
+            break;
+        case 'splash-ads':
+            if (typeof loadSplashAds === 'function') {
+                loadSplashAds(1);
+            }
             break;
         case 'shops':
             loadShops();

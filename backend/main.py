@@ -10,7 +10,7 @@ from app.core.database import engine, Base
 from app.api import auth
 
 # 导入所有模型以确保数据库表被创建
-from app.models import user, product, order, wallet, deposit, store, store_application, message, local_service, lottery, follow
+from app.models import user, product, order, wallet, deposit, store, store_application, message, local_service, lottery, follow, splash_ad
 
 # 创建数据库表
 Base.metadata.create_all(bind=engine)
@@ -37,8 +37,9 @@ os.makedirs(settings.UPLOAD_DIR, exist_ok=True)
 # 静态文件服务
 app.mount("/static", StaticFiles(directory="static"), name="static")
 
-# 后台管理路由 - 直接返回HTML内容
+# 后台管理路由处理
 @app.get("/admin")
+@app.get("/admin/")
 async def admin_index():
     from fastapi.responses import FileResponse
     import os
@@ -51,29 +52,35 @@ async def admin_index():
     else:
         raise HTTPException(status_code=404, detail="后台管理页面未找到")
 
-# 后台管理静态资源路由
+# 后台管理静态资源
 @app.get("/admin/{file_path:path}")
-async def admin_static(file_path: str):
+async def admin_static_files(file_path: str):
     from fastapi.responses import FileResponse
     import os
     import mimetypes
     
+    # 跳过根路径，避免与上面的路由冲突
+    if not file_path or file_path == "/":
+        raise HTTPException(status_code=404, detail="文件未找到")
+    
     admin_path = os.path.join(os.path.dirname(os.path.dirname(__file__)), "admin")
     full_path = os.path.join(admin_path, file_path)
     
-    # 安全检查：确保文件在admin目录内
-    if not os.path.commonpath([admin_path, full_path]) == admin_path:
+    # 安全检查
+    try:
+        if not os.path.commonpath([admin_path, full_path]) == admin_path:
+            raise HTTPException(status_code=404, detail="文件未找到")
+    except ValueError:
         raise HTTPException(status_code=404, detail="文件未找到")
     
     if os.path.exists(full_path) and os.path.isfile(full_path):
-        # 获取MIME类型
         content_type, _ = mimetypes.guess_type(full_path)
         return FileResponse(full_path, media_type=content_type)
     else:
         raise HTTPException(status_code=404, detail="文件未找到")
 
 # 注册路由
-from app.api import auth, products, bids, orders, auctions, events, home, wallet, deposit, stores, store_applications, chat, messages, users, admin, local_services, ai_recognition, lottery, checkin, follow, search
+from app.api import auth, products, bids, orders, auctions, events, home, wallet, deposit, stores, store_applications, chat, messages, users, admin, local_services, ai_recognition, lottery, checkin, follow, search, splash_ads
 
 app.include_router(auth.router, prefix="/api/v1/auth", tags=["认证"])
 app.include_router(products.router, prefix="/api/v1/products", tags=["商品"])
@@ -98,6 +105,7 @@ app.include_router(lottery.router, prefix="/api/v1", tags=["抽奖"])
 app.include_router(checkin.router, prefix="/api/v1/checkin", tags=["签到"])
 app.include_router(follow.router, prefix="/api/v1", tags=["关注粉丝"])
 app.include_router(search.router, prefix="/api/v1/search", tags=["搜索"])
+app.include_router(splash_ads.router, prefix="/api/v1", tags=["启动广告"])
 
 # 根路径
 @app.get("/")
