@@ -455,7 +455,7 @@ function initCharts() {
 // 原来的loadDashboardData函数已移到文件顶部
 
 // 加载用户数据
-async function loadUsers() {
+window.loadUsers = async function loadUsers() {
     try {
         console.log('开始加载用户列表，token:', authToken ? '已设置' : '未设置');
         
@@ -518,8 +518,8 @@ async function loadUsers() {
     }
 }
 
-// 加载商品数据
-async function loadProducts() {
+// 加载商品数据  
+window.loadProducts = async function loadProducts() {
     try {
         const response = await apiRequest('/products');
         
@@ -597,7 +597,7 @@ async function loadCategories() {
 }
 
 // 加载订单数据
-async function loadOrders() {
+window.loadOrders = async function loadOrders() {
     try {
         const response = await apiRequest('/orders');
         

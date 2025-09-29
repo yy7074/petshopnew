@@ -1067,12 +1067,41 @@
                         break;
                     case 'users':
                         console.log('用户管理页面');
+                        // 调用加载用户数据函数
+                        setTimeout(() => {
+                            if (typeof window.loadUsers === 'function') {
+                                window.loadUsers();
+                            } else if (typeof loadUsers === 'function') {
+                                loadUsers();
+                            } else {
+                                console.error('loadUsers函数未定义，尝试动态调用');
+                                // 尝试通过事件方式触发
+                                const event = new CustomEvent('loadUsersData');
+                                window.dispatchEvent(event);
+                            }
+                        }, 100);
                         break;
                     case 'products':
                         console.log('商品管理页面');
+                        // 调用加载商品数据函数
+                        setTimeout(() => {
+                            if (typeof window.loadProducts === 'function') {
+                                window.loadProducts();
+                            } else {
+                                console.error('loadProducts函数未定义');
+                            }
+                        }, 100);
                         break;
                     case 'orders':
                         console.log('订单管理页面');
+                        // 调用加载订单数据函数
+                        setTimeout(() => {
+                            if (typeof window.loadOrders === 'function') {
+                                window.loadOrders();
+                            } else {
+                                console.error('loadOrders函数未定义');
+                            }
+                        }, 100);
                         break;
                     default:
                         console.log('显示页面:', sectionName);
