@@ -277,36 +277,8 @@ window.adminLogin = async function() {
         showNotification('网络连接失败: ' + error.message, 'error');
         console.error('登录网络错误，不使用备用登录:', error);
         return;
-        
-        // 移除备用登录逻辑，强制使用真实API
-        if (false && username === 'admin' && password === 'admin123456') {
-        // 设置一个简单的token
-        authToken = 'admin-token';
-        localStorage.setItem('admin_token', authToken);
-        
-        // 隐藏登录模态框
-        hideAdminLogin();
-        
-        // 显示成功消息
-        console.log('登录成功');
-        
-        // 移除模态框元素
-        setTimeout(() => {
-            const modalElement = document.getElementById('adminLoginModal');
-            if (modalElement) {
-                modalElement.remove();
-            }
-        }, 300);
-        
-        // 刷新页面数据
-        setTimeout(() => {
-            window.location.reload();
-        }, 500);
-        
-    } else {
-        alert('用户名或密码错误\n用户名: admin\n密码: 123456');
     }
-}
+};
 
 // 显示指定的内容区域
 function showSection(sectionName) {
@@ -455,7 +427,7 @@ function initCharts() {
 // 原来的loadDashboardData函数已移到文件顶部
 
 // 加载用户数据
-window.loadUsers = async function loadUsers() {
+async function loadUsers() {
     try {
         console.log('开始加载用户列表，token:', authToken ? '已设置' : '未设置');
         
@@ -516,6 +488,30 @@ window.loadUsers = async function loadUsers() {
             tbody.innerHTML = '<tr><td colspan="7" class="text-center text-danger">加载失败: ' + error.message + '</td></tr>';
         }
     }
+}
+
+// 将函数暴露到全局，方便HTML调用
+window.loadUsers = loadUsers;
+
+// 兼容内联脚本的事件触发方式
+window.addEventListener('loadUsersData', () => {
+    console.log('收到loadUsersData事件，准备加载用户数据');
+    setTimeout(() => loadUsers(), 50);
+});
+
+// 当页面初次加载且用户页已经处于激活状态时，确保数据被拉取
+if (document.readyState !== 'loading') {
+    const activeSection = document.querySelector('.nav-link.active')?.getAttribute('href')?.substring(1);
+    if (activeSection === 'users') {
+        setTimeout(() => loadUsers(), 100);
+    }
+} else {
+    document.addEventListener('DOMContentLoaded', () => {
+        const activeSection = document.querySelector('.nav-link.active')?.getAttribute('href')?.substring(1);
+        if (activeSection === 'users') {
+            setTimeout(() => loadUsers(), 100);
+        }
+    });
 }
 
 // 加载商品数据  

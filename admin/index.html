@@ -1074,10 +1074,9 @@
                             } else if (typeof loadUsers === 'function') {
                                 loadUsers();
                             } else {
-                                console.error('loadUsers函数未定义，尝试动态调用');
-                                // 尝试通过事件方式触发
-                                const event = new CustomEvent('loadUsersData');
-                                window.dispatchEvent(event);
+                                console.error('loadUsers函数未定义，使用内联方案');
+                                // 直接在这里调用用户API
+                                loadUsersDirectly();
                             }
                         }, 100);
                         break;
@@ -1088,7 +1087,10 @@
                             if (typeof window.loadProducts === 'function') {
                                 window.loadProducts();
                             } else {
-                                console.error('loadProducts函数未定义');
+                                console.error('loadProducts函数未定义，使用内联方案');
+                                if (typeof window.loadProductsDirectly === 'function') {
+                                    window.loadProductsDirectly();
+                                }
                             }
                         }, 100);
                         break;
@@ -1099,7 +1101,71 @@
                             if (typeof window.loadOrders === 'function') {
                                 window.loadOrders();
                             } else {
-                                console.error('loadOrders函数未定义');
+                                console.error('loadOrders函数未定义，使用内联方案');
+                                if (typeof window.loadOrdersDirectly === 'function') {
+                                    window.loadOrdersDirectly();
+                                }
+                            }
+                        }, 100);
+                        break;
+                    case 'categories':
+                        console.log('分类管理页面');
+                        setTimeout(() => {
+                            if (typeof window.loadCategories === 'function') {
+                                window.loadCategories();
+                            } else {
+                                console.error('loadCategories函数未定义，使用内联方案');
+                                if (typeof window.loadCategoriesDirectly === 'function') {
+                                    window.loadCategoriesDirectly();
+                                }
+                            }
+                        }, 100);
+                        break;
+                    case 'shops':
+                        console.log('店铺管理页面');
+                        setTimeout(() => {
+                            // 自动切换到"店铺列表"标签
+                            const storesTab = document.getElementById('stores-tab');
+                            if (storesTab) {
+                                storesTab.click();
+                            }
+                            
+                            // 延迟一下再加载数据，确保标签页切换完成
+                            setTimeout(() => {
+                                if (typeof window.loadShops === 'function') {
+                                    window.loadShops();
+                                } else {
+                                    console.error('loadShops函数未定义，使用内联方案');
+                                    if (typeof window.loadShopsDirectly === 'function') {
+                                        window.loadShopsDirectly();
+                                    }
+                                }
+                            }, 200);
+                        }, 100);
+                        break;
+                    case 'events':
+                        console.log('专场活动页面');
+                        setTimeout(() => {
+                            if (typeof window.loadEvents === 'function') {
+                                window.loadEvents();
+                            } else {
+                                console.error('loadEvents函数未定义，使用内联方案');
+                                if (typeof window.loadEventsDirectly === 'function') {
+                                    window.loadEventsDirectly();
+                                }
+                            }
+                        }, 100);
+                        break;
+                    case 'messages':
+                        console.log('消息管理页面');
+                        setTimeout(() => {
+                            if (typeof window.loadMessages === 'function') {
+                                window.loadMessages();
+                            } else {
+                                console.error('loadMessages函数未定义，使用内联方案');
+                                if (typeof window.loadMessagesDirectly === 'function') {
+                                    window.loadMessagesDirectly();
+                                }
                             }
                         }, 100);
                         break;
@@ -1243,6 +1309,382 @@
             
             // 函数已移到全局作用域，这里不再重复定义
         }
+        
+        // 内联用户数据加载函数（备用方案）
+        window.loadUsersDirectly = async function() {
+            console.log('使用内联方案加载用户数据');
+            try {
+                const token = localStorage.getItem('admin_token');
+                if (!token) {
+                    console.error('没有认证token');
+                    return;
+                }
+                
+                const response = await fetch('https://catdog.dachaonet.com/api/v1/admin/users', {
+                    method: 'GET',
+                    headers: {
+                        'Authorization': `Bearer ${token}`,
+                        'Content-Type': 'application/json'
+                    }
+                });
+                
+                if (!response.ok) {
+                    throw new Error(`HTTP ${response.status}: ${response.statusText}`);
+                }
+                
+                const data = await response.json();
+                console.log('用户数据加载成功:', data);
+                
+                const tbody = document.querySelector('#usersTable tbody');
+                if (!tbody) {
+                    console.error('用户表格元素未找到');
+                    return;
+                }
+                
+                if (data && data.users && Array.isArray(data.users)) {
+                    console.log(`显示 ${data.users.length} 个用户`);
+                    tbody.innerHTML = data.users.map(user => `
+                        <tr>
+                            <td>${user.id}</td>
+                            <td>${user.username}</td>
+                            <td>${user.phone}</td>
+                            <td>${user.email || '未填写'}</td>
+                            <td>
+                                <span class="badge ${user.status === 1 ? 'bg-success' : user.status === 2 ? 'bg-secondary' : 'bg-danger'}">
+                                    ${user.status === 1 ? '正常' : user.status === 2 ? '冻结' : '禁用'}
+                                </span>
+                            </td>
+                            <td>${new Date(user.created_at).toLocaleString('zh-CN')}</td>
+                            <td>
+                                <button class="btn btn-sm btn-primary me-1" onclick="alert('查看用户 ${user.id}')">
+                                    <i class="bi bi-eye"></i>
+                                </button>
+                                <button class="btn btn-sm btn-warning me-1" onclick="alert('编辑用户 ${user.id}')">
+                                    <i class="bi bi-pencil"></i>
+                                </button>
+                                <button class="btn btn-sm btn-danger" onclick="if(confirm('确定删除用户 ${user.username}?')) alert('删除用户 ${user.id}')">
+                                    <i class="bi bi-trash"></i>
+                                </button>
+                            </td>
+                        </tr>
+                    `).join('');
+                } else {
+                    tbody.innerHTML = '<tr><td colspan="7" class="text-center">暂无用户数据</td></tr>';
+                }
+                
+            } catch (error) {
+                console.error('加载用户数据失败:', error);
+                const tbody = document.querySelector('#usersTable tbody');
+                if (tbody) {
+                    tbody.innerHTML = `<tr><td colspan="7" class="text-center text-danger">加载失败: ${error.message}</td></tr>`;
+                }
+            }
+        };
+        
+        // 内联商品数据加载函数（备用方案）
+        window.loadProductsDirectly = async function() {
+            console.log('使用内联方案加载商品数据');
+            try {
+                const token = localStorage.getItem('admin_token');
+                if (!token) return console.error('没有认证token');
+                const response = await fetch('https://catdog.dachaonet.com/api/v1/admin/products', {
+                    headers: { 'Authorization': `Bearer ${token}`, 'Content-Type': 'application/json' }
+                });
+                if (!response.ok) throw new Error(`HTTP ${response.status}: ${response.statusText}`);
+                const data = await response.json();
+                const tbody = document.querySelector('#productsTable tbody');
+                if (!tbody) return;
+                if (data && data.products && Array.isArray(data.products)) {
+                    tbody.innerHTML = data.products.map(product => `
+                        <tr>
+                            <td>${product.id}</td>
+                            <td>${product.title}</td>
+                            <td>${product.category_name || '未分类'}</td>
+                            <td>${product.seller_name || ''}</td>
+                            <td>¥${Number(product.current_price || 0).toFixed(2)}</td>
+                            <td>
+                                <span class="badge ${product.status === 2 ? 'bg-success' : product.status === 1 ? 'bg-warning' : product.status === 3 ? 'bg-secondary' : 'bg-danger'}">
+                                    ${product.status === 2 ? '拍卖中' : product.status === 1 ? '待审核' : product.status === 3 ? '已结束' : '已下架'}
+                                </span>
+                            </td>
+                            <td>${new Date(product.created_at).toLocaleString('zh-CN')}</td>
+                            <td>
+                                <button class="btn btn-sm btn-primary me-1" onclick="alert('查看商品 ${product.id}')">
+                                    <i class="bi bi-eye"></i>
+                                </button>
+                                <button class="btn btn-sm btn-warning me-1" onclick="alert('编辑商品 ${product.id}')">
+                                    <i class="bi bi-pencil"></i>
+                                </button>
+                                <button class="btn btn-sm btn-danger" onclick="if(confirm('确定删除商品 ${product.title}?')) alert('删除商品 ${product.id}')">
+                                    <i class="bi bi-trash"></i>
+                                </button>
+                            </td>
+                        </tr>
+                    `).join('');
+                } else {
+                    tbody.innerHTML = '<tr><td colspan="8" class="text-center">暂无商品数据</td></tr>';
+                }
+            } catch (error) {
+                console.error('加载商品数据失败:', error);
+                const tbody = document.querySelector('#productsTable tbody');
+                if (tbody) tbody.innerHTML = `<tr><td colspan="8" class="text-center text-danger">加载失败: ${error.message}</td></tr>`;
+            }
+        };
+        
+        // 内联订单数据加载函数（备用方案）
+        window.loadOrdersDirectly = async function() {
+            console.log('使用内联方案加载订单数据');
+            try {
+                const token = localStorage.getItem('admin_token');
+                if (!token) return console.error('没有认证token');
+                const response = await fetch('https://catdog.dachaonet.com/api/v1/admin/orders', {
+                    headers: { 'Authorization': `Bearer ${token}`, 'Content-Type': 'application/json' }
+                });
+                if (!response.ok) throw new Error(`HTTP ${response.status}: ${response.statusText}`);
+                const data = await response.json();
+                const tbody = document.querySelector('#ordersTable tbody');
+                if (!tbody) return;
+                if (data && data.orders && Array.isArray(data.orders)) {
+                    tbody.innerHTML = data.orders.map(order => `
+                        <tr>
+                            <td>${order.order_no}</td>
+                            <td>${order.buyer_name || ''}</td>
+                            <td>${order.product_title || ''}</td>
+                            <td>¥${Number(order.total_amount || 0).toFixed(2)}</td>
+                            <td>
+                                <span class="badge ${order.order_status === 1 ? 'bg-warning' : order.order_status === 2 ? 'bg-info' : order.order_status === 3 ? 'bg-success' : order.order_status === 4 ? 'bg-primary' : order.order_status === 5 ? 'bg-secondary' : 'bg-danger'}">
+                                    ${order.order_status === 1 ? '待支付' : order.order_status === 2 ? '待发货' : order.order_status === 3 ? '已发货' : order.order_status === 4 ? '已收货' : order.order_status === 5 ? '已完成' : '已取消'}
+                                </span>
+                            </td>
+                            <td>${new Date(order.created_at).toLocaleString('zh-CN')}</td>
+                            <td>
+                                <button class="btn btn-sm btn-primary me-1" onclick="alert('查看订单 ${order.order_no}')">
+                                    <i class="bi bi-eye"></i>
+                                </button>
+                                <button class="btn btn-sm btn-warning" onclick="alert('更新订单 ${order.order_no}')">
+                                    <i class="bi bi-pencil"></i>
+                                </button>
+                            </td>
+                        </tr>
+                    `).join('');
+                } else {
+                    tbody.innerHTML = '<tr><td colspan="7" class="text-center">暂无订单数据</td></tr>';
+                }
+            } catch (error) {
+                console.error('加载订单数据失败:', error);
+                const tbody = document.querySelector('#ordersTable tbody');
+                if (tbody) tbody.innerHTML = `<tr><td colspan="7" class="text-center text-danger">加载失败: ${error.message}</td></tr>`;
+            }
+        };
+        
+        // 内联分类数据加载函数（备用方案）
+        window.loadCategoriesDirectly = async function() {
+            console.log('使用内联方案加载分类数据');
+            try {
+                const token = localStorage.getItem('admin_token');
+                if (!token) return console.error('没有认证token');
+                const response = await fetch('https://catdog.dachaonet.com/api/v1/admin/categories', {
+                    headers: { 'Authorization': `Bearer ${token}`, 'Content-Type': 'application/json' }
+                });
+                if (!response.ok) throw new Error(`HTTP ${response.status}: ${response.statusText}`);
+                const data = await response.json();
+                const tbody = document.querySelector('#categoriesTable tbody');
+                if (!tbody) return;
+                if (data && data.categories && Array.isArray(data.categories)) {
+                    tbody.innerHTML = data.categories.map(category => `
+                        <tr>
+                            <td>${category.id}</td>
+                            <td>${category.name}</td>
+                            <td>${category.parent_name || '顶级分类'}</td>
+                            <td>${category.product_count || 0}</td>
+                            <td>${category.sort_order || 0}</td>
+                            <td>
+                                <span class="badge ${category.is_active ? 'bg-success' : 'bg-secondary'}">
+                                    ${category.is_active ? '启用' : '禁用'}
+                                </span>
+                            </td>
+                            <td>
+                                <button class="btn btn-sm btn-primary me-1" onclick="alert('查看分类 ${category.id}')">
+                                    <i class="bi bi-eye"></i>
+                                </button>
+                                <button class="btn btn-sm btn-warning me-1" onclick="alert('编辑分类 ${category.id}')">
+                                    <i class="bi bi-pencil"></i>
+                                </button>
+                                <button class="btn btn-sm btn-danger" onclick="if(confirm('确定删除分类 ${category.name}?')) alert('删除分类 ${category.id}')">
+                                    <i class="bi bi-trash"></i>
+                                </button>
+                            </td>
+                        </tr>
+                    `).join('');
+                } else {
+                    tbody.innerHTML = '<tr><td colspan="7" class="text-center">暂无分类数据</td></tr>';
+                }
+            } catch (error) {
+                console.error('加载分类数据失败:', error);
+                const tbody = document.querySelector('#categoriesTable tbody');
+                if (tbody) tbody.innerHTML = `<tr><td colspan="7" class="text-center text-danger">加载失败: ${error.message}</td></tr>`;
+            }
+        };
+        
+        // 内联店铺数据加载函数（备用方案）
+        window.loadShopsDirectly = async function() {
+            console.log('使用内联方案加载店铺数据');
+            try {
+                const token = localStorage.getItem('admin_token');
+                if (!token) return console.error('没有认证token');
+                const response = await fetch('https://catdog.dachaonet.com/api/v1/admin/shops', {
+                    headers: { 'Authorization': `Bearer ${token}`, 'Content-Type': 'application/json' }
+                });
+                if (!response.ok) throw new Error(`HTTP ${response.status}: ${response.statusText}`);
+                const data = await response.json();
+                const tbody = document.querySelector('#storesTable tbody');
+                if (!tbody) return;
+                if (data && data.shops && Array.isArray(data.shops)) {
+                    console.log('店铺数据:', data.shops);
+                    tbody.innerHTML = data.shops.map(shop => `
+                        <tr>
+                            <td>${shop.id}</td>
+                            <td>${shop.name}</td>
+                            <td>${shop.owner_name || ''}</td>
+                            <td>${shop.phone || ''}</td>
+                            <td>-</td>
+                            <td>${shop.total_sales || 0}</td>
+                            <td>${shop.rating ? shop.rating.toFixed(1) : '5.0'}</td>
+                            <td>-</td>
+                            <td>
+                                <span class="badge ${shop.verified ? 'bg-success' : 'bg-warning'}">
+                                    ${shop.verified ? '已认证' : '未认证'}
+                                </span>
+                            </td>
+                            <td>
+                                <span class="badge ${shop.is_open ? 'bg-success' : 'bg-danger'}">
+                                    ${shop.is_open ? '营业中' : '已关闭'}
+                                </span>
+                            </td>
+                            <td>${new Date(shop.created_at).toLocaleString('zh-CN')}</td>
+                            <td>
+                                <button class="btn btn-sm btn-primary me-1" onclick="alert('查看店铺 ${shop.id}')">
+                                    <i class="bi bi-eye"></i>
+                                </button>
+                                <button class="btn btn-sm btn-warning me-1" onclick="alert('编辑店铺 ${shop.id}')">
+                                    <i class="bi bi-pencil"></i>
+                                </button>
+                                <button class="btn btn-sm btn-danger" onclick="if(confirm('确定删除店铺 ${shop.name}?')) alert('删除店铺 ${shop.id}')">
+                                    <i class="bi bi-trash"></i>
+                                </button>
+                            </td>
+                        </tr>
+                    `).join('');
+                } else {
+                    tbody.innerHTML = '<tr><td colspan="12" class="text-center">暂无店铺数据</td></tr>';
+                }
+            } catch (error) {
+                console.error('加载店铺数据失败:', error);
+                const tbody = document.querySelector('#storesTable tbody');
+                if (tbody) tbody.innerHTML = `<tr><td colspan="12" class="text-center text-danger">加载失败: ${error.message}</td></tr>`;
+            }
+        };
+        
+        // 内联专场活动数据加载函数（备用方案）
+        window.loadEventsDirectly = async function() {
+            console.log('使用内联方案加载专场活动数据');
+            try {
+                const token = localStorage.getItem('admin_token');
+                if (!token) return console.error('没有认证token');
+                const response = await fetch('https://catdog.dachaonet.com/api/v1/admin/events', {
+                    headers: { 'Authorization': `Bearer ${token}`, 'Content-Type': 'application/json' }
+                });
+                if (!response.ok) throw new Error(`HTTP ${response.status}: ${response.statusText}`);
+                const data = await response.json();
+                const tbody = document.querySelector('#eventsTable tbody');
+                if (!tbody) return;
+                if (data && data.events && Array.isArray(data.events)) {
+                    tbody.innerHTML = data.events.map(event => `
+                        <tr>
+                            <td>${event.id}</td>
+                            <td>${event.title}</td>
+                            <td>${event.description || ''}</td>
+                            <td>${event.product_count || 0}</td>
+                            <td>${new Date(event.start_time).toLocaleString('zh-CN')}</td>
+                            <td>${new Date(event.end_time).toLocaleString('zh-CN')}</td>
+                            <td>
+                                <span class="badge ${event.is_active ? 'bg-success' : 'bg-secondary'}">
+                                    ${event.is_active ? '进行中' : '已结束'}
+                                </span>
+                            </td>
+                            <td>
+                                <button class="btn btn-sm btn-primary me-1" onclick="alert('查看活动 ${event.id}')">
+                                    <i class="bi bi-eye"></i>
+                                </button>
+                                <button class="btn btn-sm btn-warning me-1" onclick="alert('编辑活动 ${event.id}')">
+                                    <i class="bi bi-pencil"></i>
+                                </button>
+                                <button class="btn btn-sm btn-danger" onclick="if(confirm('确定删除活动 ${event.title}?')) alert('删除活动 ${event.id}')">
+                                    <i class="bi bi-trash"></i>
+                                </button>
+                            </td>
+                        </tr>
+                    `).join('');
+                } else {
+                    tbody.innerHTML = '<tr><td colspan="8" class="text-center">暂无活动数据</td></tr>';
+                }
+            } catch (error) {
+                console.error('加载活动数据失败:', error);
+                const tbody = document.querySelector('#eventsTable tbody');
+                if (tbody) tbody.innerHTML = `<tr><td colspan="8" class="text-center text-danger">加载失败: ${error.message}</td></tr>`;
+            }
+        };
+        
+        // 内联消息数据加载函数（备用方案）
+        window.loadMessagesDirectly = async function() {
+            console.log('使用内联方案加载消息数据');
+            try {
+                const token = localStorage.getItem('admin_token');
+                if (!token) return console.error('没有认证token');
+                const response = await fetch('https://catdog.dachaonet.com/api/v1/admin/messages', {
+                    headers: { 'Authorization': `Bearer ${token}`, 'Content-Type': 'application/json' }
+                });
+                if (!response.ok) throw new Error(`HTTP ${response.status}: ${response.statusText}`);
+                const data = await response.json();
+                const tbody = document.querySelector('#messagesTable tbody');
+                if (!tbody) return;
+                if (data && data.messages && Array.isArray(data.messages)) {
+                    tbody.innerHTML = data.messages.map(message => `
+                        <tr>
+                            <td>${message.id}</td>
+                            <td>${message.title || message.content.substring(0, 20) + '...'}</td>
+                            <td>
+                                <span class="badge ${message.message_type === 1 ? 'bg-info' : message.message_type === 2 ? 'bg-primary' : message.message_type === 3 ? 'bg-warning' : 'bg-success'}">
+                                    ${message.message_type === 1 ? '系统消息' : message.message_type === 2 ? '私信' : message.message_type === 3 ? '拍卖通知' : '订单通知'}
+                                </span>
+                            </td>
+                            <td>${message.sender_name || '系统'}</td>
+                            <td>${message.receiver_name || ''}</td>
+                            <td>
+                                <span class="badge ${message.is_read ? 'bg-success' : 'bg-warning'}">
+                                    ${message.is_read ? '已读' : '未读'}
+                                </span>
+                            </td>
+                            <td>${new Date(message.created_at).toLocaleString('zh-CN')}</td>
+                            <td>
+                                <button class="btn btn-sm btn-primary me-1" onclick="alert('查看消息 ${message.id}')">
+                                    <i class="bi bi-eye"></i>
+                                </button>
+                                <button class="btn btn-sm btn-danger" onclick="if(confirm('确定删除消息?')) alert('删除消息 ${message.id}')">
+                                    <i class="bi bi-trash"></i>
+                                </button>
+                            </td>
+                        </tr>
+                    `).join('');
+                } else {
+                    tbody.innerHTML = '<tr><td colspan="8" class="text-center">暂无消息数据</td></tr>';
+                }
+            } catch (error) {
+                console.error('加载消息数据失败:', error);
+                const tbody = document.querySelector('#messagesTable tbody');
+                if (tbody) tbody.innerHTML = `<tr><td colspan="8" class="text-center text-danger">加载失败: ${error.message}</td></tr>`;
+            }
+        };
         
         // 函数已移到全局作用域，这里不再重复定义
     </script>
