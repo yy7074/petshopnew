@@ -671,10 +671,10 @@
                                 <i class="bi bi-arrow-repeat"></i>
                                 刷新活动
                             </button>
-                            <button type="button" class="btn btn-primary" onclick="addEvent()">
-                                <i class="bi bi-plus"></i>
-                                新建活动
-                            </button>
+                             <button type="button" class="btn btn-primary" data-bs-toggle="modal" data-bs-target="#addEventModal">
+                                 <i class="bi bi-plus"></i>
+                                 新建活动
+                             </button>
                         </div>
                     </div>
                     <div class="card shadow mb-4">
@@ -1300,6 +1300,224 @@
                                 <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">取消</button>
                                 <button type="button" class="btn btn-danger me-auto" onclick="deleteStoreFromEdit()">删除店铺</button>
                                 <button type="button" class="btn btn-primary" onclick="saveStoreChanges()">保存修改</button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- 专场活动查看模态框 -->
+                <div class="modal fade" id="viewEventModal" tabindex="-1">
+                    <div class="modal-dialog modal-xl">
+                        <div class="modal-content">
+                            <div class="modal-header">
+                                <h5 class="modal-title">
+                                    <i class="bi bi-calendar-event me-2"></i>
+                                    专场活动详情
+                                </h5>
+                                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                            </div>
+                            <div class="modal-body">
+                                <div id="eventDetailContent">
+                                    <div class="text-center">
+                                        <div class="spinner-border" role="status">
+                                            <span class="visually-hidden">加载中...</span>
+                                        </div>
+                                        <p class="mt-2">正在加载活动信息...</p>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="modal-footer">
+                                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">关闭</button>
+                                <button type="button" class="btn btn-info" onclick="manageEventProducts()">管理商品</button>
+                                <button type="button" class="btn btn-primary" onclick="editEventFromView()">编辑活动</button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- 专场活动编辑模态框 -->
+                <div class="modal fade" id="editEventModal" tabindex="-1">
+                    <div class="modal-dialog modal-xl">
+                        <div class="modal-content">
+                            <div class="modal-header">
+                                <h5 class="modal-title">
+                                    <i class="bi bi-calendar-plus me-2"></i>
+                                    编辑专场活动
+                                </h5>
+                                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                            </div>
+                            <div class="modal-body">
+                                <form id="editEventForm">
+                                    <input type="hidden" id="editEventId" name="event_id">
+                                    
+                                    <!-- 基本信息 -->
+                                    <div class="row mb-3">
+                                        <div class="col-md-8">
+                                            <label for="editEventTitle" class="form-label">活动标题 *</label>
+                                            <input type="text" class="form-control" id="editEventTitle" name="title" required>
+                                        </div>
+                                        <div class="col-md-4">
+                                            <div class="form-check mt-4">
+                                                <input class="form-check-input" type="checkbox" id="editEventIsActive" name="is_active">
+                                                <label class="form-check-label" for="editEventIsActive">
+                                                    活动状态（启用）
+                                                </label>
+                                            </div>
+                                        </div>
+                                    </div>
+                                    
+                                    <div class="mb-3">
+                                        <label for="editEventDescription" class="form-label">活动描述</label>
+                                        <textarea class="form-control" id="editEventDescription" name="description" rows="4"></textarea>
+                                    </div>
+                                    
+                                    <div class="mb-3">
+                                        <label for="editEventBannerImage" class="form-label">活动横幅图片URL</label>
+                                        <input type="url" class="form-control" id="editEventBannerImage" name="banner_image">
+                                    </div>
+                                    
+                                    <!-- 时间设置 -->
+                                    <div class="row mb-3">
+                                        <div class="col-md-6">
+                                            <label for="editEventStartTime" class="form-label">开始时间 *</label>
+                                            <input type="datetime-local" class="form-control" id="editEventStartTime" name="start_time" required>
+                                        </div>
+                                        <div class="col-md-6">
+                                            <label for="editEventEndTime" class="form-label">结束时间 *</label>
+                                            <input type="datetime-local" class="form-control" id="editEventEndTime" name="end_time" required>
+                                        </div>
+                                    </div>
+                                </form>
+                            </div>
+                            <div class="modal-footer">
+                                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">取消</button>
+                                <button type="button" class="btn btn-danger me-auto" onclick="deleteEventFromEdit()">删除活动</button>
+                                <button type="button" class="btn btn-primary" onclick="saveEventChanges()">保存修改</button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- 新建专场活动模态框 -->
+                <div class="modal fade" id="addEventModal" tabindex="-1">
+                    <div class="modal-dialog modal-xl">
+                        <div class="modal-content">
+                            <div class="modal-header">
+                                <h5 class="modal-title">
+                                    <i class="bi bi-calendar-plus me-2"></i>
+                                    新建专场活动
+                                </h5>
+                                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                            </div>
+                            <div class="modal-body">
+                                <form id="addEventForm">
+                                    <!-- 基本信息 -->
+                                    <div class="row mb-3">
+                                        <div class="col-md-8">
+                                            <label for="addEventTitle" class="form-label">活动标题 *</label>
+                                            <input type="text" class="form-control" id="addEventTitle" name="title" required>
+                                        </div>
+                                        <div class="col-md-4">
+                                            <div class="form-check mt-4">
+                                                <input class="form-check-input" type="checkbox" id="addEventIsActive" name="is_active" checked>
+                                                <label class="form-check-label" for="addEventIsActive">
+                                                    活动状态（启用）
+                                                </label>
+                                            </div>
+                                        </div>
+                                    </div>
+                                    
+                                    <div class="mb-3">
+                                        <label for="addEventDescription" class="form-label">活动描述</label>
+                                        <textarea class="form-control" id="addEventDescription" name="description" rows="4"></textarea>
+                                    </div>
+                                    
+                                    <div class="mb-3">
+                                        <label for="addEventBannerImage" class="form-label">活动横幅图片URL</label>
+                                        <input type="url" class="form-control" id="addEventBannerImage" name="banner_image">
+                                    </div>
+                                    
+                                    <!-- 时间设置 -->
+                                    <div class="row mb-3">
+                                        <div class="col-md-6">
+                                            <label for="addEventStartTime" class="form-label">开始时间 *</label>
+                                            <input type="datetime-local" class="form-control" id="addEventStartTime" name="start_time" required>
+                                        </div>
+                                        <div class="col-md-6">
+                                            <label for="addEventEndTime" class="form-label">结束时间 *</label>
+                                            <input type="datetime-local" class="form-control" id="addEventEndTime" name="end_time" required>
+                                        </div>
+                                    </div>
+                                </form>
+                            </div>
+                            <div class="modal-footer">
+                                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">取消</button>
+                                <button type="button" class="btn btn-primary" onclick="createEvent()">创建活动</button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- 专场活动商品管理模态框 -->
+                <div class="modal fade" id="manageEventProductsModal" tabindex="-1">
+                    <div class="modal-dialog modal-xl">
+                        <div class="modal-content">
+                            <div class="modal-header">
+                                <h5 class="modal-title">
+                                    <i class="bi bi-box-seam me-2"></i>
+                                    管理专场商品
+                                </h5>
+                                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                            </div>
+                            <div class="modal-body">
+                                <div class="row">
+                                    <!-- 已关联商品列表 -->
+                                    <div class="col-md-6">
+                                        <div class="d-flex justify-content-between align-items-center mb-3">
+                                            <h6 class="text-primary mb-0">已关联商品</h6>
+                                            <button type="button" class="btn btn-sm btn-outline-primary" onclick="refreshEventProducts()">
+                                                <i class="bi bi-arrow-clockwise"></i> 刷新
+                                            </button>
+                                        </div>
+                                        <div class="border rounded p-3" style="max-height: 400px; overflow-y: auto;">
+                                            <div id="eventProductsList">
+                                                <div class="text-center">
+                                                    <div class="spinner-border spinner-border-sm" role="status">
+                                                        <span class="visually-hidden">加载中...</span>
+                                                    </div>
+                                                    <p class="mt-2 mb-0">正在加载商品...</p>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                    
+                                    <!-- 可添加商品列表 -->
+                                    <div class="col-md-6">
+                                        <div class="d-flex justify-content-between align-items-center mb-3">
+                                            <h6 class="text-success mb-0">可添加商品</h6>
+                                            <div class="d-flex gap-2">
+                                                <input type="text" class="form-control form-control-sm" id="availableProductsSearch" placeholder="搜索商品..." style="width: 150px;">
+                                                <button type="button" class="btn btn-sm btn-outline-success" onclick="searchAvailableProducts()">
+                                                    <i class="bi bi-search"></i>
+                                                </button>
+                                            </div>
+                                        </div>
+                                        <div class="border rounded p-3" style="max-height: 400px; overflow-y: auto;">
+                                            <div id="availableProductsList">
+                                                <div class="text-center">
+                                                    <div class="spinner-border spinner-border-sm" role="status">
+                                                        <span class="visually-hidden">加载中...</span>
+                                                    </div>
+                                                    <p class="mt-2 mb-0">正在加载商品...</p>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="modal-footer">
+                                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">关闭</button>
+                                <button type="button" class="btn btn-success" onclick="addSelectedProducts()">批量添加选中商品</button>
                             </div>
                         </div>
                     </div>
@@ -2144,15 +2362,20 @@
                                 </span>
                             </td>
                             <td>
-                                <button class="btn btn-sm btn-primary me-1" onclick="alert('查看活动 ${event.id}')">
-                                    <i class="bi bi-eye"></i>
-                                </button>
-                                <button class="btn btn-sm btn-warning me-1" onclick="alert('编辑活动 ${event.id}')">
-                                    <i class="bi bi-pencil"></i>
-                                </button>
-                                <button class="btn btn-sm btn-danger" onclick="if(confirm('确定删除活动 ${event.title}?')) alert('删除活动 ${event.id}')">
-                                    <i class="bi bi-trash"></i>
-                                </button>
+                                <div class="table-actions">
+                                    <button type="button" class="btn btn-outline-primary btn-sm" onclick="window.viewEvent ? viewEvent(${event.id}) : alert('查看活动 ${event.id}')" title="查看活动">
+                                        <i class="bi bi-eye"></i>
+                                    </button>
+                                    <button type="button" class="btn btn-outline-warning btn-sm" onclick="window.editEvent ? editEvent(${event.id}) : alert('编辑活动 ${event.id}')" title="编辑活动">
+                                        <i class="bi bi-pencil"></i>
+                                    </button>
+                                    <button type="button" class="btn btn-outline-info btn-sm" onclick="window.toggleEventStatus ? toggleEventStatus(${event.id}, ${event.is_active}) : alert('切换活动状态')" title="切换活动状态">
+                                        <i class="bi bi-${event.is_active ? 'pause' : 'play'}"></i>
+                                    </button>
+                                    <button type="button" class="btn btn-outline-danger btn-sm" onclick="window.deleteEvent ? deleteEvent(${event.id}) : (confirm('确定删除活动 ${event.title}?') && alert('删除活动 ${event.id}'))" title="删除活动">
+                                        <i class="bi bi-trash"></i>
+                                    </button>
+                                </div>
                             </td>
                         </tr>
                     `).join('');
@@ -3220,6 +3443,662 @@
             console.log('刷新店铺列表');
             if (typeof window.loadShopsDirectly === 'function') {
                 window.loadShopsDirectly();
+            }
+        };
+        
+        // ===== 专场活动管理相关功能函数 =====
+        let currentViewEventId = null;
+        
+        // 查看专场活动详情
+        window.viewEvent = async function(eventId) {
+            console.log('查看专场活动详情:', eventId);
+            currentViewEventId = eventId;
+            
+            try {
+                const token = localStorage.getItem('admin_token');
+                if (!token) {
+                    alert('请先登录');
+                    return;
+                }
+                
+                // 显示模态框
+                const modal = new bootstrap.Modal(document.getElementById('viewEventModal'));
+                modal.show();
+                
+                // 调用API获取活动详情
+                const response = await fetch(`https://catdog.dachaonet.com/api/v1/admin/events/${eventId}`, {
+                    headers: {
+                        'Authorization': `Bearer ${token}`,
+                        'Content-Type': 'application/json'
+                    }
+                });
+                
+                if (!response.ok) {
+                    throw new Error(`HTTP ${response.status}: ${response.statusText}`);
+                }
+                
+                const eventData = await response.json();
+                console.log('专场活动详情数据:', eventData);
+                
+                // 渲染活动详情
+                const content = document.getElementById('eventDetailContent');
+                content.innerHTML = `
+                    <div class="row">
+                        <div class="col-md-8">
+                            <h6 class="text-primary mb-3">基本信息</h6>
+                            <table class="table table-borderless">
+                                <tr><td class="fw-bold">活动ID:</td><td>${eventData.id}</td></tr>
+                                <tr><td class="fw-bold">活动标题:</td><td>${eventData.title}</td></tr>
+                                <tr><td class="fw-bold">活动描述:</td><td>${eventData.description || '无描述'}</td></tr>
+                                <tr><td class="fw-bold">横幅图片:</td><td>${eventData.banner_image ? `<img src="${eventData.banner_image}" style="max-width: 200px; max-height: 100px;" alt="活动横幅">` : '未设置'}</td></tr>
+                                <tr><td class="fw-bold">关联商品数:</td><td>${eventData.product_count || 0} 个</td></tr>
+                            </table>
+                        </div>
+                        <div class="col-md-4">
+                            <h6 class="text-primary mb-3">状态信息</h6>
+                            <table class="table table-borderless">
+                                <tr><td class="fw-bold">活动状态:</td><td>
+                                    <span class="badge ${eventData.is_active ? 'bg-success' : 'bg-secondary'}">
+                                        ${eventData.is_active ? '进行中' : '已结束'}
+                                    </span>
+                                </td></tr>
+                                <tr><td class="fw-bold">开始时间:</td><td>${new Date(eventData.start_time).toLocaleString('zh-CN')}</td></tr>
+                                <tr><td class="fw-bold">结束时间:</td><td>${new Date(eventData.end_time).toLocaleString('zh-CN')}</td></tr>
+                                <tr><td class="fw-bold">创建时间:</td><td>${new Date(eventData.created_at).toLocaleString('zh-CN')}</td></tr>
+                                <tr><td class="fw-bold">更新时间:</td><td>${eventData.updated_at ? new Date(eventData.updated_at).toLocaleString('zh-CN') : '未更新'}</td></tr>
+                            </table>
+                        </div>
+                    </div>
+                `;
+                
+            } catch (error) {
+                console.error('获取专场活动详情失败:', error);
+                document.getElementById('eventDetailContent').innerHTML = `
+                    <div class="alert alert-danger">
+                        <i class="bi bi-exclamation-triangle"></i>
+                        加载活动详情失败: ${error.message}
+                    </div>
+                `;
+            }
+        };
+        
+        // 编辑专场活动
+        window.editEvent = async function(eventId) {
+            console.log('编辑专场活动:', eventId);
+            
+            try {
+                const token = localStorage.getItem('admin_token');
+                if (!token) {
+                    alert('请先登录');
+                    return;
+                }
+                
+                // 调用API获取活动详情
+                const response = await fetch(`https://catdog.dachaonet.com/api/v1/admin/events/${eventId}`, {
+                    headers: {
+                        'Authorization': `Bearer ${token}`,
+                        'Content-Type': 'application/json'
+                    }
+                });
+                
+                if (!response.ok) {
+                    throw new Error(`HTTP ${response.status}: ${response.statusText}`);
+                }
+                
+                const eventData = await response.json();
+                console.log('专场活动编辑数据:', eventData);
+                
+                // 填充编辑表单
+                document.getElementById('editEventId').value = eventData.id;
+                document.getElementById('editEventTitle').value = eventData.title || '';
+                document.getElementById('editEventDescription').value = eventData.description || '';
+                document.getElementById('editEventBannerImage').value = eventData.banner_image || '';
+                document.getElementById('editEventIsActive').checked = eventData.is_active || false;
+                
+                // 处理时间字段
+                if (eventData.start_time) {
+                    document.getElementById('editEventStartTime').value = formatDateTimeForInput(eventData.start_time);
+                }
+                if (eventData.end_time) {
+                    document.getElementById('editEventEndTime').value = formatDateTimeForInput(eventData.end_time);
+                }
+                
+                // 显示编辑模态框
+                const modal = new bootstrap.Modal(document.getElementById('editEventModal'));
+                modal.show();
+                
+            } catch (error) {
+                console.error('获取专场活动编辑数据失败:', error);
+                alert('获取活动信息失败: ' + error.message);
+            }
+        };
+        
+        // 从查看界面跳转到编辑
+        window.editEventFromView = function() {
+            if (currentViewEventId) {
+                // 关闭查看模态框
+                const viewModal = bootstrap.Modal.getInstance(document.getElementById('viewEventModal'));
+                viewModal.hide();
+                
+                // 打开编辑模态框
+                setTimeout(() => {
+                    window.editEvent(currentViewEventId);
+                }, 300);
+            }
+        };
+        
+        // 创建新专场活动
+        window.createEvent = async function() {
+            console.log('创建新专场活动');
+            
+            try {
+                const token = localStorage.getItem('admin_token');
+                if (!token) {
+                    alert('请先登录');
+                    return;
+                }
+                
+                const formData = {
+                    title: document.getElementById('addEventTitle').value,
+                    description: document.getElementById('addEventDescription').value,
+                    banner_image: document.getElementById('addEventBannerImage').value,
+                    start_time: document.getElementById('addEventStartTime').value,
+                    end_time: document.getElementById('addEventEndTime').value,
+                    is_active: document.getElementById('addEventIsActive').checked
+                };
+                
+                console.log('提交新活动数据:', formData);
+                
+                const response = await fetch('https://catdog.dachaonet.com/api/v1/admin/events', {
+                    method: 'POST',
+                    headers: {
+                        'Authorization': `Bearer ${token}`,
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify(formData)
+                });
+                
+                if (!response.ok) {
+                    const errorData = await response.json();
+                    throw new Error(errorData.detail || `HTTP ${response.status}`);
+                }
+                
+                const result = await response.json();
+                console.log('专场活动创建成功:', result);
+                
+                // 关闭模态框
+                const modal = bootstrap.Modal.getInstance(document.getElementById('addEventModal'));
+                modal.hide();
+                
+                // 清空表单
+                document.getElementById('addEventForm').reset();
+                
+                // 刷新活动列表
+                if (typeof window.loadEventsDirectly === 'function') {
+                    window.loadEventsDirectly();
+                }
+                
+                alert('专场活动创建成功！');
+                
+            } catch (error) {
+                console.error('创建专场活动失败:', error);
+                alert('创建失败: ' + error.message);
+            }
+        };
+        
+        // 保存专场活动修改
+        window.saveEventChanges = async function() {
+            console.log('保存专场活动修改');
+            
+            try {
+                const token = localStorage.getItem('admin_token');
+                if (!token) {
+                    alert('请先登录');
+                    return;
+                }
+                
+                const eventId = document.getElementById('editEventId').value;
+                const formData = {
+                    title: document.getElementById('editEventTitle').value,
+                    description: document.getElementById('editEventDescription').value,
+                    banner_image: document.getElementById('editEventBannerImage').value,
+                    start_time: document.getElementById('editEventStartTime').value,
+                    end_time: document.getElementById('editEventEndTime').value,
+                    is_active: document.getElementById('editEventIsActive').checked
+                };
+                
+                console.log('提交活动数据:', formData);
+                
+                const response = await fetch(`https://catdog.dachaonet.com/api/v1/admin/events/${eventId}`, {
+                    method: 'PUT',
+                    headers: {
+                        'Authorization': `Bearer ${token}`,
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify(formData)
+                });
+                
+                if (!response.ok) {
+                    const errorData = await response.json();
+                    throw new Error(errorData.detail || `HTTP ${response.status}`);
+                }
+                
+                const result = await response.json();
+                console.log('专场活动更新成功:', result);
+                
+                // 关闭模态框
+                const modal = bootstrap.Modal.getInstance(document.getElementById('editEventModal'));
+                modal.hide();
+                
+                // 刷新活动列表
+                if (typeof window.loadEventsDirectly === 'function') {
+                    window.loadEventsDirectly();
+                }
+                
+                alert('专场活动更新成功！');
+                
+            } catch (error) {
+                console.error('保存专场活动修改失败:', error);
+                alert('保存失败: ' + error.message);
+            }
+        };
+        
+        // 删除专场活动
+        window.deleteEvent = async function(eventId) {
+            console.log('删除专场活动:', eventId);
+            
+            if (!confirm('确定要删除这个专场活动吗？此操作不可恢复！')) {
+                return;
+            }
+            
+            try {
+                const token = localStorage.getItem('admin_token');
+                if (!token) {
+                    alert('请先登录');
+                    return;
+                }
+                
+                const response = await fetch(`https://catdog.dachaonet.com/api/v1/admin/events/${eventId}`, {
+                    method: 'DELETE',
+                    headers: {
+                        'Authorization': `Bearer ${token}`,
+                        'Content-Type': 'application/json'
+                    }
+                });
+                
+                if (!response.ok) {
+                    const errorData = await response.json();
+                    throw new Error(errorData.detail || `HTTP ${response.status}`);
+                }
+                
+                console.log('专场活动删除成功');
+                
+                // 刷新活动列表
+                if (typeof window.loadEventsDirectly === 'function') {
+                    window.loadEventsDirectly();
+                }
+                
+                alert('专场活动删除成功！');
+                
+            } catch (error) {
+                console.error('删除专场活动失败:', error);
+                alert('删除失败: ' + error.message);
+            }
+        };
+        
+        // 从编辑界面删除专场活动
+        window.deleteEventFromEdit = function() {
+            const eventId = document.getElementById('editEventId').value;
+            const eventTitle = document.getElementById('editEventTitle').value;
+            
+            if (eventId && confirm(`确定要删除专场活动"${eventTitle}"吗？此操作不可恢复！`)) {
+                // 关闭编辑模态框
+                const modal = bootstrap.Modal.getInstance(document.getElementById('editEventModal'));
+                modal.hide();
+                
+                // 执行删除
+                setTimeout(() => {
+                    window.deleteEvent(eventId);
+                }, 300);
+            }
+        };
+        
+        // 切换专场活动状态
+        window.toggleEventStatus = async function(eventId, currentStatus) {
+            const newStatus = !currentStatus;
+            const statusText = newStatus ? '启用' : '停用';
+            
+            if (!confirm(`确定要${statusText}这个专场活动吗？`)) {
+                return;
+            }
+            
+            try {
+                const token = localStorage.getItem('admin_token');
+                if (!token) {
+                    alert('请先登录');
+                    return;
+                }
+                
+                // 调用编辑API，只更新状态
+                const response = await fetch(`https://catdog.dachaonet.com/api/v1/admin/events/${eventId}`, {
+                    method: 'PUT',
+                    headers: {
+                        'Authorization': `Bearer ${token}`,
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify({ is_active: newStatus })
+                });
+                
+                if (!response.ok) {
+                    const errorData = await response.json();
+                    throw new Error(errorData.detail || `HTTP ${response.status}`);
+                }
+                
+                console.log('专场活动状态切换成功');
+                
+                // 刷新活动列表
+                if (typeof window.loadEventsDirectly === 'function') {
+                    window.loadEventsDirectly();
+                }
+                
+                alert(`专场活动已${statusText}！`);
+                
+            } catch (error) {
+                console.error('切换专场活动状态失败:', error);
+                alert('操作失败: ' + error.message);
+            }
+        };
+        
+        // 刷新专场活动列表函数
+        window.refreshEvents = function() {
+            console.log('刷新专场活动列表');
+            if (typeof window.loadEventsDirectly === 'function') {
+                window.loadEventsDirectly();
+            }
+        };
+        
+        // ===== 专场活动商品管理功能 =====
+        let currentManageEventId = null;
+        let selectedProductIds = new Set();
+        
+        // 管理专场活动商品
+        window.manageEventProducts = function() {
+            if (!currentViewEventId) {
+                alert('请先选择一个活动');
+                return;
+            }
+            
+            currentManageEventId = currentViewEventId;
+            
+            // 关闭查看模态框
+            const viewModal = bootstrap.Modal.getInstance(document.getElementById('viewEventModal'));
+            viewModal.hide();
+            
+            // 显示商品管理模态框
+            setTimeout(() => {
+                const modal = new bootstrap.Modal(document.getElementById('manageEventProductsModal'));
+                modal.show();
+                
+                // 加载商品数据
+                refreshEventProducts();
+                loadAvailableProducts();
+            }, 300);
+        };
+        
+        // 刷新专场活动中的商品
+        window.refreshEventProducts = async function() {
+            if (!currentManageEventId) return;
+            
+            try {
+                const token = localStorage.getItem('admin_token');
+                if (!token) return;
+                
+                const response = await fetch(`https://catdog.dachaonet.com/api/v1/admin/events/${currentManageEventId}/products`, {
+                    headers: {
+                        'Authorization': `Bearer ${token}`,
+                        'Content-Type': 'application/json'
+                    }
+                });
+                
+                if (!response.ok) {
+                    throw new Error(`HTTP ${response.status}: ${response.statusText}`);
+                }
+                
+                const data = await response.json();
+                console.log('专场商品数据:', data);
+                
+                const container = document.getElementById('eventProductsList');
+                if (!container) return;
+                
+                if (data.products && data.products.length > 0) {
+                    container.innerHTML = data.products.map(product => `
+                        <div class="card mb-2">
+                            <div class="card-body p-2">
+                                <div class="d-flex justify-content-between align-items-center">
+                                    <div>
+                                        <h6 class="card-title mb-1">${product.title}</h6>
+                                        <small class="text-muted">¥${Number(product.current_price || 0).toFixed(2)} | ${product.category_name || '未分类'}</small>
+                                    </div>
+                                    <button type="button" class="btn btn-outline-danger btn-sm" onclick="removeProductFromEvent(${product.id})" title="移除商品">
+                                        <i class="bi bi-x"></i>
+                                    </button>
+                                </div>
+                            </div>
+                        </div>
+                    `).join('');
+                } else {
+                    container.innerHTML = '<div class="text-center text-muted">暂无关联商品</div>';
+                }
+                
+            } catch (error) {
+                console.error('加载专场商品失败:', error);
+                document.getElementById('eventProductsList').innerHTML = '<div class="text-center text-danger">加载失败</div>';
+            }
+        };
+        
+        // 加载可添加的商品
+        window.loadAvailableProducts = async function() {
+            try {
+                const token = localStorage.getItem('admin_token');
+                if (!token) return;
+                
+                const searchTerm = document.getElementById('availableProductsSearch')?.value || '';
+                let url = 'https://catdog.dachaonet.com/api/v1/admin/products/available-for-event';
+                if (currentManageEventId) {
+                    url += `?event_id=${currentManageEventId}`;
+                }
+                if (searchTerm) {
+                    url += `${url.includes('?') ? '&' : '?'}search=${encodeURIComponent(searchTerm)}`;
+                }
+                
+                const response = await fetch(url, {
+                    headers: {
+                        'Authorization': `Bearer ${token}`,
+                        'Content-Type': 'application/json'
+                    }
+                });
+                
+                if (!response.ok) {
+                    throw new Error(`HTTP ${response.status}: ${response.statusText}`);
+                }
+                
+                const data = await response.json();
+                console.log('可添加商品数据:', data);
+                
+                const container = document.getElementById('availableProductsList');
+                if (!container) return;
+                
+                if (data.products && data.products.length > 0) {
+                    container.innerHTML = data.products.map(product => `
+                        <div class="card mb-2">
+                            <div class="card-body p-2">
+                                <div class="d-flex justify-content-between align-items-center">
+                                    <div class="form-check">
+                                        <input class="form-check-input" type="checkbox" id="product_${product.id}" value="${product.id}" onchange="toggleProductSelection(${product.id})">
+                                        <label class="form-check-label" for="product_${product.id}">
+                                            <h6 class="mb-1">${product.title}</h6>
+                                            <small class="text-muted">¥${Number(product.current_price || 0).toFixed(2)} | ${product.category_name || '未分类'}</small>
+                                        </label>
+                                    </div>
+                                    <button type="button" class="btn btn-outline-success btn-sm" onclick="addSingleProductToEvent(${product.id})" title="添加商品">
+                                        <i class="bi bi-plus"></i>
+                                    </button>
+                                </div>
+                            </div>
+                        </div>
+                    `).join('');
+                } else {
+                    container.innerHTML = '<div class="text-center text-muted">暂无可添加商品</div>';
+                }
+                
+            } catch (error) {
+                console.error('加载可添加商品失败:', error);
+                document.getElementById('availableProductsList').innerHTML = '<div class="text-center text-danger">加载失败</div>';
+            }
+        };
+        
+        // 搜索可添加商品
+        window.searchAvailableProducts = function() {
+            loadAvailableProducts();
+        };
+        
+        // 切换商品选择状态
+        window.toggleProductSelection = function(productId) {
+            if (selectedProductIds.has(productId)) {
+                selectedProductIds.delete(productId);
+            } else {
+                selectedProductIds.add(productId);
+            }
+            console.log('已选择商品:', Array.from(selectedProductIds));
+        };
+        
+        // 添加单个商品到专场
+        window.addSingleProductToEvent = async function(productId) {
+            if (!currentManageEventId) return;
+            
+            try {
+                const token = localStorage.getItem('admin_token');
+                if (!token) {
+                    alert('请先登录');
+                    return;
+                }
+                
+                const response = await fetch(`https://catdog.dachaonet.com/api/v1/admin/events/${currentManageEventId}/products`, {
+                    method: 'POST',
+                    headers: {
+                        'Authorization': `Bearer ${token}`,
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify({
+                        product_ids: [productId],
+                        sort_order: 0
+                    })
+                });
+                
+                if (!response.ok) {
+                    const errorData = await response.json();
+                    throw new Error(errorData.detail || `HTTP ${response.status}`);
+                }
+                
+                console.log('商品添加成功');
+                
+                // 刷新两个列表
+                refreshEventProducts();
+                loadAvailableProducts();
+                
+            } catch (error) {
+                console.error('添加商品失败:', error);
+                alert('添加商品失败: ' + error.message);
+            }
+        };
+        
+        // 批量添加选中商品
+        window.addSelectedProducts = async function() {
+            if (!currentManageEventId) return;
+            if (selectedProductIds.size === 0) {
+                alert('请先选择要添加的商品');
+                return;
+            }
+            
+            try {
+                const token = localStorage.getItem('admin_token');
+                if (!token) {
+                    alert('请先登录');
+                    return;
+                }
+                
+                const response = await fetch(`https://catdog.dachaonet.com/api/v1/admin/events/${currentManageEventId}/products`, {
+                    method: 'POST',
+                    headers: {
+                        'Authorization': `Bearer ${token}`,
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify({
+                        product_ids: Array.from(selectedProductIds),
+                        sort_order: 0
+                    })
+                });
+                
+                if (!response.ok) {
+                    const errorData = await response.json();
+                    throw new Error(errorData.detail || `HTTP ${response.status}`);
+                }
+                
+                const result = await response.json();
+                console.log('批量添加商品成功:', result);
+                
+                // 清空选择
+                selectedProductIds.clear();
+                
+                // 刷新两个列表
+                refreshEventProducts();
+                loadAvailableProducts();
+                
+                alert(`成功添加 ${result.data?.added_count || 0} 个商品到专场！`);
+                
+            } catch (error) {
+                console.error('批量添加商品失败:', error);
+                alert('添加商品失败: ' + error.message);
+            }
+        };
+        
+        // 从专场中移除商品
+        window.removeProductFromEvent = async function(productId) {
+            if (!currentManageEventId) return;
+            
+            if (!confirm('确定要从专场中移除这个商品吗？')) {
+                return;
+            }
+            
+            try {
+                const token = localStorage.getItem('admin_token');
+                if (!token) {
+                    alert('请先登录');
+                    return;
+                }
+                
+                const response = await fetch(`https://catdog.dachaonet.com/api/v1/admin/events/${currentManageEventId}/products/${productId}`, {
+                    method: 'DELETE',
+                    headers: {
+                        'Authorization': `Bearer ${token}`,
+                        'Content-Type': 'application/json'
+                    }
+                });
+                
+                if (!response.ok) {
+                    const errorData = await response.json();
+                    throw new Error(errorData.detail || `HTTP ${response.status}`);
+                }
+                
+                console.log('商品移除成功');
+                
+                // 刷新两个列表
+                refreshEventProducts();
+                loadAvailableProducts();
+                
+            } catch (error) {
+                console.error('移除商品失败:', error);
+                alert('移除商品失败: ' + error.message);
             }
         };
         
