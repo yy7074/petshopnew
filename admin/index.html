@@ -1083,16 +1083,11 @@
             window.loadDashboardData = window.loadDashboardData || function() {
                 console.log('使用临时的loadDashboardData函数');
                 
-                // 显示加载状态
+                // 获取仪表盘元素
                 const totalUsersEl = document.getElementById('total-users');
                 const totalProductsEl = document.getElementById('total-products');
                 const todayOrdersEl = document.getElementById('today-orders');
                 const todayRevenueEl = document.getElementById('today-revenue');
-                
-                if (totalUsersEl) totalUsersEl.textContent = '正在连接API...';
-                if (totalProductsEl) totalProductsEl.textContent = '正在连接API...';
-                if (todayOrdersEl) todayOrdersEl.textContent = '正在连接API...';
-                if (todayRevenueEl) todayRevenueEl.textContent = '正在连接API...';
                 
                 // 尝试直接调用API
                 const apiUrl = 'https://catdog.dachaonet.com/api/v1/admin/dashboard/stats';
