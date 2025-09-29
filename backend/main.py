@@ -37,11 +37,40 @@ os.makedirs(settings.UPLOAD_DIR, exist_ok=True)
 # 静态文件服务
 app.mount("/static", StaticFiles(directory="static"), name="static")
 
-# 后台管理静态文件服务
-import os
-admin_path = os.path.join(os.path.dirname(os.path.dirname(__file__)), "admin")
-if os.path.exists(admin_path):
-    app.mount("/admin", StaticFiles(directory=admin_path, html=True), name="admin")
+# 后台管理路由 - 直接返回HTML内容
+@app.get("/admin")
+async def admin_index():
+    from fastapi.responses import FileResponse
+    import os
+    
+    admin_path = os.path.join(os.path.dirname(os.path.dirname(__file__)), "admin")
+    index_file = os.path.join(admin_path, "index.html")
+    
+    if os.path.exists(index_file):
+        return FileResponse(index_file, media_type="text/html")
+    else:
+        raise HTTPException(status_code=404, detail="后台管理页面未找到")
+
+# 后台管理静态资源路由
+@app.get("/admin/{file_path:path}")
+async def admin_static(file_path: str):
+    from fastapi.responses import FileResponse
+    import os
+    import mimetypes
+    
+    admin_path = os.path.join(os.path.dirname(os.path.dirname(__file__)), "admin")
+    full_path = os.path.join(admin_path, file_path)
+    
+    # 安全检查：确保文件在admin目录内
+    if not os.path.commonpath([admin_path, full_path]) == admin_path:
+        raise HTTPException(status_code=404, detail="文件未找到")
+    
+    if os.path.exists(full_path) and os.path.isfile(full_path):
+        # 获取MIME类型
+        content_type, _ = mimetypes.guess_type(full_path)
+        return FileResponse(full_path, media_type=content_type)
+    else:
+        raise HTTPException(status_code=404, detail="文件未找到")
 
 # 注册路由
 from app.api import auth, products, bids, orders, auctions, events, home, wallet, deposit, stores, store_applications, chat, messages, users, admin, local_services, ai_recognition, lottery, checkin, follow, search
