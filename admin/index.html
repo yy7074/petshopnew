@@ -1151,21 +1151,13 @@
                                         </div>
                                     </div>
                                     
-                                    <!-- 拍卖设置 -->
+                                    <!-- 时间设置 -->
                                     <div class="row mb-3">
-                                        <div class="col-md-4">
-                                            <label for="editProductAuctionType" class="form-label">拍卖类型 *</label>
-                                            <select class="form-select" id="editProductAuctionType" name="auction_type" required>
-                                                <option value="1">英式拍卖</option>
-                                                <option value="2">荷兰式拍卖</option>
-                                                <option value="3">定价销售</option>
-                                            </select>
-                                        </div>
-                                        <div class="col-md-4">
+                                        <div class="col-md-6">
                                             <label for="editProductStartTime" class="form-label">开始时间</label>
                                             <input type="datetime-local" class="form-control" id="editProductStartTime" name="start_time">
                                         </div>
-                                        <div class="col-md-4">
+                                        <div class="col-md-6">
                                             <label for="editProductEndTime" class="form-label">结束时间</label>
                                             <input type="datetime-local" class="form-control" id="editProductEndTime" name="end_time">
                                         </div>
@@ -1197,6 +1189,117 @@
                                 <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">取消</button>
                                 <button type="button" class="btn btn-danger me-auto" onclick="deleteProductFromEdit()">删除商品</button>
                                 <button type="button" class="btn btn-primary" onclick="saveProductChanges()">保存修改</button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- 店铺查看模态框 -->
+                <div class="modal fade" id="viewStoreModal" tabindex="-1">
+                    <div class="modal-dialog modal-xl">
+                        <div class="modal-content">
+                            <div class="modal-header">
+                                <h5 class="modal-title">
+                                    <i class="bi bi-shop me-2"></i>
+                                    店铺详情
+                                </h5>
+                                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                            </div>
+                            <div class="modal-body">
+                                <div id="storeDetailContent">
+                                    <div class="text-center">
+                                        <div class="spinner-border" role="status">
+                                            <span class="visually-hidden">加载中...</span>
+                                        </div>
+                                        <p class="mt-2">正在加载店铺信息...</p>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="modal-footer">
+                                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">关闭</button>
+                                <button type="button" class="btn btn-primary" onclick="editStoreFromView()">编辑店铺</button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- 店铺编辑模态框 -->
+                <div class="modal fade" id="editStoreModal" tabindex="-1">
+                    <div class="modal-dialog modal-xl">
+                        <div class="modal-content">
+                            <div class="modal-header">
+                                <h5 class="modal-title">
+                                    <i class="bi bi-shop-window me-2"></i>
+                                    编辑店铺
+                                </h5>
+                                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                            </div>
+                            <div class="modal-body">
+                                <form id="editStoreForm">
+                                    <input type="hidden" id="editStoreId" name="store_id">
+                                    
+                                    <!-- 基本信息 -->
+                                    <div class="row mb-3">
+                                        <div class="col-md-8">
+                                            <label for="editStoreName" class="form-label">店铺名称 *</label>
+                                            <input type="text" class="form-control" id="editStoreName" name="name" required>
+                                        </div>
+                                        <div class="col-md-4">
+                                            <label for="editStorePhone" class="form-label">联系电话</label>
+                                            <input type="tel" class="form-control" id="editStorePhone" name="phone">
+                                        </div>
+                                    </div>
+                                    
+                                    <div class="mb-3">
+                                        <label for="editStoreDescription" class="form-label">店铺描述</label>
+                                        <textarea class="form-control" id="editStoreDescription" name="description" rows="4"></textarea>
+                                    </div>
+                                    
+                                    <div class="row mb-3">
+                                        <div class="col-md-6">
+                                            <label for="editStoreLocation" class="form-label">店铺地址</label>
+                                            <input type="text" class="form-control" id="editStoreLocation" name="location">
+                                        </div>
+                                        <div class="col-md-6">
+                                            <label for="editStoreAvatar" class="form-label">店铺头像URL</label>
+                                            <input type="url" class="form-control" id="editStoreAvatar" name="avatar">
+                                        </div>
+                                    </div>
+                                    
+                                    <div class="mb-3">
+                                        <label for="editStoreBanner" class="form-label">店铺横幅URL</label>
+                                        <input type="url" class="form-control" id="editStoreBanner" name="banner">
+                                    </div>
+                                    
+                                    <!-- 状态设置 -->
+                                    <div class="row mb-3">
+                                        <div class="col-md-4">
+                                            <label for="editStoreRating" class="form-label">店铺评分</label>
+                                            <input type="number" class="form-control" id="editStoreRating" name="rating" step="0.1" min="0" max="5">
+                                        </div>
+                                        <div class="col-md-4">
+                                            <div class="form-check mt-4">
+                                                <input class="form-check-input" type="checkbox" id="editStoreIsOpen" name="is_open">
+                                                <label class="form-check-label" for="editStoreIsOpen">
+                                                    店铺营业状态
+                                                </label>
+                                            </div>
+                                        </div>
+                                        <div class="col-md-4">
+                                            <div class="form-check mt-4">
+                                                <input class="form-check-input" type="checkbox" id="editStoreVerified" name="verified">
+                                                <label class="form-check-label" for="editStoreVerified">
+                                                    认证状态
+                                                </label>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </form>
+                            </div>
+                            <div class="modal-footer">
+                                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">取消</button>
+                                <button type="button" class="btn btn-danger me-auto" onclick="deleteStoreFromEdit()">删除店铺</button>
+                                <button type="button" class="btn btn-primary" onclick="saveStoreChanges()">保存修改</button>
                             </div>
                         </div>
                     </div>
@@ -1972,7 +2075,7 @@
                             <td>${shop.phone || ''}</td>
                             <td>-</td>
                             <td>${shop.total_sales || 0}</td>
-                            <td>${shop.rating ? shop.rating.toFixed(1) : '5.0'}</td>
+                            <td>${shop.rating ? Number(shop.rating).toFixed(1) : '5.0'}</td>
                             <td>-</td>
                             <td>
                                 <span class="badge ${shop.verified ? 'bg-success' : 'bg-warning'}">
@@ -1986,15 +2089,20 @@
                             </td>
                             <td>${new Date(shop.created_at).toLocaleString('zh-CN')}</td>
                             <td>
-                                <button class="btn btn-sm btn-primary me-1" onclick="alert('查看店铺 ${shop.id}')">
-                                    <i class="bi bi-eye"></i>
-                                </button>
-                                <button class="btn btn-sm btn-warning me-1" onclick="alert('编辑店铺 ${shop.id}')">
-                                    <i class="bi bi-pencil"></i>
-                                </button>
-                                <button class="btn btn-sm btn-danger" onclick="if(confirm('确定删除店铺 ${shop.name}?')) alert('删除店铺 ${shop.id}')">
-                                    <i class="bi bi-trash"></i>
-                                </button>
+                                <div class="table-actions">
+                                    <button type="button" class="btn btn-outline-primary btn-sm" onclick="window.viewStore ? viewStore(${shop.id}) : alert('查看店铺 ${shop.id}')" title="查看店铺">
+                                        <i class="bi bi-eye"></i>
+                                    </button>
+                                    <button type="button" class="btn btn-outline-warning btn-sm" onclick="window.editStore ? editStore(${shop.id}) : alert('编辑店铺 ${shop.id}')" title="编辑店铺">
+                                        <i class="bi bi-pencil"></i>
+                                    </button>
+                                    <button type="button" class="btn btn-outline-info btn-sm" onclick="window.toggleStoreStatus ? toggleStoreStatus(${shop.id}, ${shop.is_open}) : alert('切换营业状态')" title="切换营业状态">
+                                        <i class="bi bi-${shop.is_open ? 'pause' : 'play'}"></i>
+                                    </button>
+                                    <button type="button" class="btn btn-outline-success btn-sm" onclick="window.toggleStoreVerification ? toggleStoreVerification(${shop.id}, ${shop.verified}) : alert('切换认证状态')" title="切换认证状态">
+                                        <i class="bi bi-${shop.verified ? 'shield-check' : 'shield-x'}"></i>
+                                    </button>
+                                </div>
                             </td>
                         </tr>
                     `).join('');
@@ -2529,9 +2637,6 @@
                                         ${productData.status === 2 ? '拍卖中' : productData.status === 1 ? '待审核' : productData.status === 3 ? '已结束' : '已下架'}
                                     </span>
                                 </td></tr>
-                                <tr><td class="fw-bold">拍卖类型:</td><td>
-                                    ${productData.auction_type === 1 ? '英式拍卖' : productData.auction_type === 2 ? '荷兰式拍卖' : '定价销售'}
-                                </td></tr>
                                 <tr><td class="fw-bold">开始时间:</td><td>${productData.start_time ? new Date(productData.start_time).toLocaleString('zh-CN') : '未设置'}</td></tr>
                                 <tr><td class="fw-bold">结束时间:</td><td>${productData.end_time ? new Date(productData.end_time).toLocaleString('zh-CN') : '未设置'}</td></tr>
                             </table>
@@ -2597,7 +2702,6 @@
                 document.getElementById('editProductCurrentPrice').value = productData.current_price || '';
                 document.getElementById('editProductReservePrice').value = productData.reserve_price || '';
                 document.getElementById('editProductBuyNowPrice').value = productData.buy_now_price || '';
-                document.getElementById('editProductAuctionType').value = productData.auction_type || 1;
                 document.getElementById('editProductStatus').value = productData.status || 1;
                 document.getElementById('editProductCondition').value = productData.condition || '';
                 document.getElementById('editProductLocation').value = productData.location || '';
@@ -2653,7 +2757,6 @@
                     starting_price: parseFloat(document.getElementById('editProductStartingPrice').value),
                     reserve_price: parseFloat(document.getElementById('editProductReservePrice').value) || null,
                     buy_now_price: parseFloat(document.getElementById('editProductBuyNowPrice').value) || null,
-                    auction_type: parseInt(document.getElementById('editProductAuctionType').value),
                     status: parseInt(document.getElementById('editProductStatus').value),
                     condition: document.getElementById('editProductCondition').value,
                     location: document.getElementById('editProductLocation').value,
@@ -2800,6 +2903,324 @@
             const hours = String(date.getHours()).padStart(2, '0');
             const minutes = String(date.getMinutes()).padStart(2, '0');
             return `${year}-${month}-${day}T${hours}:${minutes}`;
+        };
+        
+        // ===== 店铺管理相关功能函数 =====
+        let currentViewStoreId = null;
+        
+        // 查看店铺详情
+        window.viewStore = async function(storeId) {
+            console.log('查看店铺详情:', storeId);
+            currentViewStoreId = storeId;
+            
+            try {
+                const token = localStorage.getItem('admin_token');
+                if (!token) {
+                    alert('请先登录');
+                    return;
+                }
+                
+                // 显示模态框
+                const modal = new bootstrap.Modal(document.getElementById('viewStoreModal'));
+                modal.show();
+                
+                // 调用API获取店铺详情
+                const response = await fetch(`https://catdog.dachaonet.com/api/v1/stores/${storeId}`, {
+                    headers: {
+                        'Authorization': `Bearer ${token}`,
+                        'Content-Type': 'application/json'
+                    }
+                });
+                
+                if (!response.ok) {
+                    throw new Error(`HTTP ${response.status}: ${response.statusText}`);
+                }
+                
+                const storeData = await response.json();
+                console.log('店铺详情数据:', storeData);
+                
+                // 渲染店铺详情
+                const content = document.getElementById('storeDetailContent');
+                content.innerHTML = `
+                    <div class="row">
+                        <div class="col-md-8">
+                            <h6 class="text-primary mb-3">基本信息</h6>
+                            <table class="table table-borderless">
+                                <tr><td class="fw-bold">店铺ID:</td><td>${storeData.id}</td></tr>
+                                <tr><td class="fw-bold">店铺名称:</td><td>${storeData.name}</td></tr>
+                                <tr><td class="fw-bold">店主:</td><td>${storeData.owner_name || '未知'}</td></tr>
+                                <tr><td class="fw-bold">联系电话:</td><td>${storeData.phone || '未填写'}</td></tr>
+                                <tr><td class="fw-bold">店铺描述:</td><td>${storeData.description || '无描述'}</td></tr>
+                                <tr><td class="fw-bold">店铺地址:</td><td>${storeData.location || '未填写'}</td></tr>
+                            </table>
+                        </div>
+                        <div class="col-md-4">
+                            <h6 class="text-primary mb-3">经营状态</h6>
+                            <table class="table table-borderless">
+                                <tr><td class="fw-bold">营业状态:</td><td>
+                                    <span class="badge ${storeData.is_open ? 'bg-success' : 'bg-danger'}">
+                                        ${storeData.is_open ? '营业中' : '已关闭'}
+                                    </span>
+                                </td></tr>
+                                <tr><td class="fw-bold">认证状态:</td><td>
+                                    <span class="badge ${storeData.verified ? 'bg-success' : 'bg-warning'}">
+                                        ${storeData.verified ? '已认证' : '未认证'}
+                                    </span>
+                                </td></tr>
+                                <tr><td class="fw-bold">店铺评分:</td><td>${storeData.rating ? Number(storeData.rating).toFixed(1) : '5.0'}</td></tr>
+                                <tr><td class="fw-bold">销售总数:</td><td>${storeData.total_sales || 0}</td></tr>
+                                <tr><td class="fw-bold">创建时间:</td><td>${new Date(storeData.created_at).toLocaleString('zh-CN')}</td></tr>
+                            </table>
+                        </div>
+                    </div>
+                `;
+                
+            } catch (error) {
+                console.error('获取店铺详情失败:', error);
+                document.getElementById('storeDetailContent').innerHTML = `
+                    <div class="alert alert-danger">
+                        <i class="bi bi-exclamation-triangle"></i>
+                        加载店铺详情失败: ${error.message}
+                    </div>
+                `;
+            }
+        };
+        
+        // 编辑店铺
+        window.editStore = async function(storeId) {
+            console.log('编辑店铺:', storeId);
+            
+            try {
+                const token = localStorage.getItem('admin_token');
+                if (!token) {
+                    alert('请先登录');
+                    return;
+                }
+                
+                // 调用API获取店铺详情
+                const response = await fetch(`https://catdog.dachaonet.com/api/v1/stores/${storeId}`, {
+                    headers: {
+                        'Authorization': `Bearer ${token}`,
+                        'Content-Type': 'application/json'
+                    }
+                });
+                
+                if (!response.ok) {
+                    throw new Error(`HTTP ${response.status}: ${response.statusText}`);
+                }
+                
+                const storeData = await response.json();
+                console.log('店铺编辑数据:', storeData);
+                
+                // 填充编辑表单
+                document.getElementById('editStoreId').value = storeData.id;
+                document.getElementById('editStoreName').value = storeData.name || '';
+                document.getElementById('editStorePhone').value = storeData.phone || '';
+                document.getElementById('editStoreDescription').value = storeData.description || '';
+                document.getElementById('editStoreLocation').value = storeData.location || '';
+                document.getElementById('editStoreAvatar').value = storeData.avatar || '';
+                document.getElementById('editStoreBanner').value = storeData.banner || '';
+                document.getElementById('editStoreRating').value = storeData.rating ? Number(storeData.rating) : 5.0;
+                document.getElementById('editStoreIsOpen').checked = storeData.is_open || false;
+                document.getElementById('editStoreVerified').checked = storeData.verified || false;
+                
+                // 显示编辑模态框
+                const modal = new bootstrap.Modal(document.getElementById('editStoreModal'));
+                modal.show();
+                
+            } catch (error) {
+                console.error('获取店铺编辑数据失败:', error);
+                alert('获取店铺信息失败: ' + error.message);
+            }
+        };
+        
+        // 从查看界面跳转到编辑
+        window.editStoreFromView = function() {
+            if (currentViewStoreId) {
+                // 关闭查看模态框
+                const viewModal = bootstrap.Modal.getInstance(document.getElementById('viewStoreModal'));
+                viewModal.hide();
+                
+                // 打开编辑模态框
+                setTimeout(() => {
+                    window.editStore(currentViewStoreId);
+                }, 300);
+            }
+        };
+        
+        // 保存店铺修改
+        window.saveStoreChanges = async function() {
+            console.log('保存店铺修改');
+            
+            try {
+                const token = localStorage.getItem('admin_token');
+                if (!token) {
+                    alert('请先登录');
+                    return;
+                }
+                
+                const storeId = document.getElementById('editStoreId').value;
+                const formData = {
+                    name: document.getElementById('editStoreName').value,
+                    phone: document.getElementById('editStorePhone').value,
+                    description: document.getElementById('editStoreDescription').value,
+                    location: document.getElementById('editStoreLocation').value,
+                    avatar: document.getElementById('editStoreAvatar').value,
+                    banner: document.getElementById('editStoreBanner').value,
+                    rating: parseFloat(document.getElementById('editStoreRating').value),
+                    is_open: document.getElementById('editStoreIsOpen').checked,
+                    verified: document.getElementById('editStoreVerified').checked
+                };
+                
+                console.log('提交店铺数据:', formData);
+                
+                const response = await fetch(`https://catdog.dachaonet.com/api/v1/stores/${storeId}`, {
+                    method: 'PUT',
+                    headers: {
+                        'Authorization': `Bearer ${token}`,
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify(formData)
+                });
+                
+                if (!response.ok) {
+                    const errorData = await response.json();
+                    throw new Error(errorData.detail || `HTTP ${response.status}`);
+                }
+                
+                const result = await response.json();
+                console.log('店铺更新成功:', result);
+                
+                // 关闭模态框
+                const modal = bootstrap.Modal.getInstance(document.getElementById('editStoreModal'));
+                modal.hide();
+                
+                // 刷新店铺列表
+                if (typeof window.loadShopsDirectly === 'function') {
+                    window.loadShopsDirectly();
+                }
+                
+                alert('店铺信息更新成功！');
+                
+            } catch (error) {
+                console.error('保存店铺修改失败:', error);
+                alert('保存失败: ' + error.message);
+            }
+        };
+        
+        // 切换店铺营业状态
+        window.toggleStoreStatus = async function(storeId, currentStatus) {
+            const newStatus = !currentStatus;
+            const statusText = newStatus ? '营业' : '关闭';
+            
+            if (!confirm(`确定要将店铺状态切换为"${statusText}"吗？`)) {
+                return;
+            }
+            
+            try {
+                const token = localStorage.getItem('admin_token');
+                if (!token) {
+                    alert('请先登录');
+                    return;
+                }
+                
+                const response = await fetch(`https://catdog.dachaonet.com/api/v1/stores/${storeId}/toggle-status`, {
+                    method: 'POST',
+                    headers: {
+                        'Authorization': `Bearer ${token}`,
+                        'Content-Type': 'application/json'
+                    }
+                });
+                
+                if (!response.ok) {
+                    const errorData = await response.json();
+                    throw new Error(errorData.detail || `HTTP ${response.status}`);
+                }
+                
+                console.log('店铺状态切换成功');
+                
+                // 刷新店铺列表
+                if (typeof window.loadShopsDirectly === 'function') {
+                    window.loadShopsDirectly();
+                }
+                
+                alert(`店铺已${statusText}！`);
+                
+            } catch (error) {
+                console.error('切换店铺状态失败:', error);
+                alert('操作失败: ' + error.message);
+            }
+        };
+        
+        // 切换店铺认证状态
+        window.toggleStoreVerification = async function(storeId, currentVerified) {
+            const newVerified = !currentVerified;
+            const verifyText = newVerified ? '认证' : '取消认证';
+            
+            if (!confirm(`确定要${verifyText}这个店铺吗？`)) {
+                return;
+            }
+            
+            try {
+                const token = localStorage.getItem('admin_token');
+                if (!token) {
+                    alert('请先登录');
+                    return;
+                }
+                
+                // 调用店铺编辑API，只更新认证状态
+                const response = await fetch(`https://catdog.dachaonet.com/api/v1/stores/${storeId}`, {
+                    method: 'PUT',
+                    headers: {
+                        'Authorization': `Bearer ${token}`,
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify({ verified: newVerified })
+                });
+                
+                if (!response.ok) {
+                    const errorData = await response.json();
+                    throw new Error(errorData.detail || `HTTP ${response.status}`);
+                }
+                
+                console.log('店铺认证状态切换成功');
+                
+                // 刷新店铺列表
+                if (typeof window.loadShopsDirectly === 'function') {
+                    window.loadShopsDirectly();
+                }
+                
+                alert(`店铺${verifyText}成功！`);
+                
+            } catch (error) {
+                console.error('切换店铺认证状态失败:', error);
+                alert('操作失败: ' + error.message);
+            }
+        };
+        
+        // 从编辑界面删除店铺
+        window.deleteStoreFromEdit = function() {
+            const storeId = document.getElementById('editStoreId').value;
+            const storeName = document.getElementById('editStoreName').value;
+            
+            if (storeId && confirm(`确定要删除店铺"${storeName}"吗？此操作不可恢复！`)) {
+                // 关闭编辑模态框
+                const modal = bootstrap.Modal.getInstance(document.getElementById('editStoreModal'));
+                modal.hide();
+                
+                // 执行删除 - 暂时用提示，因为后端可能没有删除店铺的API
+                setTimeout(() => {
+                    alert('店铺删除功能暂未开放，请联系系统管理员');
+                }, 300);
+            }
+        };
+        
+        // 刷新店铺列表函数
+        window.refreshShops = function() {
+            console.log('刷新店铺列表');
+            if (typeof window.loadShopsDirectly === 'function') {
+                window.loadShopsDirectly();
+            }
         };
         
         // 函数已移到全局作用域，这里不再重复定义
