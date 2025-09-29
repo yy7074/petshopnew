@@ -96,36 +96,35 @@
             </nav>
 
             <!-- 主内容区域 -->
-            <main class="col-md-9 ms-sm-auto col-lg-10 px-md-4">
-                <div class="d-flex justify-content-between flex-wrap flex-md-nowrap align-items-center pt-3 pb-2 mb-3 border-bottom">
-                    <h1 class="h2" id="page-title">仪表盘</h1>
-                    <div class="btn-toolbar mb-2 mb-md-0">
-                        <div class="btn-group me-2">
-                            <button type="button" class="btn btn-sm btn-outline-primary" onclick="loadDashboardData()">
-                                <i class="bi bi-arrow-clockwise"></i>
-                                刷新数据
-                            </button>
-                        </div>
-                        <div class="btn-group me-2">
-                            <button type="button" class="btn btn-sm btn-outline-secondary" onclick="exportData()">
-                                <i class="bi bi-download"></i>
-                                导出数据
-                            </button>
-                        </div>
-                        <div class="btn-group me-2">
-                            <button type="button" class="btn btn-sm btn-outline-info" onclick="showProfile()">
-                                <i class="bi bi-person-circle"></i>
-                                <span id="current-admin">admin</span>
-                            </button>
-                        </div>
-                        <div class="btn-group">
-                            <button type="button" class="btn btn-sm btn-outline-danger" onclick="logout()">
-                                <i class="bi bi-box-arrow-right"></i>
-                                退出登录
-                            </button>
-                        </div>
+            <main class="col-md-9 ms-sm-auto col-lg-10 px-md-4 main-content">
+                <header class="topbar shadow-sm mb-4">
+                    <div class="topbar-title">
+                        <h1 class="h3 mb-1" id="page-title">仪表盘</h1>
+                        <p class="topbar-subtitle mb-0" id="page-description">实时掌握平台运行情况</p>
                     </div>
-                </div>
+                    <div class="topbar-actions">
+                        <div class="search-control d-none d-md-flex">
+                            <i class="bi bi-search"></i>
+                            <input type="search" id="globalSearch" class="form-control" placeholder="搜索用户、商品或订单" aria-label="全局搜索">
+                        </div>
+                        <button type="button" class="btn btn-outline-primary" onclick="loadDashboardData()">
+                            <i class="bi bi-arrow-clockwise"></i>
+                            刷新
+                        </button>
+                        <button type="button" class="btn btn-outline-secondary" onclick="exportData()">
+                            <i class="bi bi-download"></i>
+                            导出
+                        </button>
+                        <button type="button" class="btn btn-outline-info" onclick="showProfile()">
+                            <i class="bi bi-person-circle"></i>
+                            <span id="current-admin">admin</span>
+                        </button>
+                        <button type="button" class="btn btn-outline-danger" onclick="logout()">
+                            <i class="bi bi-box-arrow-right"></i>
+                            退出
+                        </button>
+                    </div>
+                </header>
 
                 <!-- 仪表盘 -->
                 <div id="dashboard" class="content-section">
@@ -238,13 +237,78 @@
 
                 <!-- 用户管理 -->
                 <div id="users" class="content-section" style="display: none;">
+                    <div class="section-header mb-4">
+                        <div>
+                            <h2 class="section-title">用户管理</h2>
+                            <p class="section-subtitle">监控平台用户状态，快速定位异常账号</p>
+                        </div>
+                        <div class="section-actions">
+                            <button type="button" class="btn btn-primary" onclick="refreshUsers()">
+                                <i class="bi bi-arrow-repeat"></i>
+                                刷新用户
+                            </button>
+                        </div>
+                    </div>
+
+                    <div class="metrics-grid mb-4">
+                        <div class="metric-card gradient-primary">
+                            <span class="metric-label">全部用户</span>
+                            <strong class="metric-value" id="userTotalCount">0</strong>
+                            <span class="metric-caption">当前总量</span>
+                        </div>
+                        <div class="metric-card gradient-success">
+                            <span class="metric-label">正常用户</span>
+                            <strong class="metric-value" id="userActiveCount">0</strong>
+                            <span class="metric-caption">状态正常</span>
+                        </div>
+                        <div class="metric-card gradient-warning">
+                            <span class="metric-label">冻结用户</span>
+                            <strong class="metric-value" id="userFrozenCount">0</strong>
+                            <span class="metric-caption">待跟进</span>
+                        </div>
+                        <div class="metric-card gradient-danger">
+                            <span class="metric-label">禁用用户</span>
+                            <strong class="metric-value" id="userBannedCount">0</strong>
+                            <span class="metric-caption">已禁用</span>
+                        </div>
+                    </div>
+
+                    <div class="section-toolbar flex-wrap mb-3">
+                        <div class="filter-group" id="userFilterGroup">
+                            <button type="button" class="btn btn-filter active" data-user-filter="all">
+                                全部
+                                <span class="badge-count" id="userFilterAllCount">0</span>
+                            </button>
+                            <button type="button" class="btn btn-filter" data-user-filter="1">
+                                正常
+                                <span class="badge-count" id="userFilterActiveCount">0</span>
+                            </button>
+                            <button type="button" class="btn btn-filter" data-user-filter="2">
+                                冻结
+                                <span class="badge-count" id="userFilterFrozenCount">0</span>
+                            </button>
+                            <button type="button" class="btn btn-filter" data-user-filter="3">
+                                禁用
+                                <span class="badge-count" id="userFilterBannedCount">0</span>
+                            </button>
+                        </div>
+                        <div class="toolbar-right ms-auto">
+                            <span class="filter-result" id="userFilteredCount">共 0 条结果</span>
+                            <div class="search-control">
+                                <i class="bi bi-search"></i>
+                                <input type="search" id="userSearchInput" placeholder="按用户名、手机号或邮箱搜索">
+                            </div>
+                        </div>
+                    </div>
+
                     <div class="card shadow mb-4">
-                        <div class="card-header py-3">
+                        <div class="card-header py-3 d-flex justify-content-between align-items-center">
                             <h6 class="m-0 font-weight-bold text-primary">用户列表</h6>
+                            <span class="table-hint">点击操作按钮查看详情或调整账号状态</span>
                         </div>
                         <div class="card-body">
                             <div class="table-responsive">
-                                <table class="table table-bordered" id="usersTable">
+                                <table class="table table-bordered align-middle" id="usersTable">
                                     <thead>
                                         <tr>
                                             <th>ID</th>
@@ -1690,6 +1754,4 @@
     </script>
 </body>
 </html>
-
-
 

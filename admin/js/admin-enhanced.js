@@ -3,6 +3,9 @@
 const API_BASE_URL = 'https://catdog.dachaonet.com/api/v1/admin';
 let currentSection = 'dashboard';
 let authToken = null;
+let userDataCache = [];
+let userFilterStatus = 'all';
+let userSearchKeyword = '';
 
 // 加载仪表盘数据 - 全局函数，确保HTML onclick可以访问
 window.loadDashboardData = async function() {
@@ -102,6 +105,8 @@ if (document.readyState === 'complete' || document.readyState === 'interactive')
 document.addEventListener('DOMContentLoaded', function() {
     console.log('DOMContentLoaded事件触发，真实函数已准备就绪');
     initCharts();
+    setupUserFilters();
+    setupGlobalSearch();
     // 检查管理员身份验证
     checkAdminAuth();
     
@@ -318,14 +323,33 @@ function showSection(sectionName) {
         'messages': '消息管理',
         'settings': '系统设置'
     };
-    
+
+    const descriptions = {
+        'dashboard': '实时掌握平台运行情况',
+        'users': '监控平台用户状态，快速定位异常账号',
+        'products': '维护拍品信息，查看上下架状态',
+        'categories': '规划商品分类，保持结构清晰',
+        'orders': '追踪订单流程与发货进度',
+        'shops': '管理入驻商家与店铺资质',
+        'events': '配置专场活动与推荐资源位',
+        'splash-ads': '运营启动页广告资源',
+        'messages': '管理平台通知与站内信',
+        'settings': '配置系统基础信息'
+    };
+
     const pageTitle = document.getElementById('page-title');
     if (pageTitle && titles[sectionName]) {
         pageTitle.textContent = titles[sectionName];
     }
-    
+
+    const pageDescription = document.getElementById('page-description');
+    if (pageDescription) {
+        pageDescription.textContent = descriptions[sectionName] || '请选择左侧菜单查看详情';
+    }
+
     currentSection = sectionName;
-    
+    syncGlobalSearchInput();
+
     // 根据不同区域加载对应数据
     switch(sectionName) {
         case 'users':
@@ -439,56 +463,204 @@ async function loadUsers() {
         
         const response = await apiRequest('/users');
         console.log('用户API响应:', response);
-        
-        const tbody = document.querySelector('#usersTable tbody');
-        if (!tbody) {
-            console.error('用户表格元素未找到');
-            return;
-        }
-        
-        if (response && response.users && Array.isArray(response.users)) {
+
+        if (response && Array.isArray(response.users)) {
             console.log(`加载到 ${response.users.length} 个用户`);
-            tbody.innerHTML = response.users.map(user => `
-                <tr>
-                    <td>${user.id}</td>
-                    <td>${user.username}</td>
-                    <td>${user.phone}</td>
-                    <td>${user.email || '未填写'}</td>
-                    <td>
-                        <span class="badge ${getStatusClass(user.status)}">
-                            ${getStatusText(user.status)}
-                        </span>
-                    </td>
-                    <td>${formatDateTime(user.created_at)}</td>
-                    <td>
-                        <button class="btn btn-sm btn-primary me-1" onclick="viewUser(${user.id})">
-                            <i class="bi bi-eye"></i>
-                        </button>
-                        <button class="btn btn-sm btn-warning me-1" onclick="editUser(${user.id})">
-                            <i class="bi bi-pencil"></i>
-                        </button>
-                        <button class="btn btn-sm btn-danger" onclick="deleteUser(${user.id})">
-                            <i class="bi bi-trash"></i>
-                        </button>
-                    </td>
-                </tr>
-            `).join('');
+            userDataCache = response.users;
         } else {
-            console.error('响应数据格式无效:', response);
-            tbody.innerHTML = '<tr><td colspan="7" class="text-center">暂无用户数据</td></tr>';
+            console.warn('用户数据格式异常，使用空列表作为回退');
+            userDataCache = [];
         }
+
+        updateUserSummary(userDataCache);
+        applyUserFilters();
         
     } catch (error) {
         console.error('加载用户数据失败:', error);
         showError('加载用户数据失败: ' + error.message);
-        
-        // 显示错误信息在表格中
-        const tbody = document.querySelector('#usersTable tbody');
-        if (tbody) {
-            tbody.innerHTML = '<tr><td colspan="7" class="text-center text-danger">加载失败: ' + error.message + '</td></tr>';
-        }
+        renderUserTable([], '加载失败: ' + error.message);
     }
 }
+
+function renderUserTable(users, emptyMessage) {
+    const tbody = document.querySelector('#usersTable tbody');
+    if (!tbody) {
+        console.warn('用户表格容器缺失');
+        return;
+    }
+
+    if (!Array.isArray(users) || users.length === 0) {
+        const message = emptyMessage || (userDataCache.length === 0 && userFilterStatus === 'all' && !userSearchKeyword
+            ? '暂无用户数据'
+            : '未找到匹配的用户');
+        tbody.innerHTML = `<tr><td colspan="7" class="table-empty text-center">${message}</td></tr>`;
+        return;
+    }
+
+    tbody.innerHTML = users.map(user => {
+        const username = user.username || '未填写';
+        const phone = user.phone || '未填写';
+        const email = user.email || '未填写';
+        const createdAt = formatDateTime(user.created_at);
+
+        return `
+        <tr>
+            <td>${user.id}</td>
+            <td>${username}</td>
+            <td>${phone}</td>
+            <td>${email}</td>
+            <td>
+                <span class="badge ${getStatusClass(user.status)}">
+                    ${getStatusText(user.status)}
+                </span>
+            </td>
+            <td>${createdAt}</td>
+            <td>
+                <button class="btn btn-sm btn-primary me-1" onclick="viewUser(${user.id})">
+                    <i class="bi bi-eye"></i>
+                </button>
+                <button class="btn btn-sm btn-warning me-1" onclick="editUser(${user.id})">
+                    <i class="bi bi-pencil"></i>
+                </button>
+                <button class="btn btn-sm btn-danger" onclick="deleteUser(${user.id})">
+                    <i class="bi bi-trash"></i>
+                </button>
+            </td>
+        </tr>
+    `;
+    }).join('');
+}
+
+function updateUserSummary(users) {
+    const list = Array.isArray(users) ? users : [];
+    const total = list.length;
+    const active = list.filter(user => Number(user.status) === 1).length;
+    const frozen = list.filter(user => Number(user.status) === 2).length;
+    const banned = list.filter(user => Number(user.status) === 3).length;
+
+    setNumberText('userTotalCount', total);
+    setNumberText('userActiveCount', active);
+    setNumberText('userFrozenCount', frozen);
+    setNumberText('userBannedCount', banned);
+
+    setNumberText('userFilterAllCount', total);
+    setNumberText('userFilterActiveCount', active);
+    setNumberText('userFilterFrozenCount', frozen);
+    setNumberText('userFilterBannedCount', banned);
+}
+
+function setNumberText(id, value) {
+    const element = document.getElementById(id);
+    if (element) {
+        element.textContent = Number(value || 0).toLocaleString();
+    }
+}
+
+function applyUserFilters() {
+    if (!Array.isArray(userDataCache)) {
+        renderUserTable([]);
+        return;
+    }
+
+    const keyword = (userSearchKeyword || '').toLowerCase();
+    const filteredUsers = userDataCache.filter(user => {
+        const matchesStatus = userFilterStatus === 'all' || String(user.status) === userFilterStatus;
+        if (!matchesStatus) return false;
+
+        if (!keyword) return true;
+
+        const fields = [user.username, user.phone, user.email];
+        return fields.some(value => (value ? String(value).toLowerCase() : '').includes(keyword));
+    });
+
+    renderUserTable(filteredUsers);
+    updateUserFilterUI();
+
+    const filteredCountEl = document.getElementById('userFilteredCount');
+    if (filteredCountEl) {
+        filteredCountEl.textContent = `共 ${filteredUsers.length} 条结果`;
+    }
+
+    syncGlobalSearchInput();
+}
+
+function updateUserFilterUI() {
+    const filterButtons = document.querySelectorAll('[data-user-filter]');
+    filterButtons.forEach(button => {
+        const isActive = button.dataset.userFilter === userFilterStatus;
+        if (isActive) {
+            button.classList.add('active');
+        } else {
+            button.classList.remove('active');
+        }
+    });
+}
+
+function setupUserFilters() {
+    const filterButtons = document.querySelectorAll('[data-user-filter]');
+    filterButtons.forEach(button => {
+        button.addEventListener('click', () => {
+            const { userFilter } = button.dataset;
+            if (!userFilter || userFilter === userFilterStatus) {
+                return;
+            }
+            userFilterStatus = userFilter;
+            applyUserFilters();
+        });
+    });
+
+    const searchInput = document.getElementById('userSearchInput');
+    if (searchInput) {
+        searchInput.addEventListener('input', event => {
+            userSearchKeyword = event.target.value.trim();
+            applyUserFilters();
+            syncGlobalSearchInput();
+        });
+    }
+
+    updateUserFilterUI();
+}
+
+function setupGlobalSearch() {
+    const globalSearchInput = document.getElementById('globalSearch');
+    if (!globalSearchInput) {
+        return;
+    }
+
+    globalSearchInput.addEventListener('input', event => {
+        const keyword = event.target.value.trim();
+        if (currentSection === 'users') {
+            const userSearchInput = document.getElementById('userSearchInput');
+            if (userSearchInput && userSearchInput.value !== keyword) {
+                userSearchInput.value = keyword;
+            }
+            userSearchKeyword = keyword;
+            applyUserFilters();
+        }
+    });
+
+    globalSearchInput.addEventListener('keypress', event => {
+        if (event.key === 'Enter' && currentSection !== 'users') {
+            showNotification('全局搜索将在后续版本开放，请先使用各模块筛选功能。', 'info');
+        }
+    });
+}
+
+function syncGlobalSearchInput() {
+    const globalSearchInput = document.getElementById('globalSearch');
+    const userSearchInput = document.getElementById('userSearchInput');
+    if (!globalSearchInput || !userSearchInput) {
+        return;
+    }
+
+    if (currentSection === 'users' && globalSearchInput.value !== userSearchInput.value) {
+        globalSearchInput.value = userSearchInput.value;
+    }
+}
+
+window.refreshUsers = function refreshUsers() {
+    loadUsers();
+};
 
 // 将函数暴露到全局，方便HTML调用
 window.loadUsers = loadUsers;

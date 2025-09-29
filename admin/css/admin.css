@@ -4,6 +4,269 @@ body {
     background-color: #f8f9fc;
 }
 
+.main-content {
+    padding-bottom: 3rem;
+}
+
+.topbar {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 1.5rem;
+    background: #ffffff;
+    border-radius: 1rem;
+    padding: 1.5rem 2rem;
+}
+
+.topbar-title h1 {
+    font-weight: 700;
+    color: #2f2f52;
+}
+
+.topbar-subtitle {
+    color: #6c6f82;
+    font-size: 0.9rem;
+}
+
+.topbar-actions {
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+}
+
+.topbar-actions .btn {
+    border-radius: 999px;
+    padding-inline: 1rem;
+}
+
+.search-control {
+    position: relative;
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    background: #eef1f8;
+    padding: 0.4rem 0.9rem;
+    border-radius: 999px;
+}
+
+.search-control i {
+    color: #6c6f82;
+}
+
+.search-control input {
+    border: none;
+    background: transparent;
+    font-size: 0.9rem;
+    min-width: 200px;
+}
+
+.search-control input:focus {
+    outline: none;
+    box-shadow: none;
+}
+
+.section-header {
+    display: flex;
+    align-items: flex-start;
+    gap: 1rem;
+    justify-content: space-between;
+}
+
+.section-title {
+    font-size: 1.4rem;
+    font-weight: 700;
+    color: #2f2f52;
+}
+
+.section-subtitle {
+    color: #7a7d91;
+    margin-bottom: 0;
+}
+
+.section-actions .btn {
+    border-radius: 999px;
+    padding-inline: 1.25rem;
+    display: inline-flex;
+    align-items: center;
+    gap: 0.4rem;
+}
+
+.metrics-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+    gap: 1rem;
+}
+
+.metric-card {
+    position: relative;
+    border-radius: 1rem;
+    color: #fff;
+    padding: 1.25rem 1.5rem;
+    overflow: hidden;
+    box-shadow: 0 12px 30px -16px rgba(68, 84, 255, 0.45);
+}
+
+.metric-card::after {
+    content: '';
+    position: absolute;
+    inset: 0;
+    background: linear-gradient(135deg, rgba(255,255,255,0.12), transparent 60%);
+}
+
+.metric-label {
+    font-size: 0.85rem;
+    letter-spacing: 0.04rem;
+    text-transform: uppercase;
+    opacity: 0.85;
+}
+
+.metric-value {
+    font-size: 2rem;
+    font-weight: 700;
+    margin: 0.35rem 0;
+}
+
+.metric-caption {
+    font-size: 0.8rem;
+    opacity: 0.9;
+}
+
+.gradient-primary {
+    background: linear-gradient(135deg, #5a6cf3 0%, #7b8bff 100%);
+}
+
+.gradient-success {
+    background: linear-gradient(135deg, #1cc88a 0%, #3de0a3 100%);
+}
+
+.gradient-warning {
+    background: linear-gradient(135deg, #f6c23e 0%, #f7d56b 100%);
+    color: #4b3a08;
+}
+
+.gradient-danger {
+    background: linear-gradient(135deg, #e74a3b 0%, #f47362 100%);
+}
+
+.section-toolbar {
+    display: flex;
+    align-items: center;
+    gap: 1rem;
+    background: #ffffff;
+    border-radius: 1rem;
+    padding: 1rem 1.25rem;
+    box-shadow: 0 10px 30px -18px rgba(82, 63, 105, 0.3);
+}
+
+.filter-group {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.75rem;
+}
+
+.btn-filter {
+    border: none;
+    background: #eef1f8;
+    color: #465063;
+    border-radius: 999px;
+    padding: 0.4rem 0.95rem;
+    font-size: 0.85rem;
+    transition: all 0.2s ease;
+    display: inline-flex;
+    align-items: center;
+    gap: 0.35rem;
+}
+
+.btn-filter:hover {
+    background: #e1e7f5;
+}
+
+.btn-filter.active {
+    background: #4e73df;
+    color: #ffffff;
+    box-shadow: 0 8px 18px -12px rgba(78, 115, 223, 0.65);
+}
+
+.btn-filter.active .badge-count {
+    background: rgba(255, 255, 255, 0.2);
+}
+
+.badge-count {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    min-width: 1.5rem;
+    height: 1.25rem;
+    border-radius: 999px;
+    background: rgba(0, 0, 0, 0.08);
+    font-size: 0.75rem;
+    padding: 0 0.4rem;
+}
+
+.toolbar-right {
+    display: flex;
+    align-items: center;
+    gap: 1rem;
+}
+
+.filter-result {
+    font-size: 0.85rem;
+    color: #6c6f82;
+}
+
+.table-hint {
+    font-size: 0.75rem;
+    color: #9aa0b5;
+}
+
+.table tbody tr:hover {
+    background-color: #f9fbff;
+}
+
+.table-empty {
+    padding: 2rem 0;
+    color: #9aa0b5;
+}
+
+.badge {
+    border-radius: 999px;
+}
+
+.topbar .search-control input {
+    min-width: 180px;
+}
+
+@media (max-width: 991.98px) {
+    .topbar {
+        flex-direction: column;
+        align-items: flex-start;
+    }
+
+    .topbar-actions {
+        width: 100%;
+        flex-wrap: wrap;
+        justify-content: flex-start;
+    }
+
+    .search-control {
+        width: 100%;
+    }
+
+    .search-control input {
+        width: 100%;
+    }
+
+    .section-toolbar {
+        flex-direction: column;
+        align-items: stretch;
+    }
+
+    .toolbar-right {
+        width: 100%;
+        justify-content: space-between;
+    }
+}
+
 .sidebar {
     position: fixed;
     top: 0;
@@ -239,7 +502,6 @@ body {
 .status-banned {
     background-color: #e74a3b;
 }
-
 
 
 
