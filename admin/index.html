@@ -108,22 +108,22 @@
                             <input type="search" id="globalSearch" class="form-control" placeholder="搜索用户、商品或订单" aria-label="全局搜索">
                         </div>
                         <button type="button" class="btn btn-outline-primary" onclick="loadDashboardData()">
-                            <i class="bi bi-arrow-clockwise"></i>
+                                <i class="bi bi-arrow-clockwise"></i>
                             刷新
-                        </button>
+                            </button>
                         <button type="button" class="btn btn-outline-secondary" onclick="exportData()">
-                            <i class="bi bi-download"></i>
+                                <i class="bi bi-download"></i>
                             导出
-                        </button>
+                            </button>
                         <button type="button" class="btn btn-outline-info" onclick="showProfile()">
-                            <i class="bi bi-person-circle"></i>
-                            <span id="current-admin">admin</span>
-                        </button>
+                                <i class="bi bi-person-circle"></i>
+                                <span id="current-admin">admin</span>
+                            </button>
                         <button type="button" class="btn btn-outline-danger" onclick="logout()">
-                            <i class="bi bi-box-arrow-right"></i>
+                                <i class="bi bi-box-arrow-right"></i>
                             退出
-                        </button>
-                    </div>
+                            </button>
+                        </div>
                 </header>
 
                 <!-- 仪表盘 -->
@@ -329,8 +329,8 @@
                     </div>
                 </div>
 
-                 <!-- 商品管理 -->
-                 <div id="products" class="content-section" style="display: none;">
+                <!-- 商品管理 -->
+                <div id="products" class="content-section" style="display: none;">
                      <div class="section-header mb-4">
                          <div>
                              <h2 class="section-title">商品管理</h2>
@@ -412,10 +412,10 @@
                                 <i class="bi bi-arrow-repeat"></i>
                                 刷新分类
                             </button>
-                            <button type="button" class="btn btn-primary" onclick="addCategory()">
+                        <button type="button" class="btn btn-primary" onclick="addCategory()">
                                 <i class="bi bi-plus"></i>
                                 新增分类
-                            </button>
+                        </button>
                         </div>
                     </div>
                     <div class="card shadow mb-4">
@@ -674,7 +674,7 @@
                              <button type="button" class="btn btn-primary" data-bs-toggle="modal" data-bs-target="#addEventModal">
                                  <i class="bi bi-plus"></i>
                                  新建活动
-                             </button>
+                        </button>
                         </div>
                     </div>
                     <div class="card shadow mb-4">
@@ -708,21 +708,39 @@
 
                 <!-- 启动广告管理 -->
                 <div id="splash-ads" class="content-section" style="display: none;">
-                    <div class="section-header mb-4">
-                        <div>
-                            <h2 class="section-title">启动广告管理</h2>
-                            <p class="section-subtitle">配置启动页展示资源，提升品牌曝光</p>
-                        </div>
-                        <div class="section-actions">
-                            <button type="button" class="btn btn-outline-primary" onclick="loadSplashAds()">
-                                <i class="bi bi-arrow-repeat"></i>
-                                刷新广告
-                            </button>
-                            <button type="button" class="btn btn-primary" data-bs-toggle="modal" data-bs-target="#addSplashAdModal">
-                                <i class="bi bi-plus"></i>
-                                添加广告
-                            </button>
-                        </div>
+                     <div class="section-header mb-4">
+                         <div>
+                             <h2 class="section-title">启动广告管理</h2>
+                             <p class="section-subtitle">配置启动页展示资源，后台配置什么APP显示什么</p>
+                         </div>
+                         <div class="section-actions">
+                             <button type="button" class="btn btn-outline-info" onclick="testSplashAdAPI()">
+                                 <i class="bi bi-play"></i>
+                                 测试API
+                             </button>
+                             <button type="button" class="btn btn-outline-primary" onclick="loadSplashAds()">
+                                 <i class="bi bi-arrow-repeat"></i>
+                                 刷新广告
+                             </button>
+                        <button type="button" class="btn btn-primary" data-bs-toggle="modal" data-bs-target="#addSplashAdModal">
+                                 <i class="bi bi-plus"></i>
+                                 添加广告
+                        </button>
+                         </div>
+                     </div>
+                     
+                     <!-- API对接说明 -->
+                     <div class="alert alert-info mb-4">
+                         <h6 class="alert-heading"><i class="bi bi-info-circle"></i> APP端对接说明</h6>
+                         <p class="mb-2"><strong>API端点：</strong> <code>GET /api/v1/app/splash-ad</code></p>
+                         <p class="mb-2"><strong>配置规则：</strong></p>
+                         <ul class="mb-0">
+                             <li>APP启动时自动调用API获取当前有效广告</li>
+                             <li>优先级高的广告优先显示，相同优先级按权重随机选择</li>
+                             <li>广告状态必须为"激活"，且在时间范围内</li>
+                             <li>支持图片和视频广告，支持点击跳转</li>
+                             <li>显示时长、跳过延迟等参数由后台配置控制</li>
+                         </ul>
                     </div>
 
                     <!-- 筛选条件 -->
@@ -743,7 +761,7 @@
                             <div class="search-control">
                                 <i class="bi bi-search"></i>
                                 <input type="text" id="adSearchInput" placeholder="搜索广告标题..." onkeyup="searchSplashAds()">
-                            </div>
+                        </div>
                         </div>
                         <div class="toolbar-right ms-auto">
                             <button class="btn btn-outline-secondary" onclick="loadSplashAds()">
@@ -1132,8 +1150,8 @@
                                     </div>
                                     
                                     <!-- 价格信息 -->
-                                    <div class="row mb-3">
-                                        <div class="col-md-3">
+                    <div class="row mb-3">
+                        <div class="col-md-3">
                                             <label for="editProductStartingPrice" class="form-label">起拍价 *</label>
                                             <input type="number" class="form-control" id="editProductStartingPrice" name="starting_price" step="0.01" min="0" required>
                                         </div>
@@ -1840,7 +1858,7 @@
                     });
                     pendingLoaders.clear();
                 });
-
+                
                 // 根据不同区域加载对应数据
                 switch(sectionName) {
                     case 'dashboard':
@@ -1857,11 +1875,19 @@
                         break;
                     case 'splash-ads':
                         // 加载启动广告数据
-                        if (typeof loadSplashAds === 'function') {
-                            loadSplashAds(1);
-                        } else {
-                            console.log('启动广告管理功能加载中...');
-                        }
+                        setTimeout(() => {
+                            if (typeof window.loadSplashAds === 'function') {
+                                window.loadSplashAds(1);
+                            } else if (typeof loadSplashAds === 'function') {
+                                loadSplashAds(1);
+                            } else {
+                                console.log('启动广告管理功能加载中...');
+                                // 使用内联方案加载启动广告
+                                if (typeof window.loadSplashAdsDirectly === 'function') {
+                                    window.loadSplashAdsDirectly();
+                                }
+                            }
+                        }, 100);
                         break;
                     case 'users':
                         console.log('用户管理页面');
@@ -4099,6 +4125,146 @@
             } catch (error) {
                 console.error('移除商品失败:', error);
                 alert('移除商品失败: ' + error.message);
+            }
+        };
+        
+        // ===== 启动广告API测试功能 =====
+        
+        // 备用启动广告函数（如果splash-ads.js未加载）
+        window.uploadAdMedia = window.uploadAdMedia || function(type) {
+            console.log('备用上传函数，类型:', type);
+            alert('上传功能加载中，请稍后再试...');
+        };
+        
+        window.loadSplashAds = window.loadSplashAds || function() {
+            console.log('备用加载启动广告函数，调用内联方案');
+            if (typeof window.loadSplashAdsDirectly === 'function') {
+                window.loadSplashAdsDirectly();
+            } else {
+                alert('启动广告功能加载中，请刷新页面再试...');
+            }
+        };
+        
+        window.saveSplashAd = window.saveSplashAd || function() {
+            console.log('备用保存广告函数');
+            alert('保存功能加载中，请稍后再试...');
+        };
+        
+        window.performUpload = window.performUpload || function() {
+            console.log('备用执行上传函数');
+            alert('上传功能加载中，请稍后再试...');
+        };
+        
+        // 内联启动广告加载函数（备用方案）
+        window.loadSplashAdsDirectly = async function() {
+            console.log('使用内联方案加载启动广告数据');
+            try {
+                const token = localStorage.getItem('admin_token');
+                if (!token) return console.error('没有认证token');
+                
+                const response = await fetch('https://catdog.dachaonet.com/api/v1/splash-ads', {
+                    headers: { 'Authorization': `Bearer ${token}`, 'Content-Type': 'application/json' }
+                });
+                
+                if (!response.ok) throw new Error(`HTTP ${response.status}: ${response.statusText}`);
+                
+                const data = await response.json();
+                console.log('启动广告数据:', data);
+                
+                const tbody = document.querySelector('#splashAdsTableBody');
+                if (!tbody) return;
+                
+                if (data && data.ads && Array.isArray(data.ads)) {
+                    tbody.innerHTML = data.ads.map(ad => `
+                        <tr>
+                            <td>${ad.id}</td>
+                            <td>${ad.title}</td>
+                            <td>
+                                <span class="badge ${ad.ad_type === 'image' ? 'bg-primary' : 'bg-info'}">
+                                    ${ad.ad_type === 'image' ? '图片广告' : '视频广告'}
+                                </span>
+                            </td>
+                            <td>
+                                <span class="badge ${ad.status === 'active' ? 'bg-success' : ad.status === 'draft' ? 'bg-warning' : ad.status === 'inactive' ? 'bg-secondary' : 'bg-danger'}">
+                                    ${ad.status === 'active' ? '激活' : ad.status === 'draft' ? '草稿' : ad.status === 'inactive' ? '停用' : '已过期'}
+                                </span>
+                            </td>
+                            <td>${ad.priority || 0}</td>
+                            <td>${ad.display_count || 0}</td>
+                            <td>${ad.click_count || 0}</td>
+                            <td>${ad.click_count > 0 && ad.display_count > 0 ? ((ad.click_count / ad.display_count) * 100).toFixed(2) + '%' : '0%'}</td>
+                            <td>${new Date(ad.created_at).toLocaleString('zh-CN')}</td>
+                            <td>
+                                <div class="table-actions">
+                                    <button type="button" class="btn btn-outline-primary btn-sm" onclick="alert('查看广告 ${ad.id}')" title="查看广告">
+                                        <i class="bi bi-eye"></i>
+                                    </button>
+                                    <button type="button" class="btn btn-outline-warning btn-sm" onclick="alert('编辑广告 ${ad.id}')" title="编辑广告">
+                                        <i class="bi bi-pencil"></i>
+                                    </button>
+                                    <button type="button" class="btn btn-outline-${ad.status === 'active' ? 'secondary' : 'success'} btn-sm" onclick="alert('切换广告状态 ${ad.id}')" title="${ad.status === 'active' ? '停用' : '激活'}广告">
+                                        <i class="bi bi-${ad.status === 'active' ? 'pause' : 'play'}"></i>
+                                    </button>
+                                    <button type="button" class="btn btn-outline-danger btn-sm" onclick="if(confirm('确定删除广告 ${ad.title}?')) alert('删除广告 ${ad.id}')" title="删除广告">
+                                        <i class="bi bi-trash"></i>
+                                    </button>
+                                </div>
+                            </td>
+                        </tr>
+                    `).join('');
+                } else {
+                    tbody.innerHTML = '<tr><td colspan="10" class="text-center">暂无启动广告数据</td></tr>';
+                }
+                
+            } catch (error) {
+                console.error('加载启动广告数据失败:', error);
+                const tbody = document.querySelector('#splashAdsTableBody');
+                if (tbody) tbody.innerHTML = `<tr><td colspan="10" class="text-center text-danger">加载失败: ${error.message}</td></tr>`;
+            }
+        };
+        
+        // 测试启动广告API
+        window.testSplashAdAPI = async function() {
+            console.log('测试启动广告API');
+            
+            try {
+                const response = await fetch('https://catdog.dachaonet.com/api/v1/app/splash-ad', {
+                    method: 'GET',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    }
+                });
+                
+                console.log('启动广告API响应状态:', response.status);
+                
+                if (response.ok) {
+                    const data = await response.json();
+                    console.log('启动广告API返回数据:', data);
+                    
+                    if (data) {
+                        alert(`✅ API测试成功！
+                        
+当前返回广告：
+• ID: ${data.id}
+• 类型: ${data.ad_type === 'image' ? '图片广告' : '视频广告'}
+• 显示时长: ${data.display_duration}秒
+• 跳过延迟: ${data.skip_delay}秒
+• 允许跳过: ${data.skip_enabled ? '是' : '否'}
+• 点击行为: ${data.click_action || '无'}
+
+APP端将显示此广告配置！`);
+                    } else {
+                        alert('⚠️ API返回空数据\n\n当前没有激活的启动广告，APP将显示默认启动页面。');
+                    }
+                } else if (response.status === 404) {
+                    alert('⚠️ 没有可用广告\n\n当前没有激活的启动广告，APP将显示默认启动页面。');
+                } else {
+                    throw new Error(`HTTP ${response.status}: ${response.statusText}`);
+                }
+                
+            } catch (error) {
+                console.error('测试启动广告API失败:', error);
+                alert('❌ API测试失败\n\n错误信息: ' + error.message + '\n\n请检查网络连接和API服务状态。');
             }
         };
         

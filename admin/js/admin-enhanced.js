@@ -336,7 +336,7 @@ function showSection(sectionName) {
         'messages': '管理平台通知与站内信',
         'settings': '配置系统基础信息'
     };
-
+    
     const pageTitle = document.getElementById('page-title');
     if (pageTitle && titles[sectionName]) {
         pageTitle.textContent = titles[sectionName];
@@ -346,10 +346,10 @@ function showSection(sectionName) {
     if (pageDescription) {
         pageDescription.textContent = descriptions[sectionName] || '请选择左侧菜单查看详情';
     }
-
+    
     currentSection = sectionName;
     syncGlobalSearchInput();
-
+    
     // 根据不同区域加载对应数据
     switch(sectionName) {
         case 'users':
@@ -463,7 +463,7 @@ async function loadUsers() {
         
         const response = await apiRequest('/users');
         console.log('用户API响应:', response);
-
+        
         if (response && Array.isArray(response.users)) {
             console.log(`加载到 ${response.users.length} 个用户`);
             userDataCache = response.users;
@@ -483,12 +483,12 @@ async function loadUsers() {
 }
 
 function renderUserTable(users, emptyMessage) {
-    const tbody = document.querySelector('#usersTable tbody');
-    if (!tbody) {
+        const tbody = document.querySelector('#usersTable tbody');
+        if (!tbody) {
         console.warn('用户表格容器缺失');
-        return;
-    }
-
+            return;
+        }
+        
     if (!Array.isArray(users) || users.length === 0) {
         const message = emptyMessage || (userDataCache.length === 0 && userFilterStatus === 'all' && !userSearchKeyword
             ? '暂无用户数据'
@@ -506,7 +506,7 @@ function renderUserTable(users, emptyMessage) {
 
         return `
         <tr data-user-id="${user.id}">
-            <td>${user.id}</td>
+                    <td>${user.id}</td>
             <td>${username}</td>
             <td>${phone}</td>
             <td>${email}</td>
@@ -515,17 +515,17 @@ function renderUserTable(users, emptyMessage) {
             <td>
                 <div class="table-actions">
                     <button type="button" class="btn btn-outline-primary btn-sm" title="查看用户" onclick="viewUser(${user.id})">
-                        <i class="bi bi-eye"></i>
-                    </button>
+                            <i class="bi bi-eye"></i>
+                        </button>
                     <button type="button" class="btn btn-outline-warning btn-sm" title="编辑用户" onclick="editUser(${user.id})">
-                        <i class="bi bi-pencil"></i>
-                    </button>
+                            <i class="bi bi-pencil"></i>
+                        </button>
                     <button type="button" class="btn btn-outline-danger btn-sm" title="删除用户" onclick="deleteUser(${user.id})">
-                        <i class="bi bi-trash"></i>
-                    </button>
+                            <i class="bi bi-trash"></i>
+                        </button>
                 </div>
-            </td>
-        </tr>
+                    </td>
+                </tr>
     `;
     }).join('');
 }
@@ -721,7 +721,7 @@ if (document.readyState !== 'loading') {
     });
 }
 
-// 加载商品数据  
+// 加载商品数据
 window.loadProducts = async function loadProducts() {
     try {
         const response = await apiRequest('/products');
@@ -1405,69 +1405,69 @@ window.editUser = async function(userId) {
                             <form id="editUserForm">
                                 <div class="row g-3">
                                     <div class="col-md-6">
-                                        <label class="form-label">用户名</label>
+                                            <label class="form-label">用户名</label>
                                         <input type="text" class="form-control" id="editUserUsername" value="${usernameValue}" required>
                                     </div>
                                     <div class="col-md-6">
-                                        <label class="form-label">手机号</label>
+                                            <label class="form-label">手机号</label>
                                         <input type="tel" class="form-control" id="editUserPhone" value="${phoneValue}" required>
-                                    </div>
+                                        </div>
                                     <div class="col-md-6">
-                                        <label class="form-label">邮箱</label>
+                                            <label class="form-label">邮箱</label>
                                         <input type="email" class="form-control" id="editUserEmail" value="${emailValue}">
                                     </div>
                                     <div class="col-md-6">
-                                        <label class="form-label">昵称</label>
+                                            <label class="form-label">昵称</label>
                                         <input type="text" class="form-control" id="editUserNickname" value="${nicknameValue}">
-                                    </div>
+                                        </div>
                                     <div class="col-md-6">
-                                        <label class="form-label">真实姓名</label>
+                                            <label class="form-label">真实姓名</label>
                                         <input type="text" class="form-control" id="editUserRealname" value="${realNameValue}">
                                     </div>
                                     <div class="col-md-6">
-                                        <label class="form-label">性别</label>
+                                            <label class="form-label">性别</label>
                                         <select class="form-select" id="editUserGender">
                                             <option value="0" ${genderValue === 0 ? 'selected' : ''}>未知</option>
                                             <option value="1" ${genderValue === 1 ? 'selected' : ''}>男</option>
                                             <option value="2" ${genderValue === 2 ? 'selected' : ''}>女</option>
-                                        </select>
-                                    </div>
+                                            </select>
+                                        </div>
                                     <div class="col-md-6">
                                         <label class="form-label">所在地区</label>
                                         <input type="text" class="form-control" id="editUserLocation" value="${locationValue}">
                                     </div>
                                     <div class="col-md-6">
-                                        <label class="form-label">账户余额 (¥)</label>
-                                        <div class="input-group">
+                                            <label class="form-label">账户余额 (¥)</label>
+                                            <div class="input-group">
                                             <input type="number" class="form-control" id="editUserBalance" value="${balanceValue}" step="0.01" min="0">
                                             <button type="button" class="btn btn-outline-primary" onclick="showAddBalanceDialog(${user.id})">
-                                                <i class="bi bi-plus"></i> 充值
-                                            </button>
+                                                    <i class="bi bi-plus"></i> 充值
+                                                </button>
+                                            </div>
                                         </div>
-                                    </div>
                                     <div class="col-md-6">
-                                        <label class="form-label">信用分</label>
+                                            <label class="form-label">信用分</label>
                                         <input type="number" class="form-control" id="editUserCredit" value="${creditScoreValue}" min="0" max="1000">
                                     </div>
                                     <div class="col-md-6">
-                                        <label class="form-label">账户状态</label>
+                                            <label class="form-label">账户状态</label>
                                         <select class="form-select" id="editUserStatus">
                                             <option value="1" ${statusValue === 1 ? 'selected' : ''}>正常</option>
                                             <option value="2" ${statusValue === 2 ? 'selected' : ''}>冻结</option>
                                             <option value="3" ${statusValue === 3 ? 'selected' : ''}>禁用</option>
-                                        </select>
+                                            </select>
+                                        </div>
                                     </div>
-                                </div>
                                 <div class="row g-3 mt-2">
                                     <div class="col-12">
                                         <div class="form-check form-check-inline">
                                             <input class="form-check-input" type="checkbox" id="editUserIsSeller" ${user.is_seller ? 'checked' : ''}>
                                             <label class="form-check-label" for="editUserIsSeller">卖家权限</label>
-                                        </div>
+                                </div>
                                         <div class="form-check form-check-inline">
                                             <input class="form-check-input" type="checkbox" id="editUserIsVerified" ${user.is_verified ? 'checked' : ''}>
                                             <label class="form-check-label" for="editUserIsVerified">已认证</label>
-                                        </div>
+                                            </div>
                                         <div class="form-check form-check-inline">
                                             <input class="form-check-input" type="checkbox" id="editUserIsAdmin" ${user.is_admin ? 'checked' : ''}>
                                             <label class="form-check-label" for="editUserIsAdmin">管理员权限</label>
@@ -1486,7 +1486,7 @@ window.editUser = async function(userId) {
                 </div>
             </div>
         `;
-
+        
         document.body.insertAdjacentHTML('beforeend', modalHtml);
         const modalElement = document.getElementById('editUserModal');
         const modalInstance = new bootstrap.Modal(modalElement);
@@ -1523,12 +1523,12 @@ window.updateUser = async function(userId) {
             is_verified: document.getElementById('editUserIsVerified').checked,
             is_admin: document.getElementById('editUserIsAdmin').checked
         };
-
+        
         const response = await apiRequest(`/users/${userId}`, {
             method: 'PUT',
             body: JSON.stringify(formData)
         });
-
+        
         if (response && response.success === false) {
             throw new Error(response.message || '更新失败');
         }
@@ -1536,7 +1536,7 @@ window.updateUser = async function(userId) {
         const successMessage = response?.message ? escapeHtml(response.message) : escapeHtml('用户信息更新成功');
         showSuccess(successMessage);
 
-        const modal = bootstrap.Modal.getInstance(document.getElementById('editUserModal'));
+            const modal = bootstrap.Modal.getInstance(document.getElementById('editUserModal'));
         if (modal) {
             modal.hide();
         }
@@ -1580,7 +1580,7 @@ window.showAddBalanceDialog = function(userId) {
             </div>
         </div>
     `;
-
+    
     document.body.insertAdjacentHTML('beforeend', balanceModalHtml);
     const modal = new bootstrap.Modal(document.getElementById('addBalanceModal'));
     modal.show();
@@ -1594,12 +1594,12 @@ window.addUserBalance = async function(userId) {
         const amountInput = document.getElementById('addAmount');
         const amount = Number.parseFloat(amountInput.value);
         const reason = document.getElementById('addReason').value.trim();
-
+        
         if (!amount || amount <= 0) {
             showError('请输入有效的充值金额');
             return;
         }
-
+        
         const response = await apiRequest(`/users/${userId}/add-balance`, {
             method: 'POST',
             body: JSON.stringify({ amount, reason })
@@ -1618,7 +1618,7 @@ window.addUserBalance = async function(userId) {
             balanceInput.value = newBalance.toFixed(2);
         }
 
-        const balanceModal = bootstrap.Modal.getInstance(document.getElementById('addBalanceModal'));
+            const balanceModal = bootstrap.Modal.getInstance(document.getElementById('addBalanceModal'));
         if (balanceModal) {
             balanceModal.hide();
         }
