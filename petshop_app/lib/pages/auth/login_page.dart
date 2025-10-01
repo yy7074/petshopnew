@@ -182,6 +182,7 @@ class _LoginPageState extends State<LoginPage> {
                       height: 160.w,
                       decoration: BoxDecoration(
                         borderRadius: BorderRadius.circular(20.r),
+                        color: Colors.transparent, // 透明背景，移除白边
                         boxShadow: [
                           BoxShadow(
                             color: const Color(0xFF9C4DFF).withOpacity(0.2),

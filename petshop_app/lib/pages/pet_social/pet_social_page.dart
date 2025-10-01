@@ -17,7 +17,7 @@ class _PetSocialPageState extends State<PetSocialPage> {
 
   // 数据状态
   List<Map<String, dynamic>> _posts = [];
-  bool _isLoading = true;
+  bool _isLoading = false; // 改为false，在_loadPosts中才设为true
   bool _isLoadingMore = false;
   String? _errorMessage;
   int _currentPage = 1;
@@ -34,6 +34,7 @@ class _PetSocialPageState extends State<PetSocialPage> {
   @override
   void initState() {
     super.initState();
+    print('🎯 宠物交流页面初始化...');
     _loadPosts();
     _scrollController.addListener(_onScroll);
   }
@@ -63,6 +64,8 @@ class _PetSocialPageState extends State<PetSocialPage> {
     });
 
     try {
+      print('🐾 开始加载宠物交流帖子... page: $_currentPage');
+
       final result = _currentSearchQuery.isNotEmpty
           ? await LocalServiceService.searchSocialPosts(
               query: _currentSearchQuery,
@@ -78,8 +81,15 @@ class _PetSocialPageState extends State<PetSocialPage> {
               location: _selectedLocation,
             );
 
+      print('✅ 获取到数据: ${result['items']?.length ?? 0} 条帖子');
+
       final List<Map<String, dynamic>> newPosts =
           List<Map<String, dynamic>>.from(result['items'] ?? []);
+
+      print('📝 解析后帖子数量: ${newPosts.length}');
+      if (newPosts.isNotEmpty) {
+        print('📋 第一条帖子: ${newPosts.first}');
+      }
 
       setState(() {
         if (refresh || _currentPage == 1) {
@@ -91,9 +101,14 @@ class _PetSocialPageState extends State<PetSocialPage> {
         _isLoading = false;
         _isLoadingMore = false;
       });
-    } catch (e) {
+
+      print('✨ 页面状态更新完成，当前显示 ${_posts.length} 条帖子');
+    } catch (e, stackTrace) {
       // API失败时使用模拟数据
-      print('API请求失败，使用模拟数据: $e');
+      print('❌ API请求失败: $e');
+      print('📚 堆栈跟踪: $stackTrace');
+      print('⚠️  使用模拟数据');
+
       setState(() {
         if (refresh || _currentPage == 1) {
           _posts = _mockPosts;
@@ -231,7 +246,11 @@ class _PetSocialPageState extends State<PetSocialPage> {
 
   // 构建页面主体
   Widget _buildBody() {
+    print(
+        '🎨 构建页面内容 - _isLoading: $_isLoading, _posts.length: ${_posts.length}, _errorMessage: $_errorMessage');
+
     if (_isLoading && _posts.isEmpty) {
+      print('⏳ 显示加载中...');
       return const Center(
         child: CircularProgressIndicator(),
       );
@@ -385,8 +404,15 @@ class _PetSocialPageState extends State<PetSocialPage> {
   }
 
   Widget _buildPostCard(Map<String, dynamic> post) {
-    final images = post['images'] as List<String>;
-    final mainImage = images.first;
+    // 处理images可能为null的情况
+    final imagesList = post['images'];
+    final List<String> images =
+        imagesList is List ? imagesList.map((e) => e.toString()).toList() : [];
+
+    // 如果没有图片，使用默认占位图
+    final mainImage = images.isNotEmpty
+        ? images.first
+        : 'https://picsum.photos/300/400?random=${post['id']}';
 
     return GestureDetector(
       onTap: () {

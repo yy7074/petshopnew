@@ -143,16 +143,16 @@ class _HomePageState extends State<HomePage> {
       'icon': 'assets/icons/cooperation.png',
       'color': Color(0xFFAB47BC)
     },
-    {
-      'name': '支付测试',
-      'icon': 'assets/icons/transaction_query.png',
-      'color': Color(0xFFE91E63)
-    },
-    {
-      'name': '拍卖测试',
-      'icon': 'assets/icons/limited_auction.png',
-      'color': Color(0xFF2196F3)
-    },
+    // {
+    //   'name': '支付测试',
+    //   'icon': 'assets/icons/transaction_query.png',
+    //   'color': Color(0xFFE91E63)
+    // },
+    // {
+    //   'name': '拍卖测试',
+    //   'icon': 'assets/icons/limited_auction.png',
+    //   'color': Color(0xFF2196F3)
+    // },
   ];
 
   final List<Map<String, dynamic>> auctionProducts = [
@@ -1481,12 +1481,12 @@ class _HomePageState extends State<HomePage> {
                 case '合作方及代理':
                   Get.toNamed('/partner-agent');
                   break;
-                case '支付测试':
-                  Get.toNamed('/test-payment');
-                  break;
-                case '拍卖测试':
-                  Get.toNamed('/auction-test');
-                  break;
+                // case '支付测试':
+                //   Get.toNamed('/test-payment');
+                //   break;
+                // case '拍卖测试':
+                //   Get.toNamed('/auction-test');
+                //   break;
                 default:
                   debugPrint('点击了：${item['name']}');
               }

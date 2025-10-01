@@ -76,6 +76,7 @@ dev_dependencies:
     sdk: flutter
   flutter_lints: ^2.0.0
   build_runner: ^2.4.7
+  flutter_launcher_icons: ^0.13.1
 
 flutter:
   uses-material-design: true
@@ -87,4 +88,13 @@ flutter:
     - assets/icons/aquatic/
     - assets/icons/local/
     - assets/animations/
+
+# 应用图标配置
+flutter_launcher_icons:
+  android: true
+  ios: true
+  image_path: "assets/images/app_icon.png"
+  adaptive_icon_background: "#6AD0FF"  # 浅蓝绿色背景
+  adaptive_icon_foreground: "assets/images/app_icon.png"
+  remove_alpha_ios: true
   
