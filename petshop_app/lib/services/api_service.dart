@@ -186,4 +186,75 @@ class ApiService extends ChangeNotifier {
       options: options,
     );
   }
+
+  // 上传商品图片
+  Future<List<String>> uploadProductImages(List<dynamic> files) async {
+    try {
+      final formData = FormData();
+
+      // 添加多个文件
+      for (var file in files) {
+        if (file is MultipartFile) {
+          formData.files.add(MapEntry('files', file));
+        } else {
+          // 假设是文件路径
+          formData.files.add(
+            MapEntry(
+              'files',
+              await MultipartFile.fromFile(
+                file.toString(),
+                filename: file.toString().split('/').last,
+              ),
+            ),
+          );
+        }
+      }
+
+      final response = await upload('/products/upload-images', formData);
+
+      if (response.statusCode == 200 && response.data['success'] == true) {
+        return List<String>.from(response.data['images'] ?? []);
+      } else {
+        throw Exception(response.data['message'] ?? '图片上传失败');
+      }
+    } catch (e) {
+      throw Exception('图片上传失败: $e');
+    }
+  }
+
+  // 上传单张图片（通用）
+  Future<String> uploadSingleImage(dynamic file,
+      {String endpoint = '/products/upload-images'}) async {
+    try {
+      final formData = FormData();
+
+      if (file is MultipartFile) {
+        formData.files.add(MapEntry('files', file));
+      } else {
+        formData.files.add(
+          MapEntry(
+            'files',
+            await MultipartFile.fromFile(
+              file.toString(),
+              filename: file.toString().split('/').last,
+            ),
+          ),
+        );
+      }
+
+      final response = await upload(endpoint, formData);
+
+      if (response.statusCode == 200 && response.data['success'] == true) {
+        final images = response.data['images'] as List?;
+        if (images != null && images.isNotEmpty) {
+          return images[0].toString();
+        }
+        throw Exception('未返回图片URL');
+      } else {
+        throw Exception(response.data['message'] ?? '图片上传失败');
+      }
+    } catch (e) {
+      throw Exception('图片上传失败: $e');
+    }
+  }
 }

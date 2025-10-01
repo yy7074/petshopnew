@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
+import 'publish_product_page.dart';
 
 class PublishTypePage extends StatefulWidget {
   const PublishTypePage({super.key});
@@ -36,6 +37,12 @@ class _PublishTypePageState extends State<PublishTypePage> {
             () {
               Navigator.pop(context);
               // 跳转到拍卖发布页面
+              Navigator.push(
+                context,
+                MaterialPageRoute(
+                  builder: (context) => const PublishProductPage(),
+                ),
+              );
             },
           ),
 
@@ -49,7 +56,13 @@ class _PublishTypePageState extends State<PublishTypePage> {
             const Color(0xFFE91E63),
             () {
               Navigator.pop(context);
-              // 跳转到一口价发布页面
+              // 跳转到一口价发布页面（同样使用发布产品页面，但预设auction_type为2）
+              Navigator.push(
+                context,
+                MaterialPageRoute(
+                  builder: (context) => const PublishProductPage(),
+                ),
+              );
             },
           ),
 
