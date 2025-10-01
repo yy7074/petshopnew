@@ -1,6 +1,5 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
-import 'package:cached_network_image/cached_network_image.dart';
 import 'publish_type_page.dart';
 
 class PublishPage extends StatefulWidget {
@@ -116,46 +115,11 @@ class _PublishPageState extends State<PublishPage> {
           SizedBox(height: 12.h),
           Row(
             children: [
-              // 第一张图片
-              _buildImageItem('https://picsum.photos/200/200?random=1'),
-              SizedBox(width: 12.w),
-              // 第二张图片
-              _buildImageItem('https://picsum.photos/200/200?random=2'),
-              SizedBox(width: 12.w),
               // 添加图片按钮
               _buildAddImageButton(),
             ],
           ),
         ],
-      ),
-    );
-  }
-
-  // 构建图片项目
-  Widget _buildImageItem(String imageUrl) {
-    return Container(
-      width: 80.w,
-      height: 80.w,
-      decoration: BoxDecoration(
-        borderRadius: BorderRadius.circular(8.r),
-        color: const Color(0xFFF5F5F5),
-      ),
-      child: ClipRRect(
-        borderRadius: BorderRadius.circular(8.r),
-        child: CachedNetworkImage(
-          imageUrl: imageUrl,
-          fit: BoxFit.cover,
-          placeholder: (context, url) => Container(
-            color: const Color(0xFFF5F5F5),
-            child: const Center(
-              child: CircularProgressIndicator(),
-            ),
-          ),
-          errorWidget: (context, url, error) => Container(
-            color: const Color(0xFFF5F5F5),
-            child: const Icon(Icons.error),
-          ),
-        ),
       ),
     );
   }
