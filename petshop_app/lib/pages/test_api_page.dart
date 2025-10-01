@@ -57,7 +57,7 @@ class _TestApiPageState extends State<TestApiPage> {
                   ),
                   SizedBox(height: 4.h),
                   Text(
-                    'https://catdog.dachaonet.com/api/v1',
+                    'http://39.96.177.57:3000/api/v1',
                     style: TextStyle(
                       fontSize: 12.sp,
                       color: const Color(0xFF9C4DFF),

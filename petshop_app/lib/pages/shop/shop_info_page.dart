@@ -1049,7 +1049,7 @@ class _ShopInfoPageState extends State<ShopInfoPage> {
                   ClipRRect(
                     borderRadius: BorderRadius.circular(8.r),
                     child: Image.network(
-                      'https://catdog.dachaonet.com$imageUrl',
+                      'http://39.96.177.57:3000$imageUrl',
                       width: double.infinity,
                       height: double.infinity,
                       fit: BoxFit.cover,

@@ -14,10 +14,28 @@ optional_auth = HTTPBearer(auto_error=False)
 
 def verify_password(plain_password: str, hashed_password: str) -> bool:
     """验证密码"""
-    return pwd_context.verify(plain_password, hashed_password)
+    # bcrypt只支持最大72字节的密码，需要截断
+    # 将密码编码为字节并截断到72字节
+    if isinstance(plain_password, str):
+        plain_password_bytes = plain_password.encode('utf-8')
+        if len(plain_password_bytes) > 72:
+            plain_password = plain_password_bytes[:72].decode('utf-8', errors='ignore')
+    
+    try:
+        return pwd_context.verify(plain_password, hashed_password)
+    except Exception as e:
+        # 如果验证失败，记录错误但不抛出异常，返回False
+        print(f"密码验证错误: {e}")
+        return False
 
 def get_password_hash(password: str) -> str:
     """生成密码哈希"""
+    # bcrypt只支持最大72字节的密码，需要截断
+    if isinstance(password, str):
+        password_bytes = password.encode('utf-8')
+        if len(password_bytes) > 72:
+            password = password_bytes[:72].decode('utf-8', errors='ignore')
+    
     return pwd_context.hash(password)
 
 def create_access_token(data: dict, expires_delta: Optional[timedelta] = None):

@@ -3,8 +3,8 @@ import 'package:flutter/foundation.dart';
 class ApiConstants {
   // 基础配置 - 根据环境动态设置
   static String get baseUrl {
-    // 统一使用内网穿透域名，映射到本地3000端口
-    return 'https://catdog.dachaonet.com/api/v1';
+    // 使用阿里云服务器地址
+    return 'http://39.96.177.57:3000/api/v1';
   }
 
   static const String version = '';

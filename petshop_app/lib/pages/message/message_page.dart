@@ -479,7 +479,7 @@ class _MessagePageState extends State<MessagePage>
                         ? DecorationImage(
                             image: NetworkImage(avatar.startsWith('http')
                                 ? avatar
-                                : 'https://catdog.dachaonet.com$avatar'),
+                                : 'http://39.96.177.57:3000$avatar'),
                             fit: BoxFit.cover,
                           )
                         : null,
