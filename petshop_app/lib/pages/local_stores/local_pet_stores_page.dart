@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import '../../constants/app_colors.dart';
+import '../../services/store_service.dart';
 import 'local_pet_store_detail_page.dart';
 
 class LocalPetStoresPage extends StatefulWidget {
@@ -12,9 +13,90 @@ class LocalPetStoresPage extends StatefulWidget {
 
 class _LocalPetStoresPageState extends State<LocalPetStoresPage> {
   final ScrollController _scrollController = ScrollController();
+  final StoreService _storeService = StoreService();
 
-  // 模拟本地宠店数据
-  final List<Map<String, dynamic>> _stores = [
+  List<Map<String, dynamic>> _stores = [];
+  bool _isLoading = false;
+  bool _hasMore = true;
+  int _currentPage = 1;
+  final int _pageSize = 20;
+
+  @override
+  void initState() {
+    super.initState();
+    _loadStores();
+    _scrollController.addListener(_onScroll);
+  }
+
+  // 加载店铺列表
+  Future<void> _loadStores({bool refresh = false}) async {
+    if (_isLoading) return;
+    if (!refresh && !_hasMore) return;
+
+    setState(() {
+      _isLoading = true;
+      if (refresh) {
+        _currentPage = 1;
+        _stores = [];
+        _hasMore = true;
+      }
+    });
+
+    try {
+      final result = await _storeService.getLocalPetStores(
+        page: _currentPage,
+        pageSize: _pageSize,
+      );
+
+      if (result.success && result.data != null) {
+        final items = (result.data!['items'] as List?)
+                ?.map((e) => e as Map<String, dynamic>)
+                .toList() ??
+            [];
+
+        setState(() {
+          if (refresh) {
+            _stores = items;
+          } else {
+            _stores.addAll(items);
+          }
+
+          _hasMore = items.length >= _pageSize;
+          _currentPage++;
+          _isLoading = false;
+        });
+      } else {
+        setState(() {
+          _isLoading = false;
+        });
+        if (mounted) {
+          ScaffoldMessenger.of(context).showSnackBar(
+            SnackBar(content: Text(result.message ?? '加载失败')),
+          );
+        }
+      }
+    } catch (e) {
+      setState(() {
+        _isLoading = false;
+      });
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text('加载失败: $e')),
+        );
+      }
+    }
+  }
+
+  // 滚动监听
+  void _onScroll() {
+    if (_scrollController.position.pixels >=
+        _scrollController.position.maxScrollExtent - 200) {
+      _loadStores();
+    }
+  }
+
+  // 备用的模拟数据（保留用于参考）
+  final List<Map<String, dynamic>> _mockStores = [
     {
       'id': '1',
       'name': '招财猫旺财狗',
@@ -143,20 +225,85 @@ class _LocalPetStoresPageState extends State<LocalPetStoresPage> {
           ),
         ),
       ),
-      body: ListView.builder(
-        controller: _scrollController,
-        padding: EdgeInsets.all(16.w),
-        itemCount: _stores.length,
-        itemBuilder: (context, index) {
-          final store = _stores[index];
-          return _buildStoreCard(store);
-        },
+      body: _stores.isEmpty && _isLoading
+          ? _buildLoadingView()
+          : _stores.isEmpty
+              ? _buildEmptyView()
+              : RefreshIndicator(
+                  onRefresh: () => _loadStores(refresh: true),
+                  child: ListView.builder(
+                    controller: _scrollController,
+                    padding: EdgeInsets.all(16.w),
+                    itemCount: _stores.length + (_hasMore ? 1 : 0),
+                    itemBuilder: (context, index) {
+                      if (index == _stores.length) {
+                        return _buildLoadingMore();
+                      }
+                      final store = _stores[index];
+                      return _buildStoreCard(store);
+                    },
+                  ),
+                ),
+    );
+  }
+
+  // 加载中视图
+  Widget _buildLoadingView() {
+    return const Center(
+      child: CircularProgressIndicator(),
+    );
+  }
+
+  // 空数据视图
+  Widget _buildEmptyView() {
+    return Center(
+      child: Column(
+        mainAxisAlignment: MainAxisAlignment.center,
+        children: [
+          Icon(
+            Icons.store_outlined,
+            size: 64.sp,
+            color: Colors.grey[400],
+          ),
+          SizedBox(height: 16.h),
+          Text(
+            '暂无店铺数据',
+            style: TextStyle(
+              fontSize: 16.sp,
+              color: Colors.grey[600],
+            ),
+          ),
+          SizedBox(height: 24.h),
+          ElevatedButton(
+            onPressed: () => _loadStores(refresh: true),
+            child: const Text('重新加载'),
+          ),
+        ],
+      ),
+    );
+  }
+
+  // 加载更多指示器
+  Widget _buildLoadingMore() {
+    return Padding(
+      padding: EdgeInsets.symmetric(vertical: 16.h),
+      child: const Center(
+        child: CircularProgressIndicator(),
       ),
     );
   }
 
   Widget _buildStoreCard(Map<String, dynamic> store) {
-    final products = store['products'] as List<Map<String, dynamic>>;
+    // 兼容API返回的数据格式
+    final storeName = store['name'] ?? store['shop_name'] ?? '未知店铺';
+    final storeAvatar = store['avatar'] ??
+        store['logo'] ??
+        'https://picsum.photos/60/60?random=${store['id']}';
+    final rating =
+        (store['rating'] ?? store['average_rating'] ?? 4.0).toDouble();
+    final followers = store['followers'] ?? store['followers_count'] ?? 0;
+    final products =
+        (store['products'] as List?)?.cast<Map<String, dynamic>>() ?? [];
 
     return GestureDetector(
       onTap: () {
@@ -190,7 +337,7 @@ class _LocalPetStoresPageState extends State<LocalPetStoresPage> {
                 children: [
                   CircleAvatar(
                     radius: 24.r,
-                    backgroundImage: NetworkImage(store['avatar']),
+                    backgroundImage: NetworkImage(storeAvatar),
                   ),
                   SizedBox(width: 12.w),
                   Expanded(
@@ -198,7 +345,7 @@ class _LocalPetStoresPageState extends State<LocalPetStoresPage> {
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
                         Text(
-                          store['name'],
+                          storeName,
                           style: TextStyle(
                             fontSize: 16.sp,
                             fontWeight: FontWeight.w600,
@@ -211,7 +358,7 @@ class _LocalPetStoresPageState extends State<LocalPetStoresPage> {
                             // 星级评分
                             ...List.generate(5, (index) {
                               return Icon(
-                                index < store['rating'].floor()
+                                index < rating.floor()
                                     ? Icons.star
                                     : Icons.star_border,
                                 color: const Color(0xFFFFB74D),
@@ -220,7 +367,9 @@ class _LocalPetStoresPageState extends State<LocalPetStoresPage> {
                             }),
                             SizedBox(width: 8.w),
                             Text(
-                              store['followers'],
+                              followers is int
+                                  ? '$followers粉丝'
+                                  : followers.toString(),
                               style: TextStyle(
                                 fontSize: 12.sp,
                                 color: Colors.grey[600],
@@ -232,7 +381,8 @@ class _LocalPetStoresPageState extends State<LocalPetStoresPage> {
                     ),
                   ),
                   Container(
-                    padding: EdgeInsets.symmetric(horizontal: 16.w, vertical: 6.h),
+                    padding:
+                        EdgeInsets.symmetric(horizontal: 16.w, vertical: 6.h),
                     decoration: BoxDecoration(
                       color: AppColors.primary,
                       borderRadius: BorderRadius.circular(15.r),
@@ -248,25 +398,27 @@ class _LocalPetStoresPageState extends State<LocalPetStoresPage> {
                   ),
                 ],
               ),
-              
-              SizedBox(height: 16.h),
-              
-              // 商品网格
-              GridView.builder(
-                shrinkWrap: true,
-                physics: const NeverScrollableScrollPhysics(),
-                gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
-                  crossAxisCount: 4,
-                  crossAxisSpacing: 8.w,
-                  mainAxisSpacing: 8.h,
-                  childAspectRatio: 0.85,
+
+              if (products.isNotEmpty) ...[
+                SizedBox(height: 16.h),
+
+                // 商品网格
+                GridView.builder(
+                  shrinkWrap: true,
+                  physics: const NeverScrollableScrollPhysics(),
+                  gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
+                    crossAxisCount: 4,
+                    crossAxisSpacing: 8.w,
+                    mainAxisSpacing: 8.h,
+                    childAspectRatio: 0.85,
+                  ),
+                  itemCount: products.length > 4 ? 4 : products.length,
+                  itemBuilder: (context, index) {
+                    final product = products[index];
+                    return _buildProductItem(product);
+                  },
                 ),
-                itemCount: products.length,
-                itemBuilder: (context, index) {
-                  final product = products[index];
-                  return _buildProductItem(product);
-                },
-              ),
+              ],
             ],
           ),
         ),
@@ -275,11 +427,21 @@ class _LocalPetStoresPageState extends State<LocalPetStoresPage> {
   }
 
   Widget _buildProductItem(Map<String, dynamic> product) {
+    // 兼容API返回的数据格式
+    final imageUrl = product['image'] ??
+        (product['images'] is List && (product['images'] as List).isNotEmpty
+            ? product['images'][0]
+            : 'https://picsum.photos/200/200?random=${product['id']}');
+    final price = product['price'] ??
+        product['current_price'] ??
+        product['starting_price'] ??
+        0;
+
     return Container(
       decoration: BoxDecoration(
         borderRadius: BorderRadius.circular(8.r),
         image: DecorationImage(
-          image: NetworkImage(product['image']),
+          image: NetworkImage(imageUrl.toString()),
           fit: BoxFit.cover,
         ),
       ),
@@ -301,10 +463,11 @@ class _LocalPetStoresPageState extends State<LocalPetStoresPage> {
                     Colors.black.withValues(alpha: 0.7),
                   ],
                 ),
-                borderRadius: BorderRadius.vertical(bottom: Radius.circular(8.r)),
+                borderRadius:
+                    BorderRadius.vertical(bottom: Radius.circular(8.r)),
               ),
               child: Text(
-                '¥${product['price']}',
+                '¥$price',
                 style: TextStyle(
                   color: Colors.white,
                   fontSize: 10.sp,

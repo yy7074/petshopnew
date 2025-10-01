@@ -61,6 +61,10 @@ class _HomePageState extends State<HomePage> {
   String _selectedPetFilter = '';
   String _selectedAquaticFilter = '';
   String _selectedFixedPriceFilter = '';
+  String _selectedAuctionFilter = '自定义'; // 限时拍卖筛选标签
+
+  // 筛选后的专场列表
+  List<home_service.SpecialEvent> _filteredEvents = [];
 
   // 筛选标签
   final List<String> _petFilterTags = [
@@ -461,6 +465,9 @@ class _HomePageState extends State<HomePage> {
             _recommendedProducts = homeData.recommendedProducts;
             _specialEvents = homeData.specialEvents;
             _categories = homeData.categories;
+
+            // 初始化筛选列表为全部专场
+            _filteredEvents = List.from(_specialEvents);
 
             print('===== API返回的商品数据检查 =====');
             if (_hotProducts.isNotEmpty) {
@@ -1064,12 +1071,19 @@ class _HomePageState extends State<HomePage> {
 
           return GestureDetector(
             onTap: () {
+              print('🔖 点击标签: $tab (索引: $index)');
               if (_currentTabIndex != index) {
+                print('📄 切换到页面: $index');
+                setState(() {
+                  _currentTabIndex = index;
+                });
                 _pageController.animateToPage(
                   index,
                   duration: const Duration(milliseconds: 200),
                   curve: Curves.easeInOut,
                 );
+              } else {
+                print('⏭️ 已经在当前页面: $index');
               }
             },
             child: Column(
@@ -1202,10 +1216,22 @@ class _HomePageState extends State<HomePage> {
   }
 
   /// 构建专场区域
-  Widget _buildSpecialEventsSection() {
-    print('构建专场区域，专场数量: ${_specialEvents.length}');
+  // 获取要显示的专场列表（筛选后的或全部）
+  List<home_service.SpecialEvent> get _displayEvents {
+    // 如果用户选择了"自定义"或没有筛选，显示全部专场
+    if (_selectedAuctionFilter == '自定义') {
+      return _specialEvents;
+    }
+    // 否则显示筛选结果（即使为空）
+    return _filteredEvents;
+  }
 
-    if (_specialEvents.isEmpty) {
+  Widget _buildSpecialEventsSection() {
+    final eventsToDisplay = _displayEvents;
+    print(
+        '构建专场区域，专场数量: ${eventsToDisplay.length} (筛选: ${_filteredEvents.isNotEmpty})');
+
+    if (eventsToDisplay.isEmpty) {
       return Container(
         height: 120.h,
         margin: EdgeInsets.symmetric(horizontal: 16.w),
@@ -1224,7 +1250,7 @@ class _HomePageState extends State<HomePage> {
               ),
               SizedBox(height: 8.h),
               Text(
-                '暂无专场数据 (${_specialEvents.length})',
+                '暂无专场数据',
                 style: TextStyle(
                   fontSize: 12.sp,
                   color: Colors.grey[600],
@@ -1245,6 +1271,8 @@ class _HomePageState extends State<HomePage> {
 
   /// 构建瀑布流专场列表
   Widget _buildStaggeredSpecialEvents() {
+    final eventsToDisplay = _displayEvents;
+
     // 计算每行显示的卡片数量
     const crossAxisCount = 2;
     final cardWidth = (1.sw - 48.w) / crossAxisCount; // 减去边距
@@ -1258,9 +1286,9 @@ class _HomePageState extends State<HomePage> {
         crossAxisSpacing: 12.w,
         childAspectRatio: 0.8, // 调整宽高比让卡片更美观
       ),
-      itemCount: _specialEvents.length,
+      itemCount: eventsToDisplay.length,
       itemBuilder: (context, index) {
-        final event = _specialEvents[index];
+        final event = eventsToDisplay[index];
         return GestureDetector(
           onTap: () {
             // 跳转到专场详情页面，传递专场 ID
@@ -1603,12 +1631,13 @@ class _HomePageState extends State<HomePage> {
                 spacing: 6.w, // 减少水平间距
                 runSpacing: 6.h, // 减少垂直间距
                 children: [
-                  _buildFilterTag('自定义', true, isPrimary: true),
-                  _buildFilterTag('比熊', false),
-                  _buildFilterTag('标赛', false),
-                  _buildFilterTag('双血统', false),
-                  _buildFilterTag('幼犬', false),
-                  _buildFilterTag('成犬', false),
+                  _buildFilterTag('自定义', _selectedAuctionFilter == '自定义',
+                      isPrimary: true),
+                  _buildFilterTag('比熊', _selectedAuctionFilter == '比熊'),
+                  _buildFilterTag('标赛', _selectedAuctionFilter == '标赛'),
+                  _buildFilterTag('双血统', _selectedAuctionFilter == '双血统'),
+                  _buildFilterTag('幼犬', _selectedAuctionFilter == '幼犬'),
+                  _buildFilterTag('成犬', _selectedAuctionFilter == '成犬'),
                 ],
               ),
               SizedBox(height: 6.h), // 减少行间距
@@ -1617,10 +1646,10 @@ class _HomePageState extends State<HomePage> {
                 spacing: 6.w,
                 runSpacing: 6.h,
                 children: [
-                  _buildFilterTag('竞价中', false),
-                  _buildFilterTag('即将结束', false),
-                  _buildFilterTag('热门推荐', false),
-                  _buildFilterTag('新品上架', false),
+                  _buildFilterTag('竞价中', _selectedAuctionFilter == '竞价中'),
+                  _buildFilterTag('即将结束', _selectedAuctionFilter == '即将结束'),
+                  _buildFilterTag('热门推荐', _selectedAuctionFilter == '热门推荐'),
+                  _buildFilterTag('新品上架', _selectedAuctionFilter == '新品上架'),
                 ],
               ),
             ],
@@ -1639,29 +1668,41 @@ class _HomePageState extends State<HomePage> {
 
   Widget _buildFilterTag(String text, bool isSelected,
       {bool isPrimary = false}) {
-    return Container(
-      padding: EdgeInsets.symmetric(horizontal: 12.w, vertical: 6.h), // 减少内边距
-      decoration: BoxDecoration(
-        color: isSelected
-            ? (isPrimary ? const Color(0xFF9C4DFF) : Colors.white)
-            : Colors.white,
-        borderRadius: BorderRadius.circular(16.r), // 减少圆角
-        border: Border.all(
+    return GestureDetector(
+      onTap: () {
+        print('🏷️ 点击筛选标签: $text');
+        setState(() {
+          _selectedAuctionFilter = text;
+        });
+        // 调用筛选逻辑
+        _loadProductsWithFilter(text);
+      },
+      child: Container(
+        padding: EdgeInsets.symmetric(horizontal: 12.w, vertical: 6.h), // 减少内边距
+        decoration: BoxDecoration(
           color: isSelected
-              ? (isPrimary ? const Color(0xFF9C4DFF) : const Color(0xFF9C4DFF))
-              : const Color(0xFF9C4DFF),
-          width: 1,
+              ? (isPrimary ? const Color(0xFF9C4DFF) : Colors.white)
+              : Colors.white,
+          borderRadius: BorderRadius.circular(16.r), // 减少圆角
+          border: Border.all(
+            color: isSelected
+                ? (isPrimary
+                    ? const Color(0xFF9C4DFF)
+                    : const Color(0xFF9C4DFF))
+                : const Color(0xFF9C4DFF),
+            width: 1,
+          ),
         ),
-      ),
-      child: Text(
-        text,
-        textAlign: TextAlign.center,
-        style: TextStyle(
-          fontSize: 10.sp, // 减小字体大小
-          color: isSelected
-              ? (isPrimary ? Colors.white : const Color(0xFF9C4DFF))
-              : const Color(0xFF9C4DFF),
-          fontWeight: isSelected ? FontWeight.w600 : FontWeight.w500,
+        child: Text(
+          text,
+          textAlign: TextAlign.center,
+          style: TextStyle(
+            fontSize: 10.sp, // 减小字体大小
+            color: isSelected
+                ? (isPrimary ? Colors.white : const Color(0xFF9C4DFF))
+                : const Color(0xFF9C4DFF),
+            fontWeight: isSelected ? FontWeight.w600 : FontWeight.w500,
+          ),
         ),
       ),
     );
@@ -2625,6 +2666,48 @@ class _HomePageState extends State<HomePage> {
         },
       ),
     );
+  }
+
+  // 根据筛选标签筛选专场
+  void _loadProductsWithFilter(String filterTag) {
+    print('🔍 开始筛选专场: $filterTag');
+
+    setState(() {
+      if (filterTag == '自定义') {
+        // 清空筛选，显示所有专场
+        _filteredEvents = [];
+        print('✅ 重置筛选，显示全部 ${_specialEvents.length} 个专场');
+      } else {
+        // 根据标签筛选专场
+        _filteredEvents = _specialEvents.where((event) {
+          final title = event.title.toLowerCase();
+          final description = (event.description ?? '').toLowerCase();
+          final tag = filterTag.toLowerCase();
+
+          // 根据不同标签筛选
+          switch (filterTag) {
+            case '比熊':
+            case '标赛':
+            case '双血统':
+            case '幼犬':
+            case '成犬':
+              return title.contains(tag) || description.contains(tag);
+            case '竞价中':
+              // 显示正在进行的专场
+              return event.isActive;
+            case '即将结束':
+              // 可以根据结束时间排序（这里简化处理，显示活跃的）
+              return event.isActive;
+            case '热门推荐':
+            case '新品上架':
+              return true; // 显示所有，后续可以根据具体需求调整
+            default:
+              return true;
+          }
+        }).toList();
+        print('✅ 筛选完成，匹配到 ${_filteredEvents.length} 个专场');
+      }
+    });
   }
 
   // 处理分类点击事件

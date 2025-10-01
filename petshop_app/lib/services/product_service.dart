@@ -16,6 +16,7 @@ class ProductService {
     String? sortBy,
     String? sortOrder,
     int? auctionType, // 添加auctionType参数
+    String? status, // 添加status参数
   }) async {
     try {
       final queryParams = <String, dynamic>{
@@ -30,6 +31,7 @@ class ProductService {
       if (sortBy != null) queryParams['sort_by'] = sortBy;
       if (sortOrder != null) queryParams['sort_order'] = sortOrder;
       if (auctionType != null) queryParams['auction_type'] = auctionType;
+      if (status != null) queryParams['status'] = status;
 
       final response =
           await _apiService.get('/products/', queryParameters: queryParams);
