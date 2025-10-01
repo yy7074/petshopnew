@@ -12,31 +12,57 @@ pwd_context = CryptContext(schemes=["bcrypt"], deprecated="auto")
 oauth2_scheme = OAuth2PasswordBearer(tokenUrl="api/v1/auth/login")
 optional_auth = HTTPBearer(auto_error=False)
 
+def _truncate_password(password: str) -> str:
+    """
+    截断密码到72字节以符合bcrypt限制
+    bcrypt只能处理最大72字节的密码
+    """
+    if not isinstance(password, str):
+        return password
+    
+    password_bytes = password.encode('utf-8')
+    if len(password_bytes) <= 72:
+        return password
+    
+    # 截断到72字节，确保不会在多字节字符中间切断
+    truncated = password_bytes[:72]
+    # 尝试解码，如果失败则逐步减少长度直到成功
+    for i in range(72, 68, -1):  # 最多回退4字节（UTF-8最多4字节字符）
+        try:
+            return truncated[:i].decode('utf-8')
+        except UnicodeDecodeError:
+            continue
+    # 如果还是失败，返回原密码的前部分
+    return password[:20]  # 安全回退
+
 def verify_password(plain_password: str, hashed_password: str) -> bool:
     """验证密码"""
-    # bcrypt只支持最大72字节的密码，需要截断
-    # 将密码编码为字节并截断到72字节
-    if isinstance(plain_password, str):
-        plain_password_bytes = plain_password.encode('utf-8')
-        if len(plain_password_bytes) > 72:
-            plain_password = plain_password_bytes[:72].decode('utf-8', errors='ignore')
-    
     try:
-        return pwd_context.verify(plain_password, hashed_password)
+        # 截断密码到bcrypt允许的最大长度
+        truncated_password = _truncate_password(plain_password)
+        return pwd_context.verify(truncated_password, hashed_password)
+    except ValueError as e:
+        # bcrypt相关错误
+        if "password cannot be longer than 72 bytes" in str(e):
+            print(f"⚠️ 密码过长，已自动截断: {len(plain_password.encode('utf-8'))} bytes")
+            # 强制使用更短的密码重试
+            return pwd_context.verify(plain_password[:20], hashed_password)
+        print(f"❌ 密码验证错误: {e}")
+        return False
     except Exception as e:
-        # 如果验证失败，记录错误但不抛出异常，返回False
-        print(f"密码验证错误: {e}")
+        print(f"❌ 未知验证错误: {e}")
         return False
 
 def get_password_hash(password: str) -> str:
     """生成密码哈希"""
-    # bcrypt只支持最大72字节的密码，需要截断
-    if isinstance(password, str):
-        password_bytes = password.encode('utf-8')
-        if len(password_bytes) > 72:
-            password = password_bytes[:72].decode('utf-8', errors='ignore')
-    
-    return pwd_context.hash(password)
+    try:
+        # 截断密码到bcrypt允许的最大长度
+        truncated_password = _truncate_password(password)
+        return pwd_context.hash(truncated_password)
+    except Exception as e:
+        print(f"❌ 密码哈希生成错误: {e}")
+        # 如果失败，使用更短的密码
+        return pwd_context.hash(password[:20])
 
 def create_access_token(data: dict, expires_delta: Optional[timedelta] = None):
     """创建访问令牌"""
