@@ -52,7 +52,10 @@ class _PetSocialDetailPageState extends State<PetSocialDetailPage> {
 
   @override
   Widget build(BuildContext context) {
-    final images = widget.post['images'] as List<String>;
+    // 安全处理图片列表
+    final imagesList = widget.post['images'];
+    final List<String> images =
+        imagesList is List ? imagesList.map((e) => e.toString()).toList() : [];
 
     return Scaffold(
       backgroundColor: Colors.white,
