@@ -55,7 +55,7 @@ class CustomBottomNav extends StatelessWidget {
             ),
           ),
 
-          // 中间圆形按钮 - 使用app logo
+          // 中间圆形按钮 - 发布按钮
           Positioned(
             left: 0,
             right: 0,
@@ -90,19 +90,10 @@ class CustomBottomNav extends StatelessWidget {
                       ),
                     ],
                   ),
-                  child: Padding(
-                    padding: EdgeInsets.all(8.w), // 减少内边距
-                    child: Image.asset(
-                      'assets/images/pet_shop_logo.png', // 使用拍宠有道logo
-                      fit: BoxFit.contain,
-                      errorBuilder: (context, error, stackTrace) {
-                        return Icon(
-                          Icons.pets,
-                          size: 28.w, // 减小图标尺寸
-                          color: Colors.white, // 改为白色图标
-                        );
-                      },
-                    ),
+                  child: Icon(
+                    Icons.add,
+                    size: 32.w,
+                    color: Colors.white,
                   ),
                 ),
               ),
