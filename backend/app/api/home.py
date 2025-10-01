@@ -167,6 +167,68 @@ async def get_home_banners(
     except Exception as e:
         raise HTTPException(status_code=500, detail=f"获取轮播图失败: {str(e)}")
 
+@router.get("/recommended-products")
+async def get_recommended_products(
+    page: int = Query(1, ge=1),
+    page_size: int = Query(10, ge=1, le=50),
+    db: Session = Depends(get_db)
+):
+    """获取推荐商品"""
+    try:
+        # 获取推荐商品（随机推荐）
+        recommended_products = db.query(Product).filter(
+            Product.status == 2
+        ).order_by(func.random()).offset((page - 1) * page_size).limit(page_size).all()
+        
+        # 转换为响应格式，包含图片信息
+        from ..models.product import ProductImage
+        products_data = []
+        for product in recommended_products:
+            images = db.query(ProductImage).filter(
+                ProductImage.product_id == product.id
+            ).order_by(ProductImage.sort_order).all()
+            
+            product_dict = {
+                "id": product.id,
+                "seller_id": product.seller_id,
+                "title": product.title,
+                "description": product.description,
+                "category_id": product.category_id,
+                "starting_price": product.starting_price,
+                "current_price": product.current_price,
+                "buy_now_price": product.buy_now_price,
+                "auction_type": product.auction_type,
+                "auction_start_time": product.auction_start_time.isoformat() if product.auction_start_time else None,
+                "auction_end_time": product.auction_end_time.isoformat() if product.auction_end_time else None,
+                "location": product.location,
+                "shipping_fee": product.shipping_fee,
+                "is_free_shipping": product.is_free_shipping,
+                "condition_type": product.condition_type,
+                "stock_quantity": product.stock_quantity,
+                "status": product.status,
+                "is_featured": product.is_featured,
+                "view_count": product.view_count,
+                "bid_count": product.bid_count,
+                "favorite_count": product.favorite_count,
+                "created_at": product.created_at.isoformat() if product.created_at else None,
+                "updated_at": product.updated_at.isoformat() if product.updated_at else None,
+                "images": [img.image_url for img in images]
+            }
+            products_data.append(product_dict)
+        
+        total = db.query(Product).filter(Product.status == 2).count()
+        
+        return {
+            "items": products_data,
+            "total": total,
+            "page": page,
+            "page_size": page_size,
+            "total_pages": (total + page_size - 1) // page_size
+        }
+        
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=f"获取推荐商品失败: {str(e)}")
+
 @router.get("/stats")
 async def get_home_stats(
     db: Session = Depends(get_db)

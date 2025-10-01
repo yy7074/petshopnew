@@ -87,6 +87,11 @@ async def get_current_user_info(current_user: User = Depends(get_current_user)):
     """获取当前用户信息"""
     return current_user
 
+@router.get("/profile", response_model=UserResponse)
+async def get_user_profile(current_user: User = Depends(get_current_user)):
+    """获取当前用户信息（兼容profile路径）"""
+    return current_user
+
 @router.post("/logout")
 async def logout():
     """用户登出"""
