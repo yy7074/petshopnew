@@ -90,10 +90,19 @@ class CustomBottomNav extends StatelessWidget {
                       ),
                     ],
                   ),
-                  child: Icon(
-                    Icons.add,
-                    size: 32.w,
-                    color: Colors.white,
+                  child: Padding(
+                    padding: EdgeInsets.all(8.w),
+                    child: Image.asset(
+                      'assets/images/publish_button_logo.png',
+                      fit: BoxFit.contain,
+                      errorBuilder: (context, error, stackTrace) {
+                        return Icon(
+                          Icons.add,
+                          size: 32.w,
+                          color: Colors.white,
+                        );
+                      },
+                    ),
                   ),
                 ),
               ),
